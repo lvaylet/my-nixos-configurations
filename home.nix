@@ -14,6 +14,9 @@
       nerd-fonts.jetbrains-mono
       nerd-fonts.meslo-lg
 
+      # Development
+      antigravity # Experience liftoff with the next-gen agent platform - https://antigravity.google/
+
       # Internet
       # ---
       google-chrome # Freeware web browser developed by Google - https://www.google.com/chrome/
