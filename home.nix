@@ -101,7 +101,11 @@
       };
     };
     jq.enable = true; # A lightweight and flexible command-line JSON processor - https://jqlang.github.io/jq/
-    lazygit.enable = true; # A simple terminal UI for git commands - https://github.com/jesseduffield/lazygit
+    lazygit = {
+      # A simple terminal UI for git commands - https://github.com/jesseduffield/lazygit
+      enable = true;
+      enableZshIntegration = true;
+    };
     nnn.enable = true; # n³ The unorthodox terminal file manager - https://github.com/jarun/nnn
     pyenv = {
       # Simple Python version management - https://github.com/pyenv/pyenv
