@@ -15,6 +15,7 @@
       nerd-fonts.meslo-lg
 
       # Development
+      # ---
       antigravity # Experience liftoff with the next-gen agent platform - https://antigravity.google/
 
       # Internet
