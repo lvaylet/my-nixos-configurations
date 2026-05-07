@@ -145,6 +145,10 @@
           vscodevim.vim # Vim Emulation
           davidanson.vscode-markdownlint # Markdown Linting and Style Checking
 
+          # Catppuccin theme + icons - https://catppuccin.com/
+          catppuccin.catppuccin-vsc
+          catppuccin.catppuccin-vsc-icons
+
           # Nix
           # ---
           jnoortheen.nix-ide # Nix IDE
@@ -195,6 +199,9 @@
           # Adjust zoom level. Each increment above 0 (e.g. 1) or below (e.g. -1) represents zooming 20% larger or
           # smaller. You can also enter decimals to adjust the zoom level with a finer granularity.
           "window.zoomLevel" = 1;
+
+          "workbench.colorTheme" = "Catppuccin Macchiato";
+          "workbench.iconTheme" = "catppuccin-macchiato";
 
           # Language Specific Editor Settings
           # ---
