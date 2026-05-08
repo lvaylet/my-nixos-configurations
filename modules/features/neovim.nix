@@ -1,5 +1,13 @@
-_: {
-  flake.nixosModules.neovim = _: {
+# Module adding home-manager NixOS module to the imports and configuring it.
+{inputs, ...}: {
+  # This is your module that imports and configures nvf
+  flake.nixosModules.neovim = {
+    # Import nvf NixOS module to get access to `programs.nvf` below.
+    # Reference: https://nvf.notashelf.dev/#sec-nixos-flakes-usage
+    imports = [
+      inputs.nvf.nixosModules.default
+    ];
+
     programs.nvf = {
       enable = true;
       settings = {
