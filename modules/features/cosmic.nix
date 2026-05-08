@@ -20,7 +20,7 @@ _: {
       # References:
       # - https://wiki.nixos.org/wiki/COSMIC#Optimization
       # - https://github.com/pop-os/system76-scheduler
-      services.system76-scheduler.enable = true;
+      system76-scheduler.enable = true;
     };
   };
 }
