@@ -142,10 +142,19 @@
       enable = true;
       profiles.default = {
         extensions = with pkgs.vscode-extensions; [
+          # Editor
+          # ---
           vscodevim.vim # Vim Emulation
+
+          # Linters and LSPs
+          # ---
           davidanson.vscode-markdownlint # Markdown Linting and Style Checking
 
-          # Catppuccin theme + icons - https://catppuccin.com/
+          # Themes and Icons
+          # ---
+          zhuangtongfa.material-theme # One Dark Pro - Atom's iconic One Dark theme for Visual Studio Code
+          pkief.material-icon-theme # Material Icon Theme - Material Design Icons for Visual Studio Code
+          # Catppuccin - https://catppuccin.com/
           catppuccin.catppuccin-vsc
           catppuccin.catppuccin-vsc-icons
 
@@ -200,8 +209,8 @@
           # smaller. You can also enter decimals to adjust the zoom level with a finer granularity.
           "window.zoomLevel" = 1;
 
-          "workbench.colorTheme" = "Catppuccin Macchiato";
-          "workbench.iconTheme" = "catppuccin-macchiato";
+          "workbench.colorTheme" = "Catppuccin Macchiato"; # or "One Dark Pro"
+          "workbench.iconTheme" = "catppuccin-macchiato"; # or "material-icon-theme"
 
           # Language Specific Editor Settings
           # ---
