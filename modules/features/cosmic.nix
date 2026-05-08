@@ -9,7 +9,8 @@ _: {
 
         # Enable automatic login (only with `cosmic-greeter` login manager).
         # Reference: https://wiki.nixos.org/wiki/COSMIC#Installation_(starting_with_NixOS_25.05)
-        # FIXME Figure out how to unlock keyring too.
+        # FIXME Figure out how to unlock the user's default keyring too (required by Google Chrome
+        # for example.
         autoLogin = {
           enable = true;
           user = "laurent";
