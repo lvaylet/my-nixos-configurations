@@ -255,8 +255,8 @@
             # smaller. You can also enter decimals to adjust the zoom level with a finer granularity.
             "window.zoomLevel" = 1;
 
-            "workbench.colorTheme" = "Catppuccin Macchiato";
-            "workbench.iconTheme" = "catppuccin-macchiato";
+            "workbench.colorTheme" = "Catppuccin Macchiato"; # or "One Dark Pro"
+            "workbench.iconTheme" = "catppuccin-macchiato"; # or "material-icon-theme"
 
             # Language Specific Editor Settings
             # ---
