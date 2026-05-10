@@ -48,7 +48,10 @@
               };
               extraDiagnostics = {
                 enable = true;
-                types = ["statix" "deadnix"];
+                types = [
+                  "statix"
+                  "deadnix"
+                ];
               };
             };
             typescript.enable = true;

@@ -12,7 +12,14 @@ _: {
 
     boot = {
       initrd = {
-        availableKernelModules = ["xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod"];
+        availableKernelModules = [
+          "xhci_pci"
+          "ahci"
+          "nvme"
+          "usbhid"
+          "usb_storage"
+          "sd_mod"
+        ];
         kernelModules = [];
       };
       kernelModules = ["kvm-amd"];
@@ -27,7 +34,10 @@ _: {
     fileSystems."/boot" = {
       device = "/dev/disk/by-uuid/8D65-002E";
       fsType = "vfat";
-      options = ["fmask=0077" "dmask=0077"];
+      options = [
+        "fmask=0077"
+        "dmask=0077"
+      ];
     };
 
     swapDevices = [];
