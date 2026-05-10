@@ -1,4 +1,4 @@
-# my-desktop-nixos-config
+# my-nixos-configurations
 
 ## Usage
 
@@ -22,3 +22,6 @@ just lint
 | `nixos-rebuild` | build a nixos system | `outputs.nixosConfigurations."HOSTNAME"` |
 | `home-manager` | build a home configuration | `outputs.homeConfigurations."USERNAME"` |
 | `nix flake show` | show the outputs provided by a flake | `outputs` |
+| `nix flake check` | check whether the flake evaluates and run its tests | |
+| `nix flake metadata` | show flake metadata | |
+| `nix flake update` | update flake lock file | |
