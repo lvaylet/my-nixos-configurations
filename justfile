@@ -23,6 +23,11 @@ lint:
   deadnix
   statix check
 
+# Fix warnings reported by `deadnix` and `statix`
+fix:
+  deadnix --edit
+  statix fix
+
 collect-garbage:
   nix-collect-garbage
 
