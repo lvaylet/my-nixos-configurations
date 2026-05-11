@@ -54,15 +54,16 @@
               protocol: efi
               path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
           '';
-          style.wallpapers = [
+          style.wallpapers = with pkgs.nixos-artwork.wallpapers; [
             # Check available wallpapers here:
             # - https://github.com/NixOS/nixos-artwork/tree/master/wallpapers
             # - https://mynixos.com/packages/nixos-artwork.wallpapers
             # and make sure to append `.gnomeFilePath` below:
-            pkgs.nixos-artwork.wallpapers.simple-dark-gray-bootloader.gnomeFilePath
-            pkgs.nixos-artwork.wallpapers.catppuccin-macchiato.gnomeFilePath
-            pkgs.nixos-artwork.wallpapers.nineish-catppuccin-macchiato.gnomeFilePath
-            pkgs.nixos-artwork.wallpapers.mosaic-blue.gnomeFilePath
+            catppuccin-macchiato.gnomeFilePath
+            mosaic-blue.gnomeFilePath
+            nineish-catppuccin-macchiato.gnomeFilePath
+            simple-dark-gray-bootloader.gnomeFilePath
+            waterfall.gnomeFilePath
           ];
         };
         efi.canTouchEfiVariables = true;
