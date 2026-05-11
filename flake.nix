@@ -28,6 +28,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Manage Neovim with `nixvim`.
+    # Reference: https://nix-community.github.io/nixvim/
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Seamless integration of Git hooks with Nix.
     git-hooks.url = "github:cachix/git-hooks.nix";
   };

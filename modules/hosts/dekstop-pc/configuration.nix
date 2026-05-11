@@ -10,7 +10,7 @@
       self.nixosModules.garbageCollection
       self.nixosModules.i18n
       self.nixosModules.keyboardUS
-      self.nixosModules.neovim
+      self.nixosModules.lazyvim # one of .neovim or .lazyvim
       self.nixosModules.nvidia
       self.nixosModules.podman
       self.nixosModules.printing
