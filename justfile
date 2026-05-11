@@ -32,6 +32,18 @@ fix:
   deadnix --edit
   statix fix
 
+# update all inputs and `flake.lock` file
+up:
+  nix flake update
+
+# show the flake outputs
+show:
+  nix flake show
+
+# check whether the flake evaluates and run its tests
+check:
+  nix flake check
+
 # build ISO image
 # build-iso:
 #     nix build .#nixosConfigurations.iso1chng.config.system.build.isoImage
