@@ -33,16 +33,21 @@
     # Bootloader and kernel.
     boot = {
       loader = {
+        efi.canTouchEfiVariables = true;
+
         limine = {
           # A modern, advanced, portable, multi-protocol bootloader and boot manager.
           # For additional Limine module configuration options, refer to https://search.nixos.org/options?channel=unstable&show=boot.loader.limine.
           enable = true;
+
           maxGenerations = 5; # Maximum number of latest generations in the boot menu.
+
           # Prepend extra settings to `limine.conf`.
           # The config format can be found here: https://github.com/limine-bootloader/limine/blob/trunk/CONFIG.md
           extraConfig = ''
             remember_last_entry: yes
           '';
+
           # Append extra entries to the end of `limine.conf`.
           #
           # For Windows 11, follow these instructions to copy the Windows bootloader to Limine's ESP
@@ -54,6 +59,7 @@
               protocol: efi
               path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
           '';
+
           style.wallpapers = with pkgs.nixos-artwork.wallpapers; [
             # Check available wallpapers here:
             # - https://github.com/NixOS/nixos-artwork/tree/master/wallpapers
@@ -66,7 +72,6 @@
             waterfall.gnomeFilePath
           ];
         };
-        efi.canTouchEfiVariables = true;
       };
     };
 
