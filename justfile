@@ -1,41 +1,53 @@
-default: format lint build
+# run `just --list`
+default:
+  just --list
 
-# Rebuild
+# rebuild
 build configuration="desktop-pc":
   nh os build .#{{configuration}}
 
-# Rebuild and switch
+# rebuild and switch
 switch configuration="desktop-pc":
   nh os switch .#{{configuration}}
 
-# Rebuild and switch after boot
+# rebuild and switch after boot
 boot configuration="desktop-pc":
   nh os boot .#{{configuration}}
 
-# Rebuild and activate but not switch
+# rebuild and activate but not switch
 test configuration="desktop-pc":
   nh os test .#{{configuration}}
 
-format:
+# format code recursively
+fmt:
   nix fmt
 
+# run linters
 lint:
   deadnix
   statix check
 
-# Fix warnings reported by `deadnix` and `statix`
+# fix warnings reported by linters
 fix:
   deadnix --edit
   statix fix
 
+# build ISO image
+# build-iso:
+#     nix build .#nixosConfigurations.iso1chng.config.system.build.isoImage
+
+# delete all unreachable store objects
 collect-garbage:
   nix-collect-garbage
 
+# delete all unreachable store objects and old generations of profiles
 delete-old-generations:
   nix-collect-garbage --delete-old
 
+# clean the current user's profiles
 clean keep="1":
-  nh clean user --keep {{keep}}
+  nh clean user --keep {{keep}} # keep at least this number of generations
 
+# clean all profiles
 clean-all keep="1":
-  nh clean all --keep {{keep}}
+  nh clean all --keep {{keep}} # keep at least this number of generations
