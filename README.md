@@ -8,6 +8,7 @@ just --list
 Available recipes:
     boot configuration="desktop-pc"   # rebuild and switch after boot
     build configuration="desktop-pc"  # rebuild
+    check                             # check whether the flake evaluates and run its tests
     clean keep="1"                    # clean the current user's profiles
     clean-all keep="1"                # clean all profiles
     collect-garbage                   # delete all unreachable store objects
@@ -16,8 +17,10 @@ Available recipes:
     fix                               # fix warnings reported by linters
     fmt                               # format code recursively
     lint                              # run linters
+    show                              # show the flake outputs
     switch configuration="desktop-pc" # rebuild and switch
     test configuration="desktop-pc"   # rebuild and activate but not switch
+    up                                # update all inputs and `flake.lock` file
 ```
 
 ## Useful Nix Commands
