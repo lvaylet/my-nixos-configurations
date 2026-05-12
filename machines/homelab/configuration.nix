@@ -28,6 +28,13 @@
     ./../../modules/nixos/neovim.nix
     ./../../modules/nixos/ssh.nix
 
+    ./../../modules/nixos/adguardhome.nix
+    ./../../modules/nixos/filebrowser.nix
+    ./../../modules/nixos/home-automation.nix
+    ./../../modules/nixos/jellyfin.nix
+    ./../../modules/nixos/media.nix
+    ./../../modules/nixos/qbittorrent.nix
+
     # ./../../services/tailscale.nix
   ];
 
