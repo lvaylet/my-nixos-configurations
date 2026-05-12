@@ -27,13 +27,13 @@
   };
 
   # Message of the day shown to users when they log in.
-  # FIXME Adjust message for remote installation. Display IP and/or SSH command, for example?
+  # TODO Adjust message for remote installation. Display IP and/or SSH command, for example?
   users.motd = ''
     Welcome to my custom NixOS ISO installer!
 
-    To install the system, copy and paste the following command:
+    To connect over SSH and/or performa a remote installation, check the local IPv4 address with:
 
-    sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/eh8/chenglab/main/install.sh)"
+    ip -4 -j addr show | jq -r '.[] | select(.operstate == "UP") | .addr_info[0].local'
 
   '';
 
