@@ -50,6 +50,7 @@
     nixosConfigurations = {
       # Machines
       desktop-pc = mkNixOSConfig ./machines/desktop-pc/configuration.nix;
+      homelab = mkNixOSConfig ./machines/homelab/configuration.nix;
 
       # Custom ISO
       iso = nixpkgs.lib.nixosSystem {
