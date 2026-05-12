@@ -47,6 +47,7 @@ git+file:///home/laurent/workspace/github.com/lvaylet/my-nixos-configurations
 │   └───x86_64-linux: package 'pre-commit-run'
 └───nixosConfigurations
     ├───desktop-pc: NixOS configuration
+    ├───homelab: NixOS configuration
     └───iso: NixOS configuration
 ```
 
