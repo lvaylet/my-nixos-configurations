@@ -11,7 +11,7 @@
 
     # Hardware
     # ---
-    ./hardware-configuration.nix
+    ./hardware-configuration-dummy.nix
     # ./../../modules/nixos/intel.nix
     ./../../modules/nixos/ssd.nix
 
