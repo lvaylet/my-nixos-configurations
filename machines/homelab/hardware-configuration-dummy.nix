@@ -47,4 +47,21 @@
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
+  # TODO Use latest kernel for best hardware support on Alder Lake.
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  # TODO Intel GPU acceleration (VA-API) for N100 (or N150 on Beelink S13 ?)
+  # nixpkgs.config.packageOverrides = pkgs: {
+  #   intel-vaapi-driver = pkgs.intel-vaapi-driver.override { enableHybridCodec = true; };
+  # };
+  # hardware.graphics = {
+  #   enable = true;
+  #   extraPackages = with pkgs; [
+  #     intel-media-driver
+  #     intel-vaapi-driver
+  #     libva-vdpau-driver
+  #     libvdpau-va-gl
+  #   ];
+  # };
 }
