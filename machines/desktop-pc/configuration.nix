@@ -71,11 +71,6 @@
           ./../../modules/home-manager/vscode.nix
           ./../../modules/home-manager/yazi.nix
           ./../../modules/home-manager/zed-editor.nix
-
-          # ./../../modules/home-manager/alacritty.nix
-          # ./../../modules/home-manager/desktop.nix
-          # ./../../modules/home-manager/fonts.nix
-          # ./../../modules/home-manager/git.nix
         ];
       };
     };
