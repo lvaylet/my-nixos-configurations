@@ -9,6 +9,9 @@
 
     git # Distributed version control system
 
+    just # Handy way to save and run project-specific commands
+    just-lsp # Language server for just
+
     vim # Most popular clone of the VI editor
 
     wget # Tool for retrieving files using HTTP, HTTPS, and FTP
