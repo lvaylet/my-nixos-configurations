@@ -1,4 +1,4 @@
-{vars, ...}: {
+_: {
   # Enable the COSMIC Desktop Environment.
   # ---
   services = {
@@ -9,10 +9,10 @@
       # Enable automatic login (only with `cosmic-greeter` login manager).
       # Reference: https://wiki.nixos.org/wiki/COSMIC#Installation_(starting_with_NixOS_25.05)
       # FIXME Figure out how to unlock the user's default keyring too (required by Google Chrome).
-      autoLogin = {
-        enable = true;
-        user = vars.userName;
-      };
+      # autoLogin = {
+      #   enable = true;
+      #   user = vars.userName;
+      # };
     };
 
     # Slightly improve the performance by enabling system76's own scheduler.

@@ -72,6 +72,8 @@
     users.${vars.userName} = {
       isNormalUser = true;
       description = vars.fullName;
+      hashedPassword = "$6$ZDig7r9f3QdUBTzl$pczfwXi/dl49SDRoYAKIk9UU8Lw.FXRl4Ayn1Mhn/22V1vK7q3FIMCzZK55b.vNzPED/bQi1XwvnDFEHnCCK/."; # Generate with `mkpasswd -m sha-512 <password>`.      shell = pkgs.zsh; # Make sure to enable `programs.zsh` too!
+      # TODO hashedPasswordFile = config.sops.secrets."user-password".path;
       extraGroups = [
         "networkmanager"
         "wheel"
@@ -80,7 +82,6 @@
         vars.sshPublicKeyPersonal
         vars.sshPublicKeyWork
       ];
-      # TODO hashedPasswordFile = config.sops.secrets."user-password".path;
       shell = pkgs.zsh; # Make sure to enable `programs.zsh` too!
     };
   };
