@@ -78,6 +78,7 @@
       ];
       openssh.authorizedKeys.keys = [
         vars.sshPublicKeyPersonal
+        vars.sshPublicKeyWork
       ];
       # TODO hashedPasswordFile = config.sops.secrets."user-password".path;
       shell = pkgs.zsh; # Make sure to enable `programs.zsh` too!

@@ -3,4 +3,5 @@
   userName = "laurent";
   userEmail = "laurent.vaylet@gmail.com";
   sshPublicKeyPersonal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICyeLKUxxWIpgR796rBG8KaTDjHyGnK3Y6Xxzq71Hedr";
+  sshPublicKeyWork = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8QfBocRKJAJRinUJSjiGkjdOnsYIZqqdVsq7ZFeiUg";
 }

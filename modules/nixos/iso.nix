@@ -23,6 +23,7 @@
     # required for deployment via ssh.
     openssh.authorizedKeys.keys = [
       vars.sshPublicKeyPersonal
+      vars.sshPublicKeyWork
     ];
   };
 
