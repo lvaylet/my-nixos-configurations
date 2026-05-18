@@ -13,11 +13,12 @@
 
         # Themes and Icons
         # ---
-        zhuangtongfa.material-theme # One Dark Pro - Atom's iconic One Dark theme for Visual Studio Code
-        pkief.material-icon-theme # Material Icon Theme - Material Design Icons for Visual Studio Code
+        arcticicestudio.nord-visual-studio-code
+        # zhuangtongfa.material-theme # One Dark Pro - Atom's iconic One Dark theme for Visual Studio Code
+        # pkief.material-icon-theme # Material Icon Theme - Material Design Icons for Visual Studio Code
         # Catppuccin - https://catppuccin.com/
-        catppuccin.catppuccin-vsc
-        catppuccin.catppuccin-vsc-icons
+        # catppuccin.catppuccin-vsc
+        # catppuccin.catppuccin-vsc-icons
 
         # Languages
         # ---
@@ -73,8 +74,8 @@
         # smaller. You can also enter decimals to adjust the zoom level with a finer granularity.
         "window.zoomLevel" = 1;
 
-        "workbench.colorTheme" = "Catppuccin Macchiato"; # or "One Dark Pro"
-        "workbench.iconTheme" = "catppuccin-macchiato"; # or "material-icon-theme"
+        "workbench.colorTheme" = "Nord"; # One of "Catppuccin Macchiato", "One Dark Pro", "Nord"
+        # "workbench.iconTheme" = One of "catppuccin-macchiato", "material-icon-theme"
 
         # Language Specific Editor Settings
         # ---
