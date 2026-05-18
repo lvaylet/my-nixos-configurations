@@ -5,7 +5,7 @@
       extensions = with pkgs.vscode-extensions; [
         # Editor
         # ---
-        vscodevim.vim # Vim Emulation
+        # vscodevim.vim # Vim Emulation
 
         # Linters and LSPs
         # ---
