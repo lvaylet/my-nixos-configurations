@@ -1,10 +1,10 @@
-{vars, ...}: {
+{osConfig, ...}: {
   programs.git = {
     enable = true;
     settings = {
       user = {
-        name = vars.userName;
-        email = vars.userEmail;
+        name = osConfig.vars.userName;
+        email = osConfig.vars.userEmail;
       };
       init.defaultBranch = "main";
 

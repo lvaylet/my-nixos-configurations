@@ -1,51 +1,85 @@
 {
   inputs,
   outputs,
-  vars,
+  config,
+  lib,
   ...
 }: {
   networking.hostName = "homelab";
 
   imports = [
     inputs.home-manager.nixosModules.home-manager
+    inputs.disko.nixosModules.disko
+    inputs.preservation.nixosModules.default
 
     # Hardware
     # ---
-    ./hardware-configuration-dummy.nix
-    # ./../../modules/nixos/intel.nix
-    ./../../modules/nixos/ssd.nix
+    ./hardware-configuration.nix
+    ./disko.nix
+    ./preservation.nix
 
     # Base Settings
     # ---
     ./../../modules/nixos/base.nix
 
-    # Optional Features
+    # Optional Features / Container Engine
     # ---
-    ./../../modules/nixos/network.nix
+    ./../../modules/nixos/podman.nix
 
     # Programs / Services
     # ---
     ./../../modules/nixos/neovim.nix
+    ./../../modules/nixos/nix-ld.nix
     ./../../modules/nixos/ssh.nix
 
     ./../../modules/nixos/adguardhome.nix
+    ./../../modules/nixos/caddy.nix
+    ./../../modules/nixos/cloudflare-tunnel.nix
+    ./../../modules/nixos/couchdb.nix
     ./../../modules/nixos/filebrowser.nix
     ./../../modules/nixos/home-automation.nix
     ./../../modules/nixos/jellyfin.nix
     ./../../modules/nixos/media.nix
+    ./../../modules/nixos/portainer.nix
     ./../../modules/nixos/qbittorrent.nix
-
-    # ./../../services/tailscale.nix
   ];
 
+  # Bootloader configuration
+  # ---
+  # Use the GRUB 2 boot loader, specifically optimized for our disko partitioning.
+  boot = {
+    loader = {
+      grub = {
+        enable = true;
+        efiSupport = true;
+        efiInstallAsRemovable = true;
+      };
+      limine.enable = lib.mkForce false;
+      efi.canTouchEfiVariables = lib.mkForce false;
+    };
+  };
+
+  # User group adjustments and root access
+  # ---
+  users.users.${config.vars.userName}.extraGroups = [
+    "multimedia" # Let the user manage qBittorrent, Filebrowser and Jellyfin files/directories.
+  ];
+
+  # Allow `root` access over SSH from authorized hosts.
+  users.users.root.openssh.authorizedKeys.keys =
+    config.vars.sshPublicKeysPersonal
+    ++ config.vars.sshPublicKeysWork;
+
+  # Home Manager Configurations
+  # ---
   home-manager = {
-    extraSpecialArgs = {inherit inputs outputs vars;};
+    extraSpecialArgs = {inherit inputs outputs;};
 
     useGlobalPkgs = true;
     useUserPackages = true;
 
     users = {
-      ${vars.userName} = {
+      ${config.vars.userName} = {
         imports = [
           # Base Settings
           # ---
@@ -61,7 +95,6 @@
           ./../../modules/home-manager/lazygit.nix
           ./../../modules/home-manager/nnn.nix
           ./../../modules/home-manager/ripgrep.nix
-          # ./../../modules/home-manager/ssh.nix
           ./../../modules/home-manager/starship.nix
           ./../../modules/home-manager/yazi.nix
         ];

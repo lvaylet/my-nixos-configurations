@@ -11,7 +11,7 @@ _: {
       # FIXME Figure out how to unlock the user's default keyring too (required by Google Chrome).
       # autoLogin = {
       #   enable = true;
-      #   user = vars.userName;
+      #   user = config.vars.userName;
       # };
     };
 

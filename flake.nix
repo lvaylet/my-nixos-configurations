@@ -24,6 +24,15 @@
 
     # Seamless integration of Git hooks with Nix.
     git-hooks.url = "github:cachix/git-hooks.nix";
+
+    # Declarative disk partitioning.
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Ephemeral root file system state preservation.
+    preservation.url = "github:nix-community/preservation";
   };
 
   outputs = {
@@ -32,7 +41,6 @@
     ...
   } @ inputs: let
     inherit (self) outputs;
-    vars = import ./vars.nix;
 
     systems = [
       "x86_64-linux"
@@ -41,7 +49,7 @@
 
     mkNixOSConfig = path:
       nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs vars;};
+        specialArgs = {inherit inputs outputs;};
         modules = [path];
       };
   in {
@@ -55,7 +63,7 @@
       # Custom ISO
       iso = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = {inherit inputs outputs vars;};
+        specialArgs = {inherit inputs outputs;};
         modules = [
           (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix")
           ./machines/iso/configuration.nix

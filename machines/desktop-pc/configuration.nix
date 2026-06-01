@@ -1,7 +1,7 @@
 {
   inputs,
   outputs,
-  vars,
+  config,
   ...
 }: {
   networking.hostName = "desktop-pc";
@@ -37,13 +37,13 @@
   ];
 
   home-manager = {
-    extraSpecialArgs = {inherit inputs outputs vars;};
+    extraSpecialArgs = {inherit inputs outputs;};
 
     useGlobalPkgs = true;
     useUserPackages = true;
 
     users = {
-      ${vars.userName} = {
+      ${config.vars.userName} = {
         imports = [
           # Base Settings
           # ---

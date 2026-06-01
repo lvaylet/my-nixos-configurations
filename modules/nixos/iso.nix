@@ -1,6 +1,7 @@
-{vars, ...}: {
+{config, ...}: {
   imports = [
     ./_packages.nix
+    ./options.nix
   ];
 
   users.users.nixos = {
@@ -21,10 +22,9 @@
     # `authorized_keys` file. You can combine the `keys` and `keyFiles` options.
     # Warning: If you are using `NixOps` then don't use this option since it will replace the key
     # required for deployment via ssh.
-    openssh.authorizedKeys.keys = [
-      vars.sshPublicKeyPersonal
-      vars.sshPublicKeyWork
-    ];
+    openssh.authorizedKeys.keys =
+      config.vars.sshPublicKeysPersonal
+      ++ config.vars.sshPublicKeysWork;
   };
 
   # Message of the day shown to users when they log in.
