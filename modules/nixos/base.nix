@@ -1,10 +1,11 @@
 {
   pkgs,
-  vars,
+  config,
   ...
 }: {
   imports = [
     ./_packages.nix
+    ./options.nix
   ];
 
   boot = {
@@ -77,19 +78,18 @@
     # activation.
     mutableUsers = false;
 
-    users.${vars.userName} = {
+    users.${config.vars.userName} = {
       isNormalUser = true;
-      description = vars.fullName;
+      description = config.vars.fullName;
       hashedPassword = "$6$ZDig7r9f3QdUBTzl$pczfwXi/dl49SDRoYAKIk9UU8Lw.FXRl4Ayn1Mhn/22V1vK7q3FIMCzZK55b.vNzPED/bQi1XwvnDFEHnCCK/."; # Generate with `mkpasswd -m sha-512 <password>`.      shell = pkgs.zsh; # Make sure to enable `programs.zsh` too!
       # TODO hashedPasswordFile = config.sops.secrets."user-password".path;
       extraGroups = [
         "networkmanager"
         "wheel" # Enable `sudo` for this user.
       ];
-      openssh.authorizedKeys.keys = [
-        vars.sshPublicKeyPersonal
-        vars.sshPublicKeyWork
-      ];
+      openssh.authorizedKeys.keys =
+        config.vars.sshPublicKeysPersonal
+        ++ config.vars.sshPublicKeysWork;
       shell = pkgs.zsh; # Make sure to enable `programs.zsh` too!
     };
   };
@@ -97,7 +97,7 @@
   # TODO Move to dedicated module?
   nix.settings.trusted-users = [
     "root"
-    vars.userName # For sudoless `cachix`.
+    config.vars.userName # For sudoless `cachix`.
   ];
 
   # TODO Move to dedicated module, e.g. `networking.nix`?

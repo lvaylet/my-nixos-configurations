@@ -1,10 +1,18 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   services.jellyfin = {
     enable = true;
     openFirewall = true;
+    group = "multimedia"; # Directly bind Jellyfin to the group for seamless read/write access.
   };
 
-  # FIXME Add `users.users.${vars.userName}` to `video` and `render` groups.
+  users.users.${config.vars.userName}.extraGroups = [
+    "video"
+    "render"
+  ];
 
   environment.systemPackages = with pkgs; [
     jellyfin
