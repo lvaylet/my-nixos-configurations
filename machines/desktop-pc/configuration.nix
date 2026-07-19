@@ -32,8 +32,8 @@
     ./../../modules/nixos/printing.nix
     ./../../modules/nixos/sound.nix
     ./../../modules/nixos/ssh.nix
-    ./../../modules/nixos/tailscale.nix
-    ./../../modules/nixos/vmware-workstation.nix
+    #./../../modules/nixos/tailscale.nix
+    #./../../modules/nixos/vmware-workstation.nix
   ];
 
   home-manager = {
