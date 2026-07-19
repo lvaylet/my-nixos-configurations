@@ -56,7 +56,7 @@
           ./../../modules/home-manager/eza.nix
           ./../../modules/home-manager/fd.nix
           ./../../modules/home-manager/fzf.nix
-          ./../../modules/home-manager/gemini-cli.nix
+          ./../../modules/home-manager/antigravity-cli.nix
           ./../../modules/home-manager/ghostty.nix
           ./../../modules/home-manager/git.nix
           ./../../modules/home-manager/jq.nix
