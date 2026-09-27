@@ -62,6 +62,7 @@
           ./../../modules/home-manager/lazygit.nix
           ./../../modules/home-manager/nnn.nix
           ./../../modules/home-manager/obsidian.nix
+          ./../../modules/home-manager/opencode.nix
           # ./../../modules/home-manager/pyenv.nix
           ./../../modules/home-manager/ripgrep.nix
           # ./../../modules/home-manager/ssh.nix
