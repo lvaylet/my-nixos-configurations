@@ -14,5 +14,6 @@
     enable = true;
     package = pkgs.noctalia;
     checkConfig = false;
+    settings = ./dotfiles/noctalia.toml;
   };
 }
