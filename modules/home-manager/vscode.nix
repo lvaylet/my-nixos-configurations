@@ -32,10 +32,10 @@
       userSettings = {
         # This property will be used to generate `settings.json`:
         # https://code.visualstudio.com/docs/getstarted/settings#_settingsjson
-        "editor.fontFamily" = "MesloLGM Nerd Font";
+        "editor.fontFamily" = "FiraCode Nerd Font";
         "editor.fontLigatures" = true;
         "editor.lineNumbers" = "relative";
-        "editor.fontSize" = 14;
+        "editor.fontSize" = 12;
         "editor.formatOnSave" = true;
         "editor.rulers" = [
           80
@@ -64,7 +64,7 @@
         "git.confirmSync" = false;
         "git.suggestSmartCommit" = false;
 
-        "terminal.integrated.fontFamily" = "MesloLGM Nerd Font";
+        "terminal.integrated.fontFamily" = "FiraCode Nerd Font";
         "terminal.integrated.fontLigatures.enabled" = true;
         "terminal.integrated.fontSize" = 12;
         "terminal.integrated.lineHeight" = 1.2;
