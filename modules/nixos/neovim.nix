@@ -18,7 +18,13 @@
           style = "mocha";
         };
 
+        luaConfigPost = ''
+          -- Configure FiraCode Nerd Font with ligatures for GUI frontends.
+          vim.opt.guifont = "FiraCode Nerd Font:h12"
+        '';
+
         statusline.lualine.enable = true; # Status line - https://github.com/nvim-lualine/lualine.nvim
+        visuals.nvim-web-devicons.enable = true; # File and status icons - https://github.com/nvim-tree/nvim-web-devicons
         telescope.enable = true; # Fuzzy finder - https://github.com/nvim-telescope/telescope.nvim
         autocomplete.nvim-cmp.enable = true; # Completion plugin - https://github.com/hrsh7th/nvim-cmp
         filetree.nvimTree.enable = true; # File explorer - https://github.com/nvim-tree/nvim-tree.lua

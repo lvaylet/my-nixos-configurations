@@ -1,24 +1,23 @@
-_: {
-  # Enable the COSMIC Desktop Environment.
+{pkgs, ...}: {
+  # Enable the Niri scrollable-tiling Wayland compositor.
+  # Reference: https://github.com/YaLTeR/niri
   # ---
-  services = {
-    desktopManager.cosmic.enable = true;
-    displayManager = {
-      cosmic-greeter.enable = true;
+  programs.niri.enable = true;
 
-      # Enable automatic login (only with `cosmic-greeter` login manager).
-      # Reference: https://wiki.nixos.org/wiki/COSMIC#Installation_(starting_with_NixOS_25.05)
-      # FIXME Figure out how to unlock the user's default keyring too (required by Google Chrome).
-      # autoLogin = {
-      #   enable = true;
-      #   user = vars.userName;
-      # };
+  # Enable the Fish shell system-wide for completions and /etc/shells registration.
+  # ---
+  programs.fish.enable = true;
+
+  # Configure Greetd display manager with Tuigreet session launcher.
+  # Reference: https://github.com/apognu/tuigreet
+  # ---
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
+        user = "greeter";
+      };
     };
-
-    # Slightly improve the performance by enabling system76's own scheduler.
-    # References:
-    # - https://wiki.nixos.org/wiki/COSMIC#Optimization
-    # - https://github.com/pop-os/system76-scheduler
-    system76-scheduler.enable = true;
   };
 }

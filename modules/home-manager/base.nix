@@ -5,7 +5,7 @@
     ./fonts.nix
 
     # Shell
-    ./_zsh.nix
+    ./fish.nix
   ];
 
   home = {

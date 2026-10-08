@@ -80,7 +80,7 @@
     users.${vars.userName} = {
       isNormalUser = true;
       description = vars.fullName;
-      hashedPassword = "$6$ZDig7r9f3QdUBTzl$pczfwXi/dl49SDRoYAKIk9UU8Lw.FXRl4Ayn1Mhn/22V1vK7q3FIMCzZK55b.vNzPED/bQi1XwvnDFEHnCCK/."; # Generate with `mkpasswd -m sha-512 <password>`.      shell = pkgs.zsh; # Make sure to enable `programs.zsh` too!
+      hashedPassword = "$6$ZDig7r9f3QdUBTzl$pczfwXi/dl49SDRoYAKIk9UU8Lw.FXRl4Ayn1Mhn/22V1vK7q3FIMCzZK55b.vNzPED/bQi1XwvnDFEHnCCK/."; # Generate with `mkpasswd -m sha-512 <password>`.
       # TODO hashedPasswordFile = config.sops.secrets."user-password".path;
       extraGroups = [
         "networkmanager"
@@ -90,7 +90,7 @@
         vars.sshPublicKeyPersonal
         vars.sshPublicKeyWork
       ];
-      shell = pkgs.zsh; # Make sure to enable `programs.zsh` too!
+      shell = pkgs.fish; # Make sure to enable `programs.fish` too!
     };
   };
 
@@ -109,7 +109,7 @@
   # When adding a new shell, always enable the shell system-wide, even if it's already enabled in
   # your Home Manager configuration. Otherwise it won't source the necessary files.
   # Reference: https://wiki.nixos.org/wiki/Command_Shell
-  programs.zsh.enable = true;
+  programs.fish.enable = true;
 
   # Let users of the wheel group run commands as super user (via sudo) without providing a password.
   security.sudo.wheelNeedsPassword = false;
