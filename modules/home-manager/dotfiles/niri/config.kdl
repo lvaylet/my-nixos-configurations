@@ -8,6 +8,7 @@ input {
     keyboard {
         xkb {
             layout "us,fr"
+            variant "intl,"
             options "grp:alt_shift_toggle"
         }
     }
