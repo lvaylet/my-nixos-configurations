@@ -22,6 +22,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Noctalia Wayland desktop shell.
+    # Reference: https://github.com/noctalia-dev/noctalia
+    noctalia = {
+      url = "github:noctalia-dev/noctalia";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Seamless integration of Git hooks with Nix.
     git-hooks.url = "github:cachix/git-hooks.nix";
   };

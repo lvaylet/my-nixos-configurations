@@ -56,11 +56,13 @@
           ./../../modules/home-manager/eza.nix
           ./../../modules/home-manager/fd.nix
           ./../../modules/home-manager/fzf.nix
-          ./../../modules/home-manager/ghostty.nix
+          # ./../../modules/home-manager/ghostty.nix
           ./../../modules/home-manager/git.nix
           ./../../modules/home-manager/jq.nix
           ./../../modules/home-manager/lazygit.nix
+          ./../../modules/home-manager/niri.nix
           ./../../modules/home-manager/nnn.nix
+          ./../../modules/home-manager/noctalia.nix
           ./../../modules/home-manager/obsidian.nix
           ./../../modules/home-manager/opencode.nix
           # ./../../modules/home-manager/pyenv.nix
@@ -68,6 +70,7 @@
           # ./../../modules/home-manager/ssh.nix
           ./../../modules/home-manager/starship.nix
           ./../../modules/home-manager/vscode.nix
+          ./../../modules/home-manager/wezterm.nix
           ./../../modules/home-manager/yazi.nix
           ./../../modules/home-manager/zed-editor.nix
         ];

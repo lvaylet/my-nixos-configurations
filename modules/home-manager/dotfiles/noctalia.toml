@@ -1,0 +1,60 @@
+[calendar]
+enabled = true
+
+[control_center.calendar]
+show_week_numbers = true
+
+[location]
+address = "La Rochelle, France"
+
+[lockscreen_widgets]
+enabled = false
+schema_version = 2
+widget_order = [ "lockscreen-login-box@DP-3" ]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@DP-3"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 1536.0
+    cy = 1546.0
+    output = "DP-3"
+    placement_height = 1728.0
+    placement_width = 3072.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@DP-3".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+[theme]
+builtin = "Noctalia"
+community_palette = "Catppuccin Macchiato Blue"
+mode = "dark"
+source = "community"
+
+    [theme.templates]
+    builtin_ids = [ "niri", "wezterm" ]
+
+[wallpaper.default]
+path = "/nix/store/vwrdyyaacmsjk1ivswzmaayya9yqkkb8-noctalia-5.1.0/share/noctalia/assets/noctalia-wallpaper.png"
+
+[wallpaper.last]
+path = "/nix/store/vwrdyyaacmsjk1ivswzmaayya9yqkkb8-noctalia-5.1.0/share/noctalia/assets/noctalia-wallpaper.png"
