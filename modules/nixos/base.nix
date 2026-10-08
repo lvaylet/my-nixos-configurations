@@ -110,6 +110,7 @@
   # your Home Manager configuration. Otherwise it won't source the necessary files.
   # Reference: https://wiki.nixos.org/wiki/Command_Shell
   programs.fish.enable = true;
+  programs.zsh.enable = true;
 
   # Let users of the wheel group run commands as super user (via sudo) without providing a password.
   security.sudo.wheelNeedsPassword = false;

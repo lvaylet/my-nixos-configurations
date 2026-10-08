@@ -46,8 +46,8 @@ prefer-no-csd
 binds {
     // Terminal and Launcher
     Mod+Return { spawn "wezterm"; }
-    Mod+Space { spawn "noctalia" "ipc" "launcher" "toggle"; }
-    Mod+D { spawn "noctalia" "ipc" "launcher" "toggle"; }
+    Mod+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+D { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
 
     // Window / Column Management
     Mod+Q { close-window; }
@@ -97,9 +97,9 @@ binds {
     Mod+Shift+9 { move-window-to-workspace 9; }
 
     // Session Actions & Noctalia IPC
-    Mod+Shift+E { spawn "noctalia" "ipc" "session" "toggle"; }
-    Mod+Escape  { spawn "noctalia" "ipc" "lock"; }
-    Mod+N       { spawn "noctalia" "ipc" "notifications" "toggle"; }
+    Mod+Shift+E { spawn "noctalia" "msg" "panel-toggle" "session"; }
+    Mod+Escape  { spawn "noctalia" "msg" "session" "lock"; }
+    Mod+N       { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
 
     // Audio & Media Keys
     XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"; }

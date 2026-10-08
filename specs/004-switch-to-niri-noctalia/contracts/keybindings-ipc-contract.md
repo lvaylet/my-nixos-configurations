@@ -16,7 +16,7 @@ The default modifier key is `Mod` (`Super` / `Windows key`).
 | Keybinding | Action | Target / IPC Command |
 |---|---|---|
 | `Mod + Return` | Launch primary terminal | `spawn "wezterm"` |
-| `Mod + Space` / `Mod + D` | Toggle application launcher | `spawn "noctalia" "ipc" "launcher" "toggle"` |
+| `Mod + Space` / `Mod + D` | Toggle application launcher | `spawn "noctalia" "msg" "panel-toggle" "launcher"` |
 | `Mod + Q` | Close active window | `close-window` |
 | `Mod + H` / `Mod + Left` | Focus window left | `focus-column-left` |
 | `Mod + L` / `Mod + Right` | Focus window right | `focus-column-right` |
@@ -25,20 +25,21 @@ The default modifier key is `Mod` (`Super` / `Windows key`).
 | `Mod + Shift + H` / `Left` | Move column left | `move-column-left` |
 | `Mod + Shift + L` / `Right`| Move column right | `move-column-right` |
 | `Mod + F` | Toggle window fullscreen | `fullscreen-window` |
-| `Mod + Shift + E` | Session power menu | `spawn "noctalia" "ipc" "session" "toggle"` |
-| `Mod + Shift + L` | Lock screen | `spawn "noctalia" "ipc" "lock"` |
+| `Mod + Shift + E` | Session power menu | `spawn "noctalia" "msg" "panel-toggle" "session"` |
+| `Mod + Escape` | Lock screen | `spawn "noctalia" "msg" "session" "lock"` |
+| `Mod + N` | Notifications / Control Center | `spawn "noctalia" "msg" "panel-toggle" "control-center"` |
 
 ---
 
 ## 2. Noctalia IPC & Service Contract
 
-Noctalia responds to command-line IPC triggers over its runtime socket:
+Noctalia responds to command-line IPC triggers over its runtime socket via `noctalia msg`:
 
-- **`noctalia ipc launcher toggle`**: Opens/closes the fuzzy search application launcher.
-- **`noctalia ipc session toggle`**: Opens the logout, reboot, shutdown confirmation overlay.
-- **`noctalia ipc lock`**: Activates the Wayland session lock screen.
-- **`noctalia ipc notifications toggle`**: Opens the notification center / history panel.
-- **`noctalia ipc reload`**: Hot-reloads TOML configuration without restarting the session.
+- **`noctalia msg panel-toggle launcher`**: Opens/closes the fuzzy search application launcher.
+- **`noctalia msg panel-toggle session`**: Opens the logout, reboot, shutdown confirmation overlay.
+- **`noctalia msg session lock`**: Activates the Wayland session lock screen.
+- **`noctalia msg panel-toggle control-center`**: Opens the control center and notifications panel.
+- **`noctalia msg config-reload`**: Hot-reloads configuration without restarting the session.
 
 ---
 

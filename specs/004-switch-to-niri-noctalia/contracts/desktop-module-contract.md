@@ -75,7 +75,7 @@ Manages user-level compositor bindings, layout, autostart, and window rules:
   - Spawns `noctalia` upon session start (`spawn-at-startup "noctalia"`).
   - Spawns xdg-desktop-portal-wlr/gnome as needed.
 - **Terminal Hotkey**: Binds `Mod+Return` (or `Super+Return`) to spawn `wezterm`.
-- **Launcher Hotkey**: Binds `Mod+Space` or `Mod+D` to spawn Noctalia launcher (`noctalia ipc launcher toggle` or `noctalia launcher`).
+- **Launcher Hotkey**: Binds `Mod+Space` or `Mod+D` to spawn Noctalia launcher (`noctalia msg panel-toggle launcher`).
 
 ### B. Noctalia Shell Configuration (`modules/home-manager/noctalia.nix`)
 
