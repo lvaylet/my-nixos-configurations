@@ -1,11 +1,10 @@
 <!--
 Sync Impact Report:
-- Version change: 1.0.0 -> 1.0.1
+- Version change: 1.0.1 -> 2.0.0
 - List of modified principles:
-  - III. Shift-Left Quality, Formatting & Static Analysis (explicitly mandated zero-error success for nix flake check / just check across all repository assets and pre-commit hooks)
-  - V. Rigorous Verification & Safe Deployment Workflow (reinforced flake evaluation checks and clean check passes before switching or committing)
-- Added sections: None
-- Removed sections: None
+  - II. Dendritic Modularity & Feature-Centric Composition (ratified migration from host/module directory silos to the Dendritic Pattern using flake-parts and import-tree, feature-centric colocation of NixOS and Home Manager settings, zero-boilerplate module discovery, and centralized config.flake.vars options).
+- Structural & Architectural Constraints:
+  - Standardized repository hierarchy updated to reflect the dendritic domain hierarchy under modules/ (core/, desktop/, services/, hosts/).
 - Follow-up TODOs: None
 -->
 
@@ -18,10 +17,10 @@ All system infrastructure, machine configurations, and user environments MUST be
 
 *Rationale*: Guarantees total reproducibility across physical and virtual targets (`desktop-pc`, `homelab`, `iso`) and eliminates configuration drift across boots and reinstalls.
 
-### II. Modular Separation of Concerns & DRY Parameterization
-Configurations MUST maintain a strict separation between machine-specific host definitions (`machines/<host>/`), system-wide NixOS modules (`modules/nixos/`), and user-level Home Manager modules (`modules/home-manager/`). Host configurations MUST only assemble modules and define machine-unique hardware attributes; they MUST NOT contain inline service definitions or duplicate common logic. Shared user parameters (usernames, email addresses, SSH public keys) MUST be centralized in `vars.nix` and passed via `specialArgs` and `extraSpecialArgs`.
+### II. Dendritic Modularity & Feature-Centric Composition
+Configurations MUST follow the **Dendritic Pattern**: every non-entrypoint file is a top-level module discovered automatically via `import-tree ./modules` and evaluated by `flake-parts`. Capabilities MUST be organized into cohesive, domain-grouped features under `modules/` (`core/`, `desktop/`, `services/`), colocating NixOS system services and Home Manager user environments within the same feature scope where applicable. Host configurations (`modules/hosts/`) MUST only assemble hardware specifications (`modules/hosts/_hardware/`) and declare their enabled feature set; they MUST NOT contain inline service definitions. Shared identity parameters (usernames, email addresses, SSH public keys) MUST be declared as top-level options in `modules/core/vars.nix` (`config.flake.vars`) and accessed without parameter plumbing.
 
-*Rationale*: Keeps machine entrypoints concise, maximizes modular reusability across hosts, and guarantees consistent updates to shared identity properties.
+*Rationale*: Eliminates directory silos and import-wiring boilerplate, colocates system and user concerns per capability, maximizes modular reusability across hosts, and guarantees consistent updates to shared identity properties.
 
 ### III. Shift-Left Quality, Formatting & Static Analysis
 All Nix expressions MUST format cleanly with `alejandra` (`nix fmt`) and pass static linting (`statix check`) and dead-code detection (`deadnix`) with zero errors or warnings. Pre-commit hooks (`git-hooks.nix`) MUST run hermetically in isolated Nix sandbox checks (`nix flake check` / `just check`) and MUST succeed with exit code 0. File hygiene rules—including trailing whitespace elimination, mixed line ending prevention, case-conflict checks, proper script permissions, and end-of-file formatting—are mandatory and non-negotiable across all code, specifications, and metadata files.
@@ -43,19 +42,20 @@ Every configuration change MUST be verified prior to permanent activation. Chang
 The repository adheres to a standardized hierarchy that MUST be respected:
 
 1. **Root Flake (`flake.nix`)**:
-   - Defines inputs, `nixosConfigurations`, multi-system `checks`, `formatter`, and `devShells`.
-   - Uses `forAllSystems` helper for system-agnostic outputs.
-2. **Machine Definitions (`machines/<host>/`)**:
-   - Each host contains a `configuration.nix` and corresponding `hardware-configuration.nix`.
-   - Imports required modules from `modules/nixos/` and delegates user configuration to Home Manager modules.
-3. **NixOS Modules (`modules/nixos/`)**:
-   - Encapsulates system services (e.g., `desktop.nix`, `nvidia.nix`, `sound.nix`, `ssh.nix`, `base.nix`).
-   - Packages shared at the system level reside in `_packages.nix`.
-4. **Home Manager Modules (`modules/home-manager/`)**:
-   - Encapsulates user packages, shells, and desktop tool configurations (e.g., `git.nix`, `ghostty.nix`, `vscode.nix`, `_zsh.nix`).
-   - Static dotfiles reside in `modules/home-manager/dotfiles/`.
-5. **Variables (`vars.nix`)**:
-   - Stores global identity and SSH credentials consumed across system and user modules.
+   - Pinned inputs, invokes `flake-parts.lib.mkFlake` with `(inputs.import-tree ./modules)`.
+2. **Core Domain (`modules/core/`)**:
+   - `systems.nix`: Target systems list (`x86_64-linux`, etc.).
+   - `vars.nix`: Centralized identity options (`config.flake.vars`).
+   - `lib.nix`: Shared composition helpers (`mkHost`).
+   - `base.nix`: Base operating system foundation.
+   - `checks.nix`, `formatter.nix`, `devshell.nix`: Multi-system developer tooling.
+3. **Desktop Domain (`modules/desktop/`)**:
+   - Encapsulates graphical sessions, Wayland compositors (Niri), shells (Noctalia), terminal (WezTerm), Fish shell, fonts, editors (nvf, VS Code, Zed), audio, and graphics.
+4. **Services Domain (`modules/services/`)**:
+   - Encapsulates system daemons, server services (Jellyfin, QBittorrent, Filebrowser, AdGuard Home), networking, OpenSSH, Tailscale, Podman, and virtualization.
+5. **Host Definitions (`modules/hosts/`)**:
+   - Target declarations (`desktop-pc.nix`, `homelab.nix`, `iso.nix`) composing hardware with selected feature modules.
+   - Hardware configurations reside under `modules/hosts/_hardware/` (ignored by automatic top-level discovery).
 
 ## Quality Gates & Verification Workflow
 
@@ -78,4 +78,4 @@ This constitution defines the supreme operational and code standards for `my-nix
   - **PATCH (0.0.X)**: Wording clarifications, typo fixes, or documentation refinements.
 - **Compliance**: All generated specifications (`/speckit-*`), plans, and tasks MUST verify alignment with these core principles during review and convergence.
 
-**Version**: 1.0.1 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-12
+**Version**: 2.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-10-09

@@ -38,6 +38,25 @@ just check
 
 ---
 
+## Architecture: The Dendritic Pattern
+
+This repository is structured around the **[Dendritic Pattern](https://github.com/mightyiam/dendritic)** using **`flake-parts`** and **`import-tree`**:
+
+- **Feature-Centric Design**: Every capability is organized as a cohesive feature in domain directories under `modules/` (`core/`, `desktop/`, `services/`, `hosts/`), colocating NixOS system services and Home Manager user environments side-by-side.
+- **Zero-Boilerplate Auto-Discovery**: All non-entrypoint files under `modules/` are discovered automatically via `(inputs.import-tree ./modules)` in `flake.nix`, requiring zero manual entries in centralized import arrays.
+- **Declarative Host Composition**: Target machines (`modules/hosts/desktop-pc.nix`, `modules/hosts/homelab.nix`, `modules/hosts/iso.nix`) declare their closure purely by listing their hardware specification and an explicit array of enabled features.
+- **Unified Identity Context**: Shared user identity, credentials, and parameters are defined as top-level options in `modules/core/vars.nix` (`config.flake.vars`) and accessed without parameter plumbing.
+
+```text
+modules/
+├── core/                  # Systems, identity options, builder, base system, checks, devShell
+├── desktop/               # NNN desktop session, WezTerm, Fish shell, fonts, editors, audio, GPU
+├── services/              # Networking, OpenSSH, Tailscale, Podman, Jellyfin, AdGuard Home, etc.
+└── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
+```
+
+---
+
 ## Operational Recipes (`justfile`)
 
 All common workflows are defined in the [`justfile`](justfile):
