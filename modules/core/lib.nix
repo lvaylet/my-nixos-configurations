@@ -16,6 +16,7 @@
       hardware ? null,
       features ? [],
       extraModules ? [],
+      enableHomeManager ? null,
     }: let
       nixosModules = lib.flatten (
         map (
@@ -40,6 +41,11 @@
         )
         features
       );
+
+      hasHomeManager =
+        if enableHomeManager != null
+        then enableHomeManager
+        else (homeManagerModules != []);
     in
       inputs.nixpkgs.lib.nixosSystem {
         inherit system;
@@ -52,6 +58,10 @@
           (lib.optional (hardware != null) hardware)
           ++ nixosModules
           ++ [
+            inputs.disko.nixosModules.disko
+            inputs.preservation.nixosModules.default
+          ]
+          ++ (lib.optionals hasHomeManager [
             inputs.home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -67,7 +77,7 @@
                 };
               };
             }
-          ]
+          ])
           ++ extraModules;
       };
   };

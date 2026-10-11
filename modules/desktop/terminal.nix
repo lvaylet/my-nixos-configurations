@@ -6,8 +6,6 @@
       # ---
       programs.wezterm = {
         enable = true;
-        enableBashIntegration = false;
-        enableZshIntegration = false;
         extraConfig = ''
           local config = wezterm.config_builder()
 

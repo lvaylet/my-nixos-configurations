@@ -67,11 +67,14 @@ Available recipes:
     default                                     # run `just --list`
 
     [(re)build]
-    boot configuration="desktop-pc" target=""   # rebuild and set boot entry (local or remote over SSH)
+    boot configuration="desktop-pc" target=""   # rebuild and switch after boot (local or remote over SSH)
     build configuration="desktop-pc" target=""  # rebuild system closure (local or remote over SSH)
     build-iso                                   # build custom ISO image with SSH access for remote installations
+    deploy-homelab target="homelab"             # deploy configuration update to homelab without repartitioning
+    install-homelab target                      # bootstrap and install homelab remotely from scratch using nixos-anywhere
     switch configuration="desktop-pc" target="" # rebuild and switch (local or remote over SSH)
     test configuration="desktop-pc" target=""   # rebuild and activate temporarily (local or remote over SSH)
+    test-homelab target="homelab"               # test configuration update on remote homelab without setting boot profile
 
     [dev-utils]
     fix                                         # fix warnings reported by linters
@@ -104,6 +107,79 @@ just switch configuration="homelab" target="homelab"
 # Set next boot profile on a remote target:
 just boot configuration="homelab" target="homelab"
 ```
+
+### Initial Provisioning of Homelab (`nixos-anywhere` & Custom ISO)
+
+To perform an automated, headless bootstrap of the impermanent `homelab` server from scratch:
+
+1. **Build the Custom Installer ISO**:
+   The custom ISO (`modules/core/iso.nix`) embeds authorized SSH public keys for both `nixos` and `root` users, enabling direct passwordless SSH access:
+
+   ```sh
+   just build-iso
+   ```
+
+   The bootable ISO image is generated under `result/iso/nixos-*-x86_64-linux.iso`. Flash it to a USB drive (e.g. using `dd`, `rpi-imager`, or Ventoy).
+
+2. **Boot the Target Host**:
+   - Insert the USB drive into the homelab hardware (e.g. Beelink S13 mini PC) and boot from it.
+   - Note the assigned IPv4 address displayed in the MOTD banner or check it with `ip addr`.
+
+3. **Install Remotely with `nixos-anywhere`**:
+   From an authorized workstation, launch the remote deployment:
+
+   ```sh
+   export TARGET_IP=<target-ip>
+
+   # Using the dedicated just recipe:
+   just install-homelab ${TARGET_IP}
+
+   # Or invoking nixos-anywhere directly:
+   nix run github:nix-community/nixos-anywhere -- --flake .#homelab root@${TARGET_IP}
+   ```
+
+   `nixos-anywhere` automatically:
+   - Partitions and formats the SSD via `disko` (creating the hybrid MBR/ESP layout, swap, and Btrfs subvolumes `/persistent` and `/nix` with ephemeral `tmpfs` root).
+   - Mounts the target filesystem hierarchy and sets up preservation links.
+   - Installs the complete NixOS system closure with GRUB 2.
+   - Reboots into your fresh impermanent system.
+
+4. **Verify and Deploy Subsequent Updates**:
+   Once rebooted, connect over SSH as `laurent` or `root`:
+
+   ```sh
+   ssh laurent@${TARGET_IP}
+   ```
+
+   For routine updates that do not require repartitioning the storage device:
+
+   ```sh
+   # Deploy and switch the configuration:
+   just deploy-homelab target="${TARGET_IP}"
+
+   # Or test the configuration temporarily without setting a new boot profile:
+   just test-homelab target="${TARGET_IP}"
+   ```
+
+### Homelab Hosted Services
+
+The `homelab` server hosts containerized and native services organized under `modules/services/` with coordinated access to shared storage (`/data`) and state preservation under `/persistent`:
+
+| Service | Type | Network / Ports | Storage / Data | Description |
+| --- | --- | --- | --- | --- |
+| **Filebrowser Quantum** | OCI Container | `8081` (TCP) | `/data:/srv`, `/var/lib/filebrowser` | Web-based file manager for browsing, uploading, and organizing files. |
+| **Home Assistant** | OCI Container | `8123` (TCP, `--network=host`) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery. |
+| **Portainer CE** | OCI Container | `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
+| **Jellyfin** | Native Service | `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
+| **qBittorrent** | Native Service | `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
+
+#### Shared Multimedia Storage (`/data`)
+
+Downloading, file management, and media streaming services collaborate using a coordinated permission model (`modules/services/media.nix`):
+
+- **Group `multimedia` (GID `995`)**: Shared by `qbittorrent` (UID `991`), `filebrowser` (UID `992`), `jellyfin`, and the primary user `laurent`.
+- **SetGID Bit (`2775`)**: Automatically propagates group ownership to all new files written in `/data/downloads` and `/data/media`.
+- **Systemd Tmpfiles (`z` rules)**: Enforces permissions after preservation mounts without race conditions.
 
 ### Local / Non-NixOS Building
 
@@ -153,6 +229,58 @@ Continuous integration runs on GitHub Actions using a two-stage gated pipeline (
 
 ---
 
+## Shell Aliases (Systemd & Logs)
+
+A set of system-wide aliases and native autocompletions (`modules/core/base.nix`) is pre-configured across all hosts using the Fish shell to streamline service control and troubleshooting:
+
+### Service Management (`systemctl`)
+
+| Alias | Command | Purpose / Example |
+| --- | --- | --- |
+| `sc` | `systemctl` | Base systemctl command (e.g. `sc list-units`) |
+| `scs` / `sc-status` | `systemctl status` | Check service status (e.g. `scs jellyfin`) |
+| `scr` / `sc-restart` | `systemctl restart` | Restart a service (e.g. `scr podman-homeassistant`) |
+| `scl` / `sc-reload` | `systemctl reload` | Reload configuration without restart (e.g. `scl nginx`) |
+| `sc-start` | `systemctl start` | Start a stopped service (e.g. `sc-start qbittorrent`) |
+| `sc-stop` | `systemctl stop` | Stop a running service (e.g. `sc-stop podman-filebrowser`) |
+| `sc-failed` | `systemctl --failed` | List all currently failed systemd units |
+
+### Log Inspection (`journalctl`)
+
+| Alias | Command | Purpose / Example |
+| --- | --- | --- |
+| `jc` | `journalctl` | Open systemd journal viewer |
+| `logs` / `jcu` | `journalctl -u` | View logs for a specific unit (e.g. `logs jellyfin` or `jcu podman-portainer`) |
+| `logsf` / `jcuf` | `journalctl -f -u` | Follow logs in real time for a unit (e.g. `logsf jellyfin`) |
+| `jcf` | `journalctl -f` | Follow all system logs in real time |
+| `jcb` | `journalctl -b` | View logs from the current boot only |
+| `jce` | `journalctl -e` | Open journal and jump directly to the end |
+
+### Git Aliases (Oh-My-Zsh Style)
+
+Common Oh-My-Zsh style Git shortcuts with native Fish autocompletion for branches, files, and options:
+
+| Alias | Command | Purpose / Action |
+| --- | --- | --- |
+| `g` | `git` | Base git command |
+| `gst` | `git status` | Show working tree status |
+| `ga` / `gaa` | `git add` / `git add --all` | Stage changes (file autocompletion enabled) |
+| `gco` / `gcb` | `git checkout` / `git checkout -b` | Checkout branch/commit (branch autocompletion enabled) |
+| `gsw` / `gswc` | `git switch` / `git switch -c` | Switch branch (branch autocompletion enabled) |
+| `gc` / `gcm` | `git commit -v` / `git commit -m` | Create commit |
+| `gca` / `gcam` | `git commit -v -a` / `git commit -a -m` | Stage all and commit |
+| `gc!` / `gca!` | `git commit -v --amend` / `... -a --amend` | Amend commit |
+| `gd` / `gds` | `git diff` / `git diff --staged` | Show changes |
+| `gl` / `gp` / `gpf` | `git pull` / `git push` / `git push --force-with-lease` | Sync with remote repository |
+| `gb` / `gba` / `gbd` | `git branch` / `-a` / `-d` | List or delete branches |
+| `glo` / `glg` / `glp` | `git log --oneline` / `--stat` / `--patch` | View commit logs |
+| `grb` / `grbi` | `git rebase` / `git rebase -i` | Rebase operations |
+| `gm` / `gmc` / `gma` | `git merge` / `--continue` / `--abort` | Merge operations |
+| `gsta` / `gstp` / `gsts` | `git stash apply` / `pop` / `show -p` | Stash management |
+| `grh` / `grhh` | `git reset` / `git reset --hard` | Reset working tree |
+
+---
+
 ## Useful Nix Commands
 
 | Command | Purpose |
@@ -163,3 +291,15 @@ Continuous integration runs on GitHub Actions using a two-stage gated pipeline (
 | `nix flake show` | show outputs provided by the flake |
 | `nix flake update` | update all pinned inputs in `flake.lock` |
 | `nixos-rebuild switch --flake .#<host> --target-host <host> --use-remote-sudo` | manual remote switch command |
+
+---
+
+## References
+
+- [Explode Root On Every Boot | Simplest Impermanent NixOS Setup 2026 | Vimjoyer](https://www.vimjoyer.com/vid89-impermanent)
+- [NixOS as a server, part 1: Impermanence](https://guekka.github.io/nixos-server-1/)
+- [Quickstart Guide: nixos-anywhere](https://nix-community.github.io/nixos-anywhere/quickstart.html)
+- [NixOS Homelab avec Impermanence Automatisée | Gemini](https://gemini.google.com/share/076bac87f8e1)
+- [Disko: Declarative Disk Partitioning for NixOS](https://github.com/nix-community/disko)
+- [Preservation: Declarative State Preservation](https://github.com/nix-community/preservation)
+- [Dendritic Pattern](https://github.com/mightyiam/dendritic)
