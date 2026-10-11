@@ -35,7 +35,15 @@
         sshPublicKeyWork = lib.mkOption {
           type = lib.types.str;
           default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8QfBocRKJAJRinUJSjiGkjdOnsYIZqqdVsq7ZFeiUg";
-          description = "Work SSH public key";
+          description = "Primary work SSH public key";
+        };
+        sshPublicKeysWork = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8QfBocRKJAJRinUJSjiGkjdOnsYIZqqdVsq7ZFeiUg"
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG+uLk0jzsfBDo7EHJoTkUkoHAAMMx9T1n4Bkd4K5dTg"
+          ];
+          description = "List of work SSH public keys";
         };
       };
     };

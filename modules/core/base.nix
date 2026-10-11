@@ -93,19 +93,14 @@
             "networkmanager"
             "wheel" # Enable `sudo` for this user.
           ];
-          openssh.authorizedKeys.keys = [
-            vars.sshPublicKeyPersonal
-            vars.sshPublicKeyWork
-          ];
-          shell = pkgs.fish; # Make sure to enable `programs.fish` too!
+          openssh.authorizedKeys.keys =
+            [
+              vars.sshPublicKeyPersonal
+            ]
+            ++ vars.sshPublicKeysWork;
+          shell = pkgs.fish;
         };
       };
-
-      # When adding a new shell, always enable the shell system-wide, even if it's already enabled in
-      # your Home Manager configuration. Otherwise it won't source the necessary files.
-      # Reference: https://wiki.nixos.org/wiki/Command_Shell
-      programs.fish.enable = true;
-      programs.zsh.enable = true;
 
       # Let users of the wheel group run commands as super user (via sudo) without providing a password.
       security.sudo.wheelNeedsPassword = false;
@@ -137,24 +132,136 @@
       # Configure console keymap.
       console.keyMap = "us-acentos";
 
-      # Base packages for every machine in my inventory.
+      # List packages installed in system profile.
+      # You can use https://search.nixos.org/ to find more packages (and options).
       environment.systemPackages = with pkgs; [
-        efibootmgr # Linux user-space application to modify the Intel Extensible Firmware Interface (EFI) Boot Manager
-
-        gptfdisk # Set of text-mode partitioning tools for Globally Unique Identifier (GUID) Partition Table (GPT) disks
-        parted # Create, destroy, resize, check, and copy partitions
-        tparted # Text-based user interface (TUI) frontend for parted
-
-        git # Distributed version control system
-
-        just # Handy way to save and run project-specific commands
-        just-lsp # Language server for just
-
-        vim # Most popular clone of the VI editor
-
-        wget # Tool for retrieving files using HTTP, HTTPS, and FTP
-        curl # Command line tool for transferring files with URL syntax
+        curl
+        git
+        htop
+        vim
+        wget
       ];
+
+      # Shell aliases for systemd and journalctl
+      environment.shellAliases = {
+        # systemctl management
+        sc = "systemctl";
+        sc-status = "systemctl status";
+        sc-restart = "systemctl restart";
+        sc-reload = "systemctl reload";
+        sc-start = "systemctl start";
+        sc-stop = "systemctl stop";
+        sc-failed = "systemctl --failed";
+
+        # Shorthand aliases
+        scs = "systemctl status";
+        scr = "systemctl restart";
+        scl = "systemctl reload";
+
+        # journalctl logging
+        jc = "journalctl";
+        jcb = "journalctl -b"; # Current boot
+        jce = "journalctl -e"; # End of journal
+        jcf = "journalctl -f"; # Follow journal
+        jcu = "journalctl -u"; # Unit logs, e.g.: jcu jellyfin
+        jcuf = "journalctl -f -u"; # Follow unit logs, e.g.: jcuf jellyfin
+        logs = "journalctl -u"; # Unit logs, e.g.: logs jellyfin
+        logsf = "journalctl -f -u"; # Follow unit logs, e.g.: logsf jellyfin
+
+        # Git (Oh-My-Zsh style aliases)
+        g = "git";
+        ga = "git add";
+        gaa = "git add --all";
+        gst = "git status";
+        gco = "git checkout";
+        gcb = "git checkout -b";
+        gsw = "git switch";
+        gswc = "git switch -c";
+        gc = "git commit --verbose";
+        gcm = "git commit --message";
+        gca = "git commit --verbose --all";
+        gcam = "git commit --all --message";
+        "gc!" = "git commit --verbose --amend";
+        "gca!" = "git commit --verbose --all --amend";
+        "gcan!" = "git commit --verbose --all --no-edit --amend";
+        gd = "git diff";
+        gds = "git diff --staged";
+        gl = "git pull";
+        gp = "git push";
+        gpf = "git push --force-with-lease";
+        gb = "git branch";
+        gba = "git branch --all";
+        gbd = "git branch --delete";
+        glo = "git log --oneline --decorate";
+        glg = "git log --stat";
+        glp = "git log --patch";
+        grb = "git rebase";
+        grba = "git rebase --abort";
+        grbc = "git rebase --continue";
+        grbi = "git rebase --interactive";
+        gm = "git merge";
+        gma = "git merge --abort";
+        gmc = "git merge --continue";
+        gsta = "git stash apply";
+        gstp = "git stash pop";
+        gsts = "git stash show --patch";
+        gstd = "git stash drop";
+        grh = "git reset";
+        grhh = "git reset --hard";
+        gclean = "git clean --interactive -d";
+      };
+
+      # Configure Fish shell and completions for aliases across all configurations
+      programs.fish = {
+        enable = true;
+        interactiveShellInit = ''
+          # Completions for systemctl and journalctl aliases
+          complete -c sc -w systemctl
+          complete -c scs -w "systemctl status"
+          complete -c sc-status -w "systemctl status"
+          complete -c scr -w "systemctl restart"
+          complete -c sc-restart -w "systemctl restart"
+          complete -c scl -w "systemctl reload"
+          complete -c sc-reload -w "systemctl reload"
+          complete -c sc-start -w "systemctl start"
+          complete -c sc-stop -w "systemctl stop"
+          complete -c sc-failed -w "systemctl --failed"
+          complete -c jc -w journalctl
+          complete -c jcb -w "journalctl -b"
+          complete -c jce -w "journalctl -e"
+          complete -c jcf -w "journalctl -f"
+          complete -c jcu -w "journalctl -u"
+          complete -c jcuf -w "journalctl -f -u"
+          complete -c logs -w "journalctl -u"
+          complete -c logsf -w "journalctl -f -u"
+
+          # Completions for git aliases
+          complete -c g -w git
+          complete -c ga -w "git add"
+          complete -c gaa -w "git add"
+          complete -c gst -w "git status"
+          complete -c gco -w "git checkout"
+          complete -c gcb -w "git checkout -b"
+          complete -c gsw -w "git switch"
+          complete -c gswc -w "git switch -c"
+          complete -c gc -w "git commit"
+          complete -c gca -w "git commit"
+          complete -c gd -w "git diff"
+          complete -c gds -w "git diff"
+          complete -c gl -w "git pull"
+          complete -c gp -w "git push"
+          complete -c gpf -w "git push"
+          complete -c gb -w "git branch"
+          complete -c gba -w "git branch"
+          complete -c gbd -w "git branch"
+          complete -c grb -w "git rebase"
+          complete -c gm -w "git merge"
+          complete -c grh -w "git reset"
+          complete -c grhh -w "git reset"
+          complete -c gsta -w "git stash apply"
+          complete -c gstp -w "git stash pop"
+        '';
+      };
 
       # This value determines the NixOS release from which the default
       # settings for stateful data, like file locations and database versions
@@ -165,11 +272,7 @@
       system.stateVersion = "26.05"; # Did you read the comment?
     };
 
-    homeManager = {
-      pkgs,
-      vars,
-      ...
-    }: {
+    homeManager = {vars, ...}: {
       home = {
         username = vars.userName;
         homeDirectory = "/home/${vars.userName}";
@@ -182,21 +285,6 @@
         # want to update the value, then make sure to first check the Home Manager
         # release notes.
         stateVersion = "26.05";
-
-        packages = with pkgs; [
-          # Internet
-          # ---
-          google-chrome # Freeware web browser developed by Google - https://www.google.com/chrome/
-
-          # Nix
-          # ---
-          alejandra # An uncompromising Nix Code Formatter - https://github.com/kamadorueda/alejandra
-          deadnix # Scan .nix files for dead code (unused variable bindings) - https://github.com/astro/deadnix
-          nixd # A Nix Language Server, based on Nix libraries - https://github.com/nix-community/nixd
-          statix # Lints and suggestions for the Nix programming language - https://github.com/oppiliappan/statix
-          nh # Yet another Nix CLI helper - https://github.com/nix-community/nh
-          cachix # A service for Nix binary cache hosting - https://github.com/cachix/cachix
-        ];
       };
 
       # Whether new or changed services that are wanted by active targets should be started.

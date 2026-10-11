@@ -21,6 +21,17 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Declarative disk partitioning
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Declarative state preservation for impermanence
+    preservation = {
+      url = "github:nix-community/preservation";
+    };
+
     # Seamless integration of Git hooks with Nix.
     git-hooks.url = "github:cachix/git-hooks.nix";
 

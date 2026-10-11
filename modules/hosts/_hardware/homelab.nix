@@ -2,9 +2,9 @@
 # and may be overwritten by future invocations.  Please make changes
 # to /etc/nixos/configuration.nix instead.
 {
-  config,
   lib,
   modulesPath,
+  pkgs,
   ...
 }: {
   imports = [
@@ -15,36 +15,167 @@
     initrd = {
       availableKernelModules = [
         "xhci_pci"
-        "ahci"
         "nvme"
-        "usbhid"
         "usb_storage"
         "sd_mod"
       ];
       kernelModules = [];
     };
-    kernelModules = ["kvm-intel"];
+    kernelModules = [
+      "kvm-intel"
+    ];
     extraModulePackages = [];
+    kernel.sysctl."vm.swappiness" = 100;
   };
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-label/nixos";
-    fsType = "ext4";
+  # The Intel N150 (Alder Lake-N generation) embedded in the Beelink S13 is an
+  # excellent low-power chip for a homelab, but its 4 cores / 4 threads and
+  # non-expandable 16 GB of RAM require a few sensible optimizations. With
+  # your 1 TB NVMe SSD and RAM-based architecture, the goal is to maximize CPU
+  # responsiveness, save RAM for your future containers, and preserve the SSD's
+  # lifespan.
+  #
+  # 1. RAM Optimization (ZRAM vs. TMPFS)
+  # Since your OS already runs in RAM via tmpfs, you need to prevent memory
+  # starvation if you deploy many containers. Instead of creating a traditional
+  # Swap partition on the SSD (which would wear it out prematurely), we enable
+  # ZRAM to create a compressed swap space directly inside your RAM. The Intel
+  # N150 processor is more than fast enough to handle on-the-fly compression and
+  # decompression. This virtually "expands" your memory (16 GB of physical RAM
+  # can behave like ~24 GB of usable space).
+  #
+  # Enable compressed swap in RAM.
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd"; # Best compression/speed ratio for the Intel N150.
+    memoryPercent = 50; # Use up to 50% of max RAM for the compressed swap.
   };
-
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-label/boot";
-    fsType = "vfat";
-    options = [
-      "fmask=0077"
-      "dmask=0077"
+  #
+  # Adjust the kernel's tendency to swap (swappiness)
+  # We tell it to aggressively swap into ZRAM to free up "real" RAM for apps.
+  # (Note: moved inside boot block at the top of the file to prevent repeated boot attributes warnings)
+  #
+  # 2. Intel Microcode and Power Management
+  # The N150 is a modern processor architecture composed entirely of "E"
+  # (efficiency) cores. For it to properly manage its frequencies and sleep
+  # states (especially for a headless server running 24/7), it needs up-to-date
+  # microcode and an appropriate governor.
+  #
+  # Update Intel microcode (crucial for N150 stability and security).
+  hardware.cpu.intel.updateMicrocode = true;
+  #
+  # Optimize power management for a headless server.
+  powerManagement.cpuFreqGovernor = "schedutil"; # Perfect balance between responsiveness and power saving.
+  #
+  # Optional: Load Intel iGPU graphics drivers (Intel UHD Graphics), highly
+  # useful if you later do Plex/Jellyfin hardware video transcoding or object
+  # detection.
+  hardware.graphics = {
+    enable = true;
+    extraPackages = [
+      pkgs.intel-media-driver # For QuickSync hardware transcoding
+      pkgs.intel-compute-runtime # For OpenCL / lightweight AI
     ];
   };
-
-  swapDevices = [];
-
-  networking.useDHCP = lib.mkDefault true;
+  #
+  # 3. Preservation and Performance of the 1 TB NVMe SSD
+  # The Beelink S13 uses an NVMe SSD. To prevent it from slowing down over time
+  # (due to block write wear) and to ensure Btrfs doesn't write unnecessarily,
+  # we enable the weekly TRIM service and adjust the mount options in `disko.nix`.
+  #
+  # Enable weekly TRIM to maintain the performance of the 1 TB SSD
+  services.fstrim.enable = true;
+  services.fstrim.interval = "weekly";
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
+  # Declarative Disk Partitioning (Disko)
+  # ---
+  # Don't boot before `/nix` is mounted.
+  fileSystems."/nix".neededForBoot = true;
+
+  # Set up an ephemeral root.
+  disko.devices.nodev = {
+    "/" = {
+      fsType = "tmpfs"; # All the contents of our root directory will be stored in RAM and thus wiped out on every reboot.
+      mountOptions = [
+        "size=25%" # Define the maximum amount of RAM our root directory will be allowed to take.
+        "mode=755" # Make it so only `root` can write there.
+      ];
+    };
+  };
+
+  # Set up persistence of files and directories on main device.
+  # Use hybrid layout to maximize compatibility with both BIOS and UEFI machines.
+  # Reference: https://github.com/nix-community/disko/blob/master/example/hybrid.nix
+  disko.devices.disk.main = {
+    # CHANGE THIS TO YOUR DEVICE, as reported by `lsblk`.
+    # Usually `/dev/sda` or `/dev/nvme0n1`.
+    # Use unambiguous ID, e.g. `/dev/disk/by-id/<ID>`, with multiple disks are present.
+    device = "/dev/disk/by-id/nvme-PNY_CS2130_500GB_SSD_PNY16200007380108D83";
+    type = "disk";
+    content = {
+      type = "gpt";
+      partitions = {
+        MBR = {
+          type = "EF02"; # For GRUB (GRand Unified Bootloader) MBR.
+          size = "1M";
+          priority = 1; # Must be the first partition.
+        };
+        ESP = {
+          type = "EF00";
+          size = "1G";
+          content = {
+            type = "filesystem";
+            format = "vfat";
+            mountpoint = "/boot";
+            mountOptions = [
+              "umask=0077"
+            ];
+          };
+        };
+        swap = {
+          size = "4G"; # Rule of thumb: match your RAM here.
+          content = {
+            type = "swap";
+            resumeDevice = true;
+          };
+        };
+        root = {
+          size = "100%";
+          content = {
+            type = "btrfs";
+            extraArgs = [
+              "-f"
+            ];
+            subvolumes = {
+              "/persistent" = {
+                # Files and directories to persist
+                mountOptions = [
+                  "subvol=persistent"
+                  "noatime" # Prevents Linux from rewriting to the SSD every time a file is simply *read*.
+                  "compress=zstd" # Drastically reduces the size of written data (extending the SSD's lifespan) and speeds up read/write operations because the N150 processor compresses data faster than the SSD can write it.
+                  "ssd"
+                  "discard=async" # On modern SSDs, this enables asynchronous TRIM discard operations in the background rather than synchronously blocking IO, leading to better responsiveness and prolonged drive longevity.
+                ];
+                mountpoint = "/persistent";
+              };
+
+              "/nix" = {
+                # Nix Store
+                mountOptions = [
+                  "subvol=nix"
+                  "noatime" # Prevents Linux from rewriting to the SSD every time a file is simply *read*.
+                  "compress=zstd" # Drastically reduces the size of written data (extending the SSD's lifespan) and speeds up read/write operations because the N150 processor compresses data faster than the SSD can write it.
+                  "ssd"
+                  "discard=async" # On modern SSDs, this enables asynchronous TRIM discard operations in the background rather than synchronously blocking IO, leading to better responsiveness and prolonged drive longevity.
+                ];
+                mountpoint = "/nix";
+              };
+            };
+          };
+        };
+      };
+    };
+  };
 }

@@ -71,6 +71,50 @@ test configuration="desktop-pc" target="":
 build-iso:
   nix build .#nixosConfigurations.iso.config.system.build.isoImage
 
+# bootstrap and install homelab remotely from scratch using nixos-anywhere
+[group('(re)build')]
+install-homelab target:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  TARGET_HOST="{{target}}"
+  if [[ "${TARGET_HOST}" != *"@"* ]]; then
+    TARGET_HOST="root@${TARGET_HOST}"
+  fi
+  echo "==> Deploying homelab to ${TARGET_HOST} with nixos-anywhere..."
+  nix run github:nix-community/nixos-anywhere -- --flake .#homelab "${TARGET_HOST}"
+
+# deploy configuration update to homelab without repartitioning
+[group('(re)build')]
+deploy-homelab target="homelab":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  TARGET_HOST="{{target}}"
+  if [[ "${TARGET_HOST}" != *"@"* ]]; then
+    TARGET_HOST="root@${TARGET_HOST}"
+  fi
+  echo "==> Switching configuration on homelab (${TARGET_HOST})..."
+  if command -v nh >/dev/null 2>&1; then
+    nh os switch . -H homelab --target-host "${TARGET_HOST}"
+  else
+    nixos-rebuild switch --flake .#homelab --target-host "${TARGET_HOST}"
+  fi
+
+# test configuration update on remote homelab without setting boot profile
+[group('(re)build')]
+test-homelab target="homelab":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  TARGET_HOST="{{target}}"
+  if [[ "${TARGET_HOST}" != *"@"* ]]; then
+    TARGET_HOST="root@${TARGET_HOST}"
+  fi
+  echo "==> Testing configuration on homelab (${TARGET_HOST})..."
+  if command -v nh >/dev/null 2>&1; then
+    nh os test . -H homelab --target-host "${TARGET_HOST}"
+  else
+    nixos-rebuild test --flake .#homelab --target-host "${TARGET_HOST}"
+  fi
+
 ###################################
 # Dev Utils
 ###################################
