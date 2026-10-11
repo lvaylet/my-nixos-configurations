@@ -51,7 +51,7 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 modules/
 ├── core/                  # Systems, identity options, builder, base system, checks, devShell
 ├── desktop/               # NNN desktop session, WezTerm, Fish shell, fonts, editors, audio, GPU
-├── services/              # Networking, OpenSSH, Tailscale, Podman, Jellyfin, AdGuard Home, etc.
+├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
 ```
 
@@ -165,13 +165,23 @@ To perform an automated, headless bootstrap of the impermanent `homelab` server 
 
 The `homelab` server hosts containerized and native services organized under `modules/services/` with coordinated access to shared storage (`/data`) and state preservation under `/persistent`:
 
-| Service | Type | Network / Ports | Storage / Data | Description |
+| **Service** | **Type** | **Network / Ports** | **Storage / Data** | **Description** |
 | --- | --- | --- | --- | --- |
+| **Caddy** | Native Service | N/A (bound per service) | `/var/lib/caddy` | Reverse proxy providing internal TLS termination. |
 | **Filebrowser Quantum** | OCI Container | `8081` (TCP) | `/data:/srv`, `/var/lib/filebrowser` | Web-based file manager for browsing, uploading, and organizing files. |
 | **Home Assistant** | OCI Container | `8123` (TCP, `--network=host`) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery. |
 | **Portainer CE** | OCI Container | `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
+| **n8n** | OCI Container | `5678` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor and webhook integration. |
 | **Jellyfin** | Native Service | `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
 | **qBittorrent** | Native Service | `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
+
+#### Reverse Proxy & TLS/HTTPS Access (Caddy)
+
+Traffic for n8n is routed securely through **Caddy** (`modules/services/caddy.nix`) acting as an internal reverse proxy with automatic local TLS (`tls internal`) on port `5678`:
+
+- **n8n (`https://<homelab-ip>:5678` or `https://homelab:5678`)**: Caddy terminates TLS on port `5678` and reverse proxies to the internal n8n container (`127.0.0.1:5679`). Ports `80` and `443` are not opened or used. This eliminates browser secure cookie warnings and Safari compatibility issues while preserving the standard n8n port `5678`.
+- **Portainer (`https://<homelab-ip>:9443`)**: Web interface accessible over HTTPS using Portainer's built-in self-signed TLS certificates.
+- **State Preservation**: Caddy certificates and its local PKI authority (`/var/lib/caddy`) are preserved under `/persistent/var/lib/caddy` to maintain consistent TLS identities across reboots.
 
 #### Shared Multimedia Storage (`/data`)
 
