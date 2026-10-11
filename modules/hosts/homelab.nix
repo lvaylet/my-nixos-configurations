@@ -19,19 +19,20 @@
       core.preservation
 
       # Services
-      services.network
-      services.ssh
-      services.podman
-      services.media
+      services.caddy
       services.filebrowser
       services.home-automation
-      services.portainer
       services.jellyfin
-      services.qbittorrent
-      services.nix-ld
-      services.ssd
-      services.caddy
+      services.media
       services.n8n
+      services.network
+      services.nix-ld
+      services.podman
+      services.portainer
+      services.qbittorrent
+      services.ssd
+      services.ssh
+      services.tailscale
     ];
 
     extraModules = [

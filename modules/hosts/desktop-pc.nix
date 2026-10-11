@@ -14,21 +14,22 @@
       core.git
 
       # Desktop & Shell
-      desktop.session
-      desktop.terminal
-      desktop.shell
-      desktop.fonts
-      desktop.editors
-      desktop.audio
-      desktop.graphics
       desktop.apps
+      desktop.audio
+      desktop.editors
+      desktop.fonts
+      desktop.graphics
+      desktop.session
+      desktop.shell
+      desktop.terminal
 
       # Services
       services.network
-      services.ssh
       services.podman
       services.printing
       services.ssd
+      services.ssh
+      services.tailscale
     ];
 
     extraModules = [
