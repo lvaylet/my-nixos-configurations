@@ -15,11 +15,13 @@
           TZ = "Europe/Paris";
           GENERIC_TIMEZONE = "Europe/Paris";
           N8N_PORT = "5678";
+          N8N_PROTOCOL = "https";
           N8N_DEFAULT_BINARY_DATA_MODE = "filesystem";
           N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS = "true";
         };
         ports = [
-          "5678:5678"
+          # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 5678.
+          "127.0.0.1:5679:5678"
         ];
         user = "1000:1000";
       };
@@ -29,7 +31,21 @@
         "local-fs.target"
       ];
 
-      # Open default n8n port in firewall.
+      # Configure Caddy reverse proxy with internal TLS for n8n on port 5678 only.
+      services.caddy = {
+        enable = true;
+        virtualHosts.":5678" = {
+          extraConfig = ''
+            tls {
+              issuer internal
+              on_demand
+            }
+            reverse_proxy 127.0.0.1:5679
+          '';
+        };
+      };
+
+      # Open n8n HTTPS port in firewall.
       networking.firewall.allowedTCPPorts = [
         5678
       ];

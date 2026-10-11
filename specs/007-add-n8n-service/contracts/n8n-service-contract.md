@@ -16,6 +16,7 @@ This contract defines the schema, configuration options, and behavioral guarante
     nixos = {
       config,
       lib,
+      pkgs,
       ...
     }: {
       # Run service as OCI container with systemd.
@@ -28,6 +29,9 @@ This contract defines the schema, configuration options, and behavioral guarante
           TZ = "Europe/Paris";
           GENERIC_TIMEZONE = "Europe/Paris";
           N8N_PORT = "5678";
+          N8N_PROTOCOL = "https";
+          N8N_SSL_KEY = "/home/node/.n8n/key.pem";
+          N8N_SSL_CERT = "/home/node/.n8n/cert.pem";
           N8N_DEFAULT_BINARY_DATA_MODE = "filesystem";
           N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS = "true";
         };
@@ -37,17 +41,32 @@ This contract defines the schema, configuration options, and behavioral guarante
         user = "1000:1000";
       };
 
-      # Wait for local filesystems and preservation bind mounts to complete.
-      systemd.services."podman-n8n".after = [
-        "local-fs.target"
-      ];
+      # Wait for local filesystems and preservation bind mounts to complete, and generate self-signed TLS certs if missing.
+      systemd.services."podman-n8n" = {
+        after = [
+          "local-fs.target"
+        ];
+        preStart = ''
+          if [ ! -f /var/lib/n8n/cert.pem ] || [ ! -f /var/lib/n8n/key.pem ]; then
+            mkdir -p /var/lib/n8n
+            ${pkgs.openssl}/bin/openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
+              -keyout /var/lib/n8n/key.pem \
+              -out /var/lib/n8n/cert.pem \
+              -subj "/CN=homelab" \
+              -addext "subjectAltName=DNS:homelab,DNS:localhost,IP:127.0.0.1"
+            chown -R 1000:1000 /var/lib/n8n/key.pem /var/lib/n8n/cert.pem
+            chmod 600 /var/lib/n8n/key.pem
+            chmod 644 /var/lib/n8n/cert.pem
+          fi
+        '';
+      };
 
       # Open default n8n port in firewall.
       networking.firewall.allowedTCPPorts = [
         5678
       ];
 
-      # Colocated state preservation for workflows, credentials, and SQLite database.
+      # Colocated state preservation for workflows, credentials, TLS certs, and SQLite database.
       preservation.preserveAt."/persistent".directories =
         lib.mkIf (config.virtualisation.oci-containers.containers ? n8n) [
           {
