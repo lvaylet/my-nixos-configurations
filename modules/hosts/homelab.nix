@@ -30,6 +30,7 @@
       services.qbittorrent
       services.nix-ld
       services.ssd
+      services.n8n
     ];
 
     extraModules = [

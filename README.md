@@ -51,7 +51,7 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 modules/
 ├── core/                  # Systems, identity options, builder, base system, checks, devShell
 ├── desktop/               # NNN desktop session, WezTerm, Fish shell, fonts, editors, audio, GPU
-├── services/              # Networking, OpenSSH, Tailscale, Podman, Jellyfin, AdGuard Home, etc.
+├── services/              # Networking, OpenSSH, Tailscale, Podman, Jellyfin, n8n, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
 ```
 
@@ -170,6 +170,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Filebrowser Quantum** | OCI Container | `8081` (TCP) | `/data:/srv`, `/var/lib/filebrowser` | Web-based file manager for browsing, uploading, and organizing files. |
 | **Home Assistant** | OCI Container | `8123` (TCP, `--network=host`) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery. |
 | **Portainer CE** | OCI Container | `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
+| **n8n** | OCI Container | `5678` (TCP) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor and webhook integration. |
 | **Jellyfin** | Native Service | `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
 | **qBittorrent** | Native Service | `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
 
