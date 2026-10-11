@@ -8,7 +8,7 @@
       # Run service as OCI container with `systemd`.
       virtualisation.oci-containers.containers.filebrowser = {
         # FileBrowser Quantum - https://github.com/gtsteffaniak/filebrowser
-        image = "ghcr.io/gtsteffaniak/filebrowser:latest";
+        image = "ghcr.io/gtsteffaniak/filebrowser:2-stable";
         volumes = [
           "/data:/srv"
           # "/var/lib/filebrowser:/config" # TODO Is that relevant/required?
