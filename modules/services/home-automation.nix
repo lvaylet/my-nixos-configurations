@@ -8,7 +8,7 @@
       # Run service as OCI container with `systemd`.
       virtualisation.oci-containers.containers.homeassistant = {
         # https://www.home-assistant.io/installation/generic-x86-64/#install-home-assistant-container
-        image = "ghcr.io/home-assistant/home-assistant:2026.5.3"; # or `:stable`
+        image = "ghcr.io/home-assistant/home-assistant:2026.10"; # or `:stable`
         volumes = [
           "/var/lib/home-assistant:/config" # Make sure to persist this volume in `preservation.nix`.
           "/run/dbus:/run/dbus:ro" # Optional: useful for bluetooth/network discovery.
