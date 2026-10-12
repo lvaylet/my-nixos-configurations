@@ -25,6 +25,7 @@
 
       # Services
       services.network
+      services.nix-ld
       services.podman
       services.printing
       services.ssd
