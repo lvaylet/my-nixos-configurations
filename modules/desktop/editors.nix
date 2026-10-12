@@ -13,6 +13,7 @@
         gnumake
         ripgrep
         fd
+        tree-sitter
 
         # Archive and download utilities
         curl
