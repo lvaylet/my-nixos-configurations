@@ -24,6 +24,7 @@
       desktop.terminal
 
       # Services
+      services.bluetooth
       services.network
       services.nix-ld
       services.podman
