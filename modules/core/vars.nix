@@ -45,6 +45,16 @@
           ];
           description = "List of work SSH public keys";
         };
+        tailscaleDomain = lib.mkOption {
+          type = lib.types.str;
+          default = "tailc5cc8b.ts.net";
+          description = "Tailscale tailnet base domain name";
+        };
+        homelabDomain = lib.mkOption {
+          type = lib.types.str;
+          default = "homelab.vaylet.fr";
+          description = "Base domain for homelab services";
+        };
       };
     };
     default = {};

@@ -167,21 +167,70 @@ The `homelab` server hosts containerized and native services organized under `mo
 
 | **Service** | **Type** | **Network / Ports** | **Storage / Data** | **Description** |
 | --- | --- | --- | --- | --- |
-| **Caddy** | Native Service | N/A (bound per service) | `/var/lib/caddy` | Reverse proxy providing internal TLS termination. |
-| **Filebrowser Quantum** | OCI Container | `8081` (TCP) | `/data:/srv`, `/var/lib/filebrowser` | Web-based file manager for browsing, uploading, and organizing files. |
-| **Home Assistant** | OCI Container | `8123` (TCP, `--network=host`) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery. |
-| **Portainer CE** | OCI Container | `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
-| **n8n** | OCI Container | `5678` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor and webhook integration. |
-| **Jellyfin** | Native Service | `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
-| **qBittorrent** | Native Service | `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
+| **Caddy** | Native Service | `443` (HTTPS) | `/var/lib/caddy` | Central reverse proxy with Cloudflare DNS-01 ACME plugin and Let's Encrypt TLS. |
+| **Filebrowser Quantum** | OCI Container | `443` (HTTPS via Caddy), `8081` (LAN HTTP) | `/data:/srv`, `/var/lib/filebrowser` | Web-based file manager for browsing, uploading, and organizing files. |
+| **Home Assistant** | OCI Container | `443` (HTTPS via Caddy), `8123` (LAN HTTP) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery and Tailscale HTTPS access. |
+| **Portainer CE** | OCI Container | `443` (HTTPS via Caddy), `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
+| **n8n** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor and webhook integration. |
+| **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
+| **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
 
-#### Reverse Proxy & TLS/HTTPS Access (Caddy)
+#### Reverse Proxy & Secure HTTPS Access (Caddy & Cloudflare DNS-01)
 
-Traffic for n8n is routed securely through **Caddy** (`modules/services/caddy.nix`) acting as an internal reverse proxy with automatic local TLS (`tls internal`) on port `5678`:
+Internal web applications are securely exposed on dedicated subdomains of `homelab.vaylet.fr` through **Caddy** (`modules/services/caddy.nix`) compiled with the official `caddy-dns/cloudflare` plugin:
 
-- **n8n (`https://<homelab-ip>:5678` or `https://homelab:5678`)**: Caddy terminates TLS on port `5678` and reverse proxies to the internal n8n container (`127.0.0.1:5679`). Ports `80` and `443` are not opened or used. This eliminates browser secure cookie warnings and Safari compatibility issues while preserving the standard n8n port `5678`.
-- **Portainer (`https://<homelab-ip>:9443`)**: Web interface accessible over HTTPS using Portainer's built-in self-signed TLS certificates.
-- **State Preservation**: Caddy certificates and its local PKI authority (`/var/lib/caddy`) are preserved under `/persistent/var/lib/caddy` to maintain consistent TLS identities across reboots.
+| **Service** | **Subdomain / External URL** | **Upstream Target** | **LAN Direct URL** |
+| --- | --- | --- | --- |
+| **Home Assistant** | `https://ha.homelab.vaylet.fr` | `127.0.0.1:8123` | `http://homelab:8123` |
+| **n8n** | `https://n8n.homelab.vaylet.fr` | `127.0.0.1:5679` | N/A (loopback bound) |
+| **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | `http://homelab:8081` |
+| **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | `https://homelab:9443` |
+| **Jellyfin** | `https://jellyfin.homelab.vaylet.fr` | `127.0.0.1:8096` | `http://homelab:8096` |
+| **qBittorrent** | `https://qbittorrent.homelab.vaylet.fr` | `127.0.0.1:8080` | `http://homelab:8080` |
+
+- **Security & Private Tailscale Overlay**: DNS records for `*.homelab.vaylet.fr` point exclusively to the homelab's private Tailscale CGNAT IP (`100.127.199.88`). No ports are opened or forwarded on the home router (WAN). Only devices authenticated to your private Tailscale network can reach these endpoints.
+- **Automated Publicly-Trusted Certificates**: Caddy automatically provisions and renews genuine Let's Encrypt certificates using the ACME DNS-01 challenge via Cloudflare, eliminating browser security alerts and mobile app certificate rejections without exposing port 80 to the internet.
+- **State & Secret Preservation**: Certificates, runtime state, and the Cloudflare API secret file in `/var/lib/caddy` are preserved under `/persistent/var/lib/caddy` across ephemeral tmpfs reboots.
+
+##### Configuration Instructions
+
+1. **DNS Setup (Cloudflare)**:
+   - In Cloudflare DNS for `vaylet.fr`, create a single wildcard **A** record:
+     - **Name**: `*.homelab` (resolves `*.homelab.vaylet.fr`)
+     - **IPv4 Address**: `100.127.199.88` (homelab's Tailscale IP)
+     - **Proxy status**: **DNS Only** (grey cloud — mandatory for non-routable Tailscale CGNAT IPs)
+
+2. **Cloudflare API Token Provisioning**:
+   - In Cloudflare, generate an API token with `Zone - DNS - Edit` permissions for the `vaylet.fr` zone.
+   - On the `homelab` server, provision the token into the persistent Caddy environment file (never committed to git):
+
+   ```sh
+   sudo mkdir -p /persistent/var/lib/caddy
+   sudo tee /persistent/var/lib/caddy/cloudflare.env << 'EOF'
+   CLOUDFLARE_API_TOKEN=<your-cloudflare-api-token>
+   EOF
+   sudo chown -R caddy:caddy /persistent/var/lib/caddy
+   sudo chmod 0600 /persistent/var/lib/caddy/cloudflare.env
+   ```
+
+3. **Home Assistant Reverse Proxy Authorization (UI Configuration)**:
+   - Modern Home Assistant releases (>= 2026.10) manage reverse proxy trust directly in the Web UI, ignoring legacy `http:` YAML blocks in `configuration.yaml`.
+   - Access Home Assistant initially from the local LAN at `http://homelab:8123` (or `http://192.168.1.181:8123`).
+   - Navigate to **Settings** > **System** > **Network** (**Paramètres** > **Système** > **Réseau**).
+   - In the **Reverse Proxy** (**Proxy inverse**) section:
+     - Check **Use reverse proxy** (**Utiliser un proxy inverse**).
+     - Add Caddy's loopback addresses to **Trusted proxies** (**Proxys de confiance**):
+       - `127.0.0.1`
+       - `::1`
+   - *(Optional)* In **Home Assistant URL**, set the external URL to `https://ha.homelab.vaylet.fr`.
+   - Click **Save** (**Enregistrer**) and restart Home Assistant (`scr podman-homeassistant` or via UI).
+   - Remove any deprecated `http:` block from `/persistent/var/lib/home-assistant/configuration.yaml` to avoid deprecation warnings.
+
+4. **Deploy & Activate**:
+
+   ```sh
+   just switch configuration="homelab" target="homelab"
+   ```
 
 #### Shared Multimedia Storage (`/data`)
 

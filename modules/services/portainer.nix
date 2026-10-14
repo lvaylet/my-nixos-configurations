@@ -3,6 +3,7 @@
     nixos = {
       config,
       lib,
+      vars,
       ...
     }: {
       # Run service as OCI container with `systemd`.
@@ -26,6 +27,20 @@
       systemd.services."podman-portainer".after = [
         "local-fs.target"
       ];
+
+      # Configure Caddy reverse proxy for Portainer on portainer.<homelabDomain>.
+      services.caddy = {
+        enable = true;
+        virtualHosts."portainer.${vars.homelabDomain}" = {
+          extraConfig = ''
+            reverse_proxy https://127.0.0.1:9443 {
+              transport http {
+                tls_insecure_skip_verify
+              }
+            }
+          '';
+        };
+      };
 
       # Open default Portainer ports in firewall.
       networking.firewall.allowedTCPPorts = [
