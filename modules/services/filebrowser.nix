@@ -3,6 +3,7 @@
     nixos = {
       config,
       lib,
+      vars,
       ...
     }: {
       # Run service as OCI container with `systemd`.
@@ -35,6 +36,16 @@
       systemd.services."podman-filebrowser".after = [
         "local-fs.target"
       ];
+
+      # Configure Caddy reverse proxy for FileBrowser Quantum on fb.<homelabDomain>.
+      services.caddy = {
+        enable = true;
+        virtualHosts."fb.${vars.homelabDomain}" = {
+          extraConfig = ''
+            reverse_proxy 127.0.0.1:8081
+          '';
+        };
+      };
 
       # Open default Filebrowser port in firewall.
       networking.firewall.allowedTCPPorts = [

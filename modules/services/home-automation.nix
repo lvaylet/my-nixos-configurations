@@ -3,6 +3,7 @@
     nixos = {
       config,
       lib,
+      vars,
       ...
     }: {
       # Run service as OCI container with `systemd`.
@@ -29,8 +30,24 @@
         "local-fs.target"
       ];
 
-      # Open default Home Assistant port in firewall.
+      # Configure Caddy reverse proxy for Home Assistant on ha.<homelabDomain>.
+      # Note: In Home Assistant (>= 2026.10), reverse proxy trust is configured via the UI:
+      #   Settings > System > Network > Reverse Proxy:
+      #     - Enable "Use reverse proxy"
+      #     - Trusted proxies: 127.0.0.1, ::1
+      # (The legacy `http:` block in configuration.yaml is deprecated and ignored).
+      services.caddy = {
+        enable = true;
+        virtualHosts."ha.${vars.homelabDomain}" = {
+          extraConfig = ''
+            reverse_proxy 127.0.0.1:8123
+          '';
+        };
+      };
+
+      # Open default Home Assistant port (direct LAN HTTP) and Caddy HTTPS port in firewall.
       networking.firewall.allowedTCPPorts = [
+        443
         8123
       ];
 

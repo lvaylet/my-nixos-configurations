@@ -3,6 +3,7 @@
     nixos = {
       config,
       lib,
+      vars,
       ...
     }: {
       services.qbittorrent = {
@@ -43,6 +44,16 @@
               Password_PBKDF2 = "@ByteArray(eoaLU7OVVIoPhldUJB+gEg==:zT1YodTdGIZmWZze07O3AhePk44TJUKKNVTYQyi7hERjlldjjlUtAl7S9pM2bqmsE1/Ho+5XF/gtXj1jWnIDMA==)";
             };
           };
+        };
+      };
+
+      # Configure Caddy reverse proxy for qBittorrent on qbittorrent.<homelabDomain>.
+      services.caddy = {
+        enable = true;
+        virtualHosts."qbittorrent.${vars.homelabDomain}" = {
+          extraConfig = ''
+            reverse_proxy 127.0.0.1:8080
+          '';
         };
       };
 

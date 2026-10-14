@@ -3,6 +3,7 @@
     nixos = {
       config,
       lib,
+      vars,
       ...
     }: {
       # Run service as OCI container with `systemd`.
@@ -18,9 +19,10 @@
           N8N_PROTOCOL = "https";
           N8N_DEFAULT_BINARY_DATA_MODE = "filesystem";
           N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS = "true";
+          WEBHOOK_URL = "https://n8n.${vars.homelabDomain}/";
         };
         ports = [
-          # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 5678.
+          # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 443.
           "127.0.0.1:5679:5678"
         ];
         user = "1000:1000";
@@ -31,23 +33,19 @@
         "local-fs.target"
       ];
 
-      # Configure Caddy reverse proxy with internal TLS for n8n on port 5678 only.
+      # Configure Caddy reverse proxy for n8n on n8n.<homelabDomain>.
       services.caddy = {
         enable = true;
-        virtualHosts.":5678" = {
+        virtualHosts."n8n.${vars.homelabDomain}" = {
           extraConfig = ''
-            tls {
-              issuer internal
-              on_demand
-            }
             reverse_proxy 127.0.0.1:5679
           '';
         };
       };
 
-      # Open n8n HTTPS port in firewall.
+      # Open HTTPS port in firewall.
       networking.firewall.allowedTCPPorts = [
-        5678
+        443
       ];
 
       preservation.preserveAt."/persistent".directories = lib.mkIf (config.virtualisation.oci-containers.containers ? n8n) [

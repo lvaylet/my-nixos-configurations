@@ -3,6 +3,7 @@
     nixos = {
       config,
       lib,
+      vars,
       ...
     }: {
       services.jellyfin = {
@@ -10,6 +11,16 @@
         openFirewall = true;
         group = "multimedia"; # Directly bind Jellyfin to the group for seamless read/write access.
         # TODO Configure `Movies` library declaratively.
+      };
+
+      # Configure Caddy reverse proxy for Jellyfin on jellyfin.<homelabDomain>.
+      services.caddy = {
+        enable = true;
+        virtualHosts."jellyfin.${vars.homelabDomain}" = {
+          extraConfig = ''
+            reverse_proxy 127.0.0.1:8096
+          '';
+        };
       };
 
       # Add default `jellyfin` user to `multimedia` group to simplify file sharing with qBittorrent.
