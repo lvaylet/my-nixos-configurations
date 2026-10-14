@@ -63,7 +63,13 @@
         };
 
         nnn.enable = true;
-        opencode.enable = true;
+
+        opencode = {
+          enable = true;
+          tui = {
+            theme = "catppuccin-macchiato";
+          };
+        };
 
         pyenv.enable = true;
       };
