@@ -12,7 +12,6 @@
       # Base Settings
       core.base
       core.git
-      core.neovim
 
       # Desktop & Shell
       desktop.apps

@@ -49,8 +49,8 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 
 ```text
 modules/
-├── core/                  # Systems, identity options, builder, base system, Git, LazyVim/Neovim, checks, devShell
-├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, GUI editors, audio, GPU
+├── core/                  # Systems, identity options, builder, base system, checks, devShell
+├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
 ├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, WAHA, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
 ```
