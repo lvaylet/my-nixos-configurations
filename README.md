@@ -50,7 +50,7 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 ```text
 modules/
 ├── core/                  # Systems, identity options, builder, base system, checks, devShell
-├── desktop/               # NNN desktop session, WezTerm, Fish shell, fonts, editors, audio, GPU
+├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
 ├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, WAHA, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
 ```
@@ -128,14 +128,28 @@ To perform an automated, headless bootstrap of the impermanent `homelab` server 
 3. **Install Remotely with `nixos-anywhere`**:
    From an authorized workstation, launch the remote deployment:
 
-   ```sh
+   **Bash**:
+
+   ```bash
    export TARGET_IP=<target-ip>
 
    # Using the dedicated just recipe:
-   just install-homelab ${TARGET_IP}
+   just install-homelab "${TARGET_IP}"
 
    # Or invoking nixos-anywhere directly:
-   nix run github:nix-community/nixos-anywhere -- --flake .#homelab root@${TARGET_IP}
+   nix run github:nix-community/nixos-anywhere -- --flake .#homelab "root@${TARGET_IP}"
+   ```
+
+   **Fish**:
+
+   ```fish
+   set -gx TARGET_IP <target-ip>
+
+   # Using the dedicated just recipe:
+   just install-homelab "$TARGET_IP"
+
+   # Or invoking nixos-anywhere directly:
+   nix run github:nix-community/nixos-anywhere -- --flake .#homelab "root@$TARGET_IP"
    ```
 
    `nixos-anywhere` automatically:
@@ -145,20 +159,40 @@ To perform an automated, headless bootstrap of the impermanent `homelab` server 
    - Reboots into your fresh impermanent system.
 
 4. **Verify and Deploy Subsequent Updates**:
-   Once rebooted, connect over SSH as `laurent` or `root`:
+   Once rebooted, connect over SSH as `laurent` (default interactive shell: **Fish**) or `root` (default shell: **Bash**):
 
-   ```sh
-   ssh laurent@${TARGET_IP}
+   **Bash**:
+
+   ```bash
+   ssh "laurent@${TARGET_IP}"
+   ```
+
+   **Fish**:
+
+   ```fish
+   ssh "laurent@$TARGET_IP"
    ```
 
    For routine updates that do not require repartitioning the storage device:
 
-   ```sh
+   **Bash**:
+
+   ```bash
    # Deploy and switch the configuration:
    just deploy-homelab target="${TARGET_IP}"
 
    # Or test the configuration temporarily without setting a new boot profile:
    just test-homelab target="${TARGET_IP}"
+   ```
+
+   **Fish**:
+
+   ```fish
+   # Deploy and switch the configuration:
+   just deploy-homelab target="$TARGET_IP"
+
+   # Or test the configuration temporarily without setting a new boot profile:
+   just test-homelab target="$TARGET_IP"
    ```
 
 ### Homelab Hosted Services
@@ -206,11 +240,24 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
    - In Cloudflare, generate an API token with `Zone - DNS - Edit` permissions for the `vaylet.fr` zone.
    - On the `homelab` server, provision the token into the persistent Caddy environment file (never committed to git):
 
-   ```sh
+   **Bash**:
+
+   ```bash
    sudo mkdir -p /persistent/var/lib/caddy
    sudo tee /persistent/var/lib/caddy/cloudflare.env << 'EOF'
    CLOUDFLARE_API_TOKEN=<your-cloudflare-api-token>
    EOF
+   sudo chown -R caddy:caddy /persistent/var/lib/caddy
+   sudo chmod 0600 /persistent/var/lib/caddy/cloudflare.env
+   ```
+
+   **Fish**:
+
+   ```fish
+   sudo mkdir -p /persistent/var/lib/caddy
+   printf '%s\n' \
+     'CLOUDFLARE_API_TOKEN=<your-cloudflare-api-token>' \
+     | sudo tee /persistent/var/lib/caddy/cloudflare.env
    sudo chown -R caddy:caddy /persistent/var/lib/caddy
    sudo chmod 0600 /persistent/var/lib/caddy/cloudflare.env
    ```
@@ -236,7 +283,9 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
    tr -dc 'a-f0-9' < /dev/urandom | head -c 64; echo
    ```
 
-   ```sh
+   **Bash**:
+
+   ```bash
    sudo mkdir -p /persistent/var/lib/waha
    sudo tee /persistent/var/lib/waha/waha.env << 'EOF'
    WAHA_API_KEY=<your-waha-api-key>
@@ -245,6 +294,21 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
    WHATSAPP_SWAGGER_USERNAME=admin
    WHATSAPP_SWAGGER_PASSWORD=<your-swagger-password>
    EOF
+   sudo chmod 0600 /persistent/var/lib/waha/waha.env
+   sudo systemctl restart podman-waha
+   ```
+
+   **Fish**:
+
+   ```fish
+   sudo mkdir -p /persistent/var/lib/waha
+   printf '%s\n' \
+     'WAHA_API_KEY=<your-waha-api-key>' \
+     'WAHA_DASHBOARD_USERNAME=admin' \
+     'WAHA_DASHBOARD_PASSWORD=<your-dashboard-password>' \
+     'WHATSAPP_SWAGGER_USERNAME=admin' \
+     'WHATSAPP_SWAGGER_PASSWORD=<your-swagger-password>' \
+     | sudo tee /persistent/var/lib/waha/waha.env
    sudo chmod 0600 /persistent/var/lib/waha/waha.env
    sudo systemctl restart podman-waha
    ```
@@ -306,6 +370,18 @@ git+file:///home/laurent/workspace/github.com/lvaylet/my-nixos-configurations
     └───iso: NixOS configuration
 ```
 
+## Quality Gates & Verification Workflow
+
+All contributions and configuration changes follow the repository's constitutional quality gates (`.specify/memory/constitution.md`):
+
+1. **Branch Isolation & Pull Request**: All modifications must take place in a dedicated branch associated with a Pull Request targeting `main` (direct commits to `main` are prohibited).
+2. **Living Documentation & Dual-Shell Parity**: `README.md` must be updated within the same branch whenever a service or workflow is added, modified, or removed, providing explicit **Bash** and **Fish** command variants whenever shell syntax differs.
+3. **Formatting**: Run `just fmt` (or `nix fmt .`) to format all `.nix` files with `alejandra` and execute pre-commit formatters.
+4. **Linting & Diagnostics**: Run `just lint` (`deadnix` and `statix check`); auto-fixable warnings can be resolved with `just fix`.
+5. **Flake Integrity & Checks**: Run `just check` (`nix flake check`) to validate syntax, evaluate derivations, and run all hermetic pre-commit sandbox checks with a 100% pass rate.
+6. **Activation Testing**: Run `just test configuration="<host>"` (`nh os test .#<host>`) to safely test configuration activation without modifying bootloader entries.
+7. **Deployment & Switch**: Run `just switch configuration="<host>"` (`nh os switch .#<host>`) or `just boot` to finalize system generation updates.
+
 ## Continuous Integration
 
 Continuous integration runs on GitHub Actions using a two-stage gated pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
@@ -316,9 +392,13 @@ Continuous integration runs on GitHub Actions using a two-stage gated pipeline (
 
 ---
 
-## Shell Aliases (Systemd & Logs)
+## Shell Environment & Aliases (Bash & Fish Duality)
 
-A set of system-wide aliases and native autocompletions (`modules/core/base.nix`) is pre-configured across all hosts using the Fish shell to streamline service control and troubleshooting:
+Managed NixOS hosts (`desktop-pc`, `homelab`, `iso`) operate with a dual-shell architecture across user accounts and operational contexts:
+
+- **Fish (`pkgs.fish`)**: Configured as the default interactive login shell for the primary user (`laurent`) across all hosts (`users.users.laurent.shell = pkgs.fish` in `modules/core/base.nix`), enriched with native command-wrapping autocompletions (`complete -c <alias> -w "<command>"`).
+- **Bash (`pkgs.bashInteractive`)**: Retained as the default login shell for `root`, the custom headless installer ISO (`modules/core/iso.nix`), non-NixOS bootstrap hosts, and `justfile` execution recipes.
+- **Shared System-Wide Aliases (`environment.shellAliases`)**: Declared in `modules/core/base.nix` and automatically registered by NixOS in **both Bash and Fish**, ensuring identical `systemctl`, `journalctl`, and `git` shortcuts whether logged in as `laurent` (Fish) or `root` (Bash).
 
 ### Service Management (`systemctl`)
 
@@ -345,7 +425,7 @@ A set of system-wide aliases and native autocompletions (`modules/core/base.nix`
 
 ### Git Aliases (Oh-My-Zsh Style)
 
-Common Oh-My-Zsh style Git shortcuts with native Fish autocompletion for branches, files, and options:
+Common Oh-My-Zsh style Git shortcuts available in both Bash and Fish, with native Fish autocompletion for branches, files, and options:
 
 | Alias | Command | Purpose / Action |
 | --- | --- | --- |
@@ -354,17 +434,34 @@ Common Oh-My-Zsh style Git shortcuts with native Fish autocompletion for branche
 | `ga` / `gaa` | `git add` / `git add --all` | Stage changes (file autocompletion enabled) |
 | `gco` / `gcb` | `git checkout` / `git checkout -b` | Checkout branch/commit (branch autocompletion enabled) |
 | `gsw` / `gswc` | `git switch` / `git switch -c` | Switch branch (branch autocompletion enabled) |
-| `gc` / `gcm` | `git commit -v` / `git commit -m` | Create commit |
-| `gca` / `gcam` | `git commit -v -a` / `git commit -a -m` | Stage all and commit |
-| `gc!` / `gca!` | `git commit -v --amend` / `... -a --amend` | Amend commit |
-| `gd` / `gds` | `git diff` / `git diff --staged` | Show changes |
+| `gc` / `gcm` | `git commit --verbose` / `git commit --message` | Create commit |
+| `gca` / `gcam` | `git commit --verbose --all` / `git commit --all --message` | Stage all and commit |
+| `gc!` / `gca!` / `gcan!` | `git commit --verbose --amend` / `... --all --amend` / `... --all --no-edit --amend` | Amend previous commit (with or without editing message) |
+| `gd` / `gds` | `git diff` / `git diff --staged` | Show unstaged or staged changes |
 | `gl` / `gp` / `gpf` | `git pull` / `git push` / `git push --force-with-lease` | Sync with remote repository |
-| `gb` / `gba` / `gbd` | `git branch` / `-a` / `-d` | List or delete branches |
-| `glo` / `glg` / `glp` | `git log --oneline` / `--stat` / `--patch` | View commit logs |
-| `grb` / `grbi` | `git rebase` / `git rebase -i` | Rebase operations |
+| `gb` / `gba` / `gbd` | `git branch` / `git branch --all` / `git branch --delete` | List or delete branches |
+| `glo` / `glg` / `glp` | `git log --oneline --decorate` / `git log --stat` / `git log --patch` | View commit logs |
+| `grb` / `grbi` / `grbc` / `grba` | `git rebase` / `--interactive` / `--continue` / `--abort` | Rebase operations |
 | `gm` / `gmc` / `gma` | `git merge` / `--continue` / `--abort` | Merge operations |
-| `gsta` / `gstp` / `gsts` | `git stash apply` / `pop` / `show -p` | Stash management |
+| `gsta` / `gstp` / `gsts` / `gstd` | `git stash apply` / `pop` / `show --patch` / `drop` | Stash management |
 | `grh` / `grhh` | `git reset` / `git reset --hard` | Reset working tree |
+| `gclean` | `git clean --interactive -d` | Interactively clean untracked files and directories |
+
+### Desktop Interactive Fish Extensions (`modules/desktop/shell.nix`)
+
+On desktop workstations (`desktop-pc`), Home Manager extends Fish with modern CLI replacements, helper functions, and a declarative [Starship](https://starship.rs/) prompt (`~/.config/starship.toml`):
+
+| Alias / Function | Command | Purpose / Action |
+| --- | --- | --- |
+| `ls` | `eza --group --group-directories-first --icons --header --time-style long-iso` | Directory listing with icons and ISO timestamps |
+| `ll` / `la` | `eza ... --long` / `eza ... --long --all` | Detailed long listing (standard / including hidden files) |
+| `llt` / `lat` | `eza ... --long --tree` / `eza ... --long --all --tree` | Recursive tree view (standard / including hidden files) |
+| `cat` | `bat` | Syntax-highlighted file viewer |
+| `y` | `yazi` | Terminal file manager |
+| `b` | `btop` | Interactive system resource monitor |
+| `d` | `ncdu --exclude /mnt --color dark` | Disk usage analyzer |
+| `c` / `x` / `r` | `clear` / `exit` / `source ~/.config/fish/config.fish` | Session control and Fish config reload |
+| `take <dir>` | `mkdir -p $argv[1]; and cd $argv[1]` | Create a directory and immediately `cd` into it |
 
 ---
 
