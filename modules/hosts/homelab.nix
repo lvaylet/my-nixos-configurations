@@ -33,6 +33,7 @@
       services.ssd
       services.ssh
       services.tailscale
+      services.waha
     ];
 
     extraModules = [
