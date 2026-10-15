@@ -55,6 +55,7 @@
           users.${vars.userName} = {
             directories = [
               ".ssh"
+              ".config/gh" # GitHub CLI authentication and configuration
               ".local/share/fish" # Fish shell history and universal variables
               # ".mozilla"
               # ".local/state/wireplumber"
