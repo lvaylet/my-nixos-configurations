@@ -51,7 +51,7 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 modules/
 ├── core/                  # Systems, identity options, builder, base system, checks, devShell
 ├── desktop/               # NNN desktop session, WezTerm, Fish shell, fonts, editors, audio, GPU
-├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, etc.
+├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, WAHA, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
 ```
 
@@ -172,6 +172,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Home Assistant** | OCI Container | `443` (HTTPS via Caddy), `8123` (LAN HTTP) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery and Tailscale HTTPS access. |
 | **Portainer CE** | OCI Container | `443` (HTTPS via Caddy), `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
 | **n8n** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor and webhook integration. |
+| **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
 | **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
 | **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
 
@@ -183,6 +184,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 | --- | --- | --- | --- |
 | **Home Assistant** | `https://ha.homelab.vaylet.fr` | `127.0.0.1:8123` | `http://homelab:8123` |
 | **n8n** | `https://n8n.homelab.vaylet.fr` | `127.0.0.1:5679` | N/A (loopback bound) |
+| **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | N/A (loopback bound) |
 | **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | `http://homelab:8081` |
 | **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | `https://homelab:9443` |
 | **Jellyfin** | `https://jellyfin.homelab.vaylet.fr` | `127.0.0.1:8096` | `http://homelab:8096` |
@@ -226,7 +228,33 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
    - Click **Save** (**Enregistrer**) and restart Home Assistant (`scr podman-homeassistant` or via UI).
    - Remove any deprecated `http:` block from `/persistent/var/lib/home-assistant/configuration.yaml` to avoid deprecation warnings.
 
-4. **Deploy & Activate**:
+4. **WAHA Credentials & Initial WhatsApp Session Setup**:
+   - By default, WAHA generates random credentials on each container start if none are provided. To keep the API key and dashboard/Swagger passwords persistent across restarts (without committing secrets to Git), provision `/persistent/var/lib/waha/waha.env` on the `homelab` server:
+   - *(Tip)* Generate a secure 256-bit (64-character hex) API key without external dependencies using `/dev/urandom`:
+
+   ```sh
+   tr -dc 'a-f0-9' < /dev/urandom | head -c 64; echo
+   ```
+
+   ```sh
+   sudo mkdir -p /persistent/var/lib/waha
+   sudo tee /persistent/var/lib/waha/waha.env << 'EOF'
+   WAHA_API_KEY=<your-waha-api-key>
+   WAHA_DASHBOARD_USERNAME=admin
+   WAHA_DASHBOARD_PASSWORD=<your-dashboard-password>
+   WHATSAPP_SWAGGER_USERNAME=admin
+   WHATSAPP_SWAGGER_PASSWORD=<your-swagger-password>
+   EOF
+   sudo chmod 0600 /persistent/var/lib/waha/waha.env
+   sudo systemctl restart podman-waha
+   ```
+
+   - Open `https://waha.homelab.vaylet.fr/dashboard` in your browser and sign in with `WAHA_DASHBOARD_USERNAME` / `WAHA_DASHBOARD_PASSWORD`.
+   - Start the `default` WhatsApp session and pair your phone by scanning the QR code (or entering a phone pairing code) from the WhatsApp mobile app (**Linked devices** > **Link a device**).
+   - Once paired, the session state is persisted in `/var/lib/waha/sessions` (`/persistent/var/lib/waha/sessions`) and automatically reconnected on boot via `WHATSAPP_RESTART_ALL_SESSIONS=True`.
+   - In **n8n** (`https://n8n.homelab.vaylet.fr`), configure your WAHA HTTP requests or community node to use `http://127.0.0.1:3001` (or `https://waha.homelab.vaylet.fr`) with header `X-Api-Key: <your-waha-api-key>`.
+
+5. **Deploy & Activate**:
 
    ```sh
    just switch configuration="homelab" target="homelab"
