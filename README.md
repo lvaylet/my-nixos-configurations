@@ -205,7 +205,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Filebrowser Quantum** | OCI Container | `443` (HTTPS via Caddy), `8081` (LAN HTTP) | `/data:/srv`, `/var/lib/filebrowser` | Web-based file manager for browsing, uploading, and organizing files. |
 | **Home Assistant** | OCI Container | `443` (HTTPS via Caddy), `8123` (LAN HTTP) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery and Tailscale HTTPS access. |
 | **Portainer CE** | OCI Container | `443` (HTTPS via Caddy), `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
-| **n8n** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor and webhook integration. |
+| **n8n** (+ `n8n-runners`) | OCI Containers | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor, webhook integration, and isolated `n8nio/runners` sidecar for native Python 3 and JavaScript `Code` nodes. |
 | **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
 | **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
 | **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
