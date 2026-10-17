@@ -51,7 +51,7 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 modules/
 ├── core/                  # Systems, identity options, builder, base system, Neovim/LazyVim, checks, devShell
 ├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
-├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, WAHA, etc.
+├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, Uptime Kuma, WAHA, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
 ```
 
@@ -206,6 +206,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Home Assistant** | OCI Container | `443` (HTTPS via Caddy), `8123` (LAN HTTP) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery and Tailscale HTTPS access. |
 | **Portainer CE** | OCI Container | `443` (HTTPS via Caddy), `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
 | **n8n** (+ `n8n-runners`) | OCI Containers | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor, webhook integration, and isolated `n8nio/runners` sidecar for native Python 3 and JavaScript `Code` nodes. |
+| **Uptime Kuma** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/uptime-kuma`, Docker socket | Self-hosted monitoring tool for tracking service availability, Portainer/Podman container status, response latency, and TLS certificate expiration with real-time alerts. |
 | **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
 | **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
 | **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
@@ -218,6 +219,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 | --- | --- | --- | --- |
 | **Home Assistant** | `https://ha.homelab.vaylet.fr` | `127.0.0.1:8123` | `http://homelab:8123` |
 | **n8n** | `https://n8n.homelab.vaylet.fr` | `127.0.0.1:5679` | N/A (loopback bound) |
+| **Uptime Kuma** | `https://uptime.homelab.vaylet.fr` | `127.0.0.1:3002` | N/A (loopback bound) |
 | **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | N/A (loopback bound) |
 | **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | `http://homelab:8081` |
 | **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | `https://homelab:9443` |
@@ -318,7 +320,14 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
    - Once paired, the session state is persisted in `/var/lib/waha/sessions` (`/persistent/var/lib/waha/sessions`) and automatically reconnected on boot via `WHATSAPP_RESTART_ALL_SESSIONS=True`.
    - In **n8n** (`https://n8n.homelab.vaylet.fr`), configure your WAHA HTTP requests or community node to use `http://127.0.0.1:3001` (or `https://waha.homelab.vaylet.fr`) with header `X-Api-Key: <your-waha-api-key>`.
 
-5. **Deploy & Activate**:
+5. **Uptime Kuma Initial Setup & Portainer Container Monitoring**:
+   - Open `https://uptime.homelab.vaylet.fr` in your browser and create your administrator account on first launch.
+   - To monitor OCI containers managed by Portainer (`filebrowser`, `homeassistant`, `n8n`, `n8n-runners`, `portainer`, `waha`):
+     - Navigate to **Settings** > **Docker Hosts** (**Paramètres** > **Hôtes Docker**) and click **Setup Docker Host**.
+     - Set **Connection Type** to **Socket** and **Docker Daemon** to `/var/run/docker.sock` (or `/var/run/podman/podman.sock`), then click **Test** and **Save**.
+     - When creating a new monitor, select **Monitor Type**: **Docker Container** and enter the exact container name as shown in Portainer (e.g. `n8n`, `waha`, `homeassistant`, `filebrowser`, `portainer`).
+
+6. **Deploy & Activate**:
 
    ```sh
    just switch configuration="homelab" target="homelab"
