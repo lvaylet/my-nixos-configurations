@@ -103,7 +103,7 @@
           extensions = [
             # Themes and Icon Themes
             # ---
-            "one-dark-pro"
+            "nord"
             "material-icon-theme"
 
             # Languages
@@ -116,9 +116,9 @@
           # Reference: https://wiki.nixos.org/wiki/Zed
           userSettings = {
             theme = {
-              mode = "system";
+              mode = "dark";
               light = "One Light";
-              dark = "One Dark";
+              dark = "Nord";
             };
             iconTheme = "Material Icon Theme";
 

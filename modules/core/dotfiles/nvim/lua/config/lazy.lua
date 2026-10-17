@@ -32,7 +32,7 @@ require("lazy").setup({
     version = false, -- always use the latest git commit
     -- version = "*", -- try installing the most recent stable version (only if they have one)
   },
-  install = { colorscheme = { "tokyonight", "habamax" } },
+  install = { colorscheme = { "nord", "habamax" } },
   checker = {
     enabled = true, -- check for plugin updates periodically
     notify = false, -- notify on update
