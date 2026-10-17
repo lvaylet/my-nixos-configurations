@@ -49,7 +49,7 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 
 ```text
 modules/
-├── core/                  # Systems, identity options, builder, base system, checks, devShell
+├── core/                  # Systems, identity options, builder, base system, Neovim/LazyVim, checks, devShell
 ├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
 ├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, WAHA, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
@@ -462,6 +462,15 @@ On desktop workstations (`desktop-pc`), Home Manager extends Fish with modern CL
 | `d` | `ncdu --exclude /mnt --color dark` | Disk usage analyzer |
 | `c` / `x` / `r` | `clear` / `exit` / `source ~/.config/fish/config.fish` | Session control and Fish config reload |
 | `take <dir>` | `mkdir -p $argv[1]; and cd $argv[1]` | Create a directory and immediately `cd` into it |
+
+### Shared Modal Editor: Neovim & LazyVim (`modules/core/neovim.nix`)
+
+Both `desktop-pc` and `homelab` share a unified, system-level [LazyVim](https://www.lazyvim.org/) editing environment via `core.neovim` without requiring Home Manager on `homelab`:
+
+- **System-Level Neovim Engine**: Configured via NixOS `programs.neovim` (`defaultEditor = true`, `viAlias = true`, `vimAlias = true`, `withNodeJs = true`, `withPython3 = true`), provisioning all upstream LazyVim CLI dependencies (`git`, `gcc`, `gnumake`, `ripgrep`, `fd`, `tree-sitter`, `curl`, `unzip`, `gnutar`, `gzip`) in `environment.systemPackages`.
+- **Declarative Store Symlink (`systemd.tmpfiles.rules`)**: Links `/home/laurent/.config/nvim` (`L+`) to the shared starter files in `modules/core/dotfiles/nvim/`, while directing `lazy.nvim`'s lockfile to `~/.local/share/nvim/lazy-lock.json` so plugin updates work with a read-only `/nix/store` config directory.
+- **Impermanence State Persistence on `homelab` (`modules/core/preservation.nix`)**: Persists `.local/share/nvim` (cloned LazyVim plugins, `lazy-lock.json`, and compiled Tree-sitter parsers) and `.local/state/nvim` (undo history, ShaDa registers, and session state) under `/persistent/home/laurent` across reboots.
+- **Desktop GUI Editors (`modules/desktop/editors.nix`)**: Graphical editors (VS Code, Zed) and Wayland clipboard integration (`wl-clipboard`) remain scoped exclusively to `desktop-pc`.
 
 ---
 
