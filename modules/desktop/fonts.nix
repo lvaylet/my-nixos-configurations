@@ -9,9 +9,18 @@
         nerd-fonts.meslo-lg
       ];
 
-      # Allow fontconfig to discover fonts and configurations installed through `home.packages` and `nix-env`.
-      # Source: https://mynixos.com/home-manager/option/fonts.fontconfig.enable
-      fonts.fontconfig.enable = true;
+      # Allow fontconfig to discover fonts and configurations installed through `home.packages` and `nix-env`,
+      # and prioritize FiraCode Nerd Font whenever a generic `monospace` font is requested.
+      # Source: https://mynixos.com/home-manager/options/fonts.fontconfig
+      fonts.fontconfig = {
+        enable = true;
+        defaultFonts = {
+          monospace = [
+            "FiraCode Nerd Font"
+            "FiraCode Nerd Font Mono"
+          ];
+        };
+      };
     };
   };
 }

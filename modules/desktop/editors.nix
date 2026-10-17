@@ -43,6 +43,10 @@
                 120
               ];
 
+              "chat.editor.fontFamily" = "FiraCode Nerd Font";
+              "debug.console.fontFamily" = "FiraCode Nerd Font";
+              "scm.inputFontFamily" = "FiraCode Nerd Font";
+
               "diffEditor.codeLens" = true;
               "diffEditor.hideUnchangedRegions.enabled" = true;
               "diffEditor.ignoreTrimWhitespace" = false;
@@ -121,6 +125,17 @@
               dark = "Nord";
             };
             iconTheme = "Material Icon Theme";
+
+            buffer_font_family = "FiraCode Nerd Font";
+            buffer_font_size = 12;
+            buffer_font_features = {
+              calt = true;
+            };
+
+            terminal = {
+              font_family = "FiraCode Nerd Font";
+              font_size = 12;
+            };
 
             hour_format = "hour24";
 

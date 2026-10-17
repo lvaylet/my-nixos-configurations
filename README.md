@@ -481,6 +481,17 @@ The `desktop-pc` workstation and shared CLI/editor modules use the Arctic, bluis
 - **Code Editors**: Neovim/LazyVim (`gbprod/nord.nvim` with `colorscheme = "nord"`), VS Code (`arcticicestudio.nord-visual-studio-code`), and Zed (`nord` extension with `Nord` dark theme).
 - **Shell, Prompt & TUI Utilities**: Starship (`[palettes.nord]`), Fish syntax and pager colors, OpenCode TUI (`theme = "nord"`), Bat (`theme = "Nord"`), Fzf (`colors`), Yazi (`theme`), Btop (`color_theme = "nord"`), and Lazygit (`gui.theme`).
 
+### Unified Code Typography: FiraCode Nerd Font (`modules/desktop/fonts.nix`)
+
+Whenever source code or terminal text is displayed across the `desktop-pc` stack, **FiraCode Nerd Font** (`pkgs.nerd-fonts.fira-code`) is used with OpenType programming ligatures (`calt`, `clig`, `liga`) and Nerd Font v3 symbol glyphs enabled:
+
+- **System & User Default `monospace` (`modules/desktop/fonts.nix`)**: Fontconfig (`fonts.fontconfig.defaultFonts.monospace`) prioritizes `FiraCode Nerd Font` (with `FiraCode Nerd Font Mono` as fallback) so web browsers, Markdown previews, and system viewers rendering generic `monospace` or `<code>`/`<pre>` blocks automatically use `FiraCode Nerd Font`.
+- **Code Editors (`modules/desktop/editors.nix`, `modules/core/dotfiles/nvim/`)**:
+  - **VS Code**: Configured with `"FiraCode Nerd Font"` and ligatures across the code editor (`editor.fontFamily`), integrated terminal (`terminal.integrated.fontFamily`), debug console (`debug.console.fontFamily`), SCM input (`scm.inputFontFamily`), and chat code blocks (`chat.editor.fontFamily`).
+  - **Zed Editor**: Configured with `buffer_font_family = "FiraCode Nerd Font"` (`calt = true`) and `terminal.font_family = "FiraCode Nerd Font"`.
+  - **Neovim / LazyVim**: Inherits `FiraCode Nerd Font` and ligatures from the parent terminal emulator in TUI mode and sets `vim.opt.guifont = "FiraCode Nerd Font:h12"` (`lua/config/options.lua`) for GUI clients.
+- **Terminal Emulators (`modules/desktop/terminal.nix`, `modules/desktop/apps.nix`)**: Both **WezTerm** (`wezterm.font('FiraCode Nerd Font')`) and **Ghostty** (`font-family = "FiraCode Nerd Font"`) enable `calt`, `clig`, and `liga` ligature features by default.
+
 ### Shared Modal Editor: Neovim & LazyVim (`modules/core/neovim.nix`)
 
 Both `desktop-pc` and `homelab` share a unified, system-level [LazyVim](https://www.lazyvim.org/) editing environment via `core.neovim` without requiring Home Manager on `homelab`:

@@ -33,6 +33,12 @@
           enable = true;
           settings = {
             theme = "Nord";
+            font-family = "FiraCode Nerd Font";
+            font-feature = [
+              "calt"
+              "clig"
+              "liga"
+            ];
           };
         };
 
