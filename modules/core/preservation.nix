@@ -57,9 +57,10 @@
               ".ssh"
               ".config/gh" # GitHub CLI authentication and configuration
               ".local/share/fish" # Fish shell history and universal variables
+              ".local/share/nvim" # LazyVim plugins, lazy-lock.json, and Tree-sitter parsers
+              ".local/state/nvim" # Neovim undo history, ShaDa registers, and session state
               # ".mozilla"
               # ".local/state/wireplumber"
-              # ".local/state/neovim"
               # "Documents"
             ];
           };

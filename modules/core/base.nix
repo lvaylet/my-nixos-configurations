@@ -139,7 +139,6 @@
         gh
         git
         htop
-        vim
         wget
       ];
 

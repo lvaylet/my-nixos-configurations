@@ -16,6 +16,7 @@
     features = with config.flake.modules; [
       # Base Settings
       core.base
+      core.neovim
       core.preservation
 
       # Services
