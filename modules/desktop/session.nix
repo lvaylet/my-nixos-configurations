@@ -13,7 +13,7 @@
         enable = true;
         settings = {
           default_session = {
-            command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
+            command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --theme 'border=cyan;text=white;prompt=cyan;time=cyan;action=blue;button=cyan;container=black;input=white' --cmd niri-session";
             user = "greeter";
           };
         };

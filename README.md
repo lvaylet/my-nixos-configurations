@@ -458,26 +458,35 @@ Common Oh-My-Zsh style Git shortcuts available in both Bash and Fish, with nativ
 
 ### Desktop Interactive Fish Extensions (`modules/desktop/shell.nix`)
 
-On desktop workstations (`desktop-pc`), Home Manager extends Fish with modern CLI replacements, helper functions, and a declarative [Starship](https://starship.rs/) prompt (`~/.config/starship.toml`):
+On desktop workstations (`desktop-pc`), Home Manager extends Fish with Nord syntax/pager highlighting, modern CLI replacements, helper functions, and a declarative Nord-themed [Starship](https://starship.rs/) prompt (`~/.config/starship.toml`):
 
 | Alias / Function | Command | Purpose / Action |
 | --- | --- | --- |
 | `ls` | `eza --group --group-directories-first --icons --header --time-style long-iso` | Directory listing with icons and ISO timestamps |
 | `ll` / `la` | `eza ... --long` / `eza ... --long --all` | Detailed long listing (standard / including hidden files) |
 | `llt` / `lat` | `eza ... --long --tree` / `eza ... --long --all --tree` | Recursive tree view (standard / including hidden files) |
-| `cat` | `bat` | Syntax-highlighted file viewer |
-| `y` | `yazi` | Terminal file manager |
-| `b` | `btop` | Interactive system resource monitor |
+| `cat` | `bat` | Syntax-highlighted file viewer (`Nord` theme) |
+| `y` | `yazi` | Terminal file manager (`Nord` theme) |
+| `b` | `btop` | Interactive system resource monitor (`nord` theme) |
 | `d` | `ncdu --exclude /mnt --color dark` | Disk usage analyzer |
 | `c` / `x` / `r` | `clear` / `exit` / `source ~/.config/fish/config.fish` | Session control and Fish config reload |
 | `take <dir>` | `mkdir -p $argv[1]; and cd $argv[1]` | Create a directory and immediately `cd` into it |
+
+### Unified Nord Visual Theme (`desktop-pc` & Shared Stack)
+
+The `desktop-pc` workstation and shared CLI/editor modules use the Arctic, bluish **[Nord](https://www.nordtheme.com/)** color palette (`#2E3440`–`#B48EAD`) consistently across all layers of the stack:
+
+- **Session, Compositor & Boot**: Noctalia desktop shell (`builtin = "Nord"` dark mode), Niri window focus rings and borders (`#88C0D0` active Frost, `#4C566A` inactive Polar Night, `#BF616A` urgent Aurora Red), Tuigreet KMS login screen, and Limine bootloader wallpapers.
+- **Terminal Emulators**: WezTerm (`color_scheme = 'nord'`) and Ghostty (`theme = "Nord"`).
+- **Code Editors**: Neovim/LazyVim (`gbprod/nord.nvim` with `colorscheme = "nord"`), VS Code (`arcticicestudio.nord-visual-studio-code`), and Zed (`nord` extension with `Nord` dark theme).
+- **Shell, Prompt & TUI Utilities**: Starship (`[palettes.nord]`), Fish syntax and pager colors, OpenCode TUI (`theme = "nord"`), Bat (`theme = "Nord"`), Fzf (`colors`), Yazi (`theme`), Btop (`color_theme = "nord"`), and Lazygit (`gui.theme`).
 
 ### Shared Modal Editor: Neovim & LazyVim (`modules/core/neovim.nix`)
 
 Both `desktop-pc` and `homelab` share a unified, system-level [LazyVim](https://www.lazyvim.org/) editing environment via `core.neovim` without requiring Home Manager on `homelab`:
 
 - **System-Level Neovim Engine**: Configured via NixOS `programs.neovim` (`defaultEditor = true`, `viAlias = true`, `vimAlias = true`, `withNodeJs = true`, `withPython3 = true`), provisioning all upstream LazyVim CLI dependencies (`git`, `gcc`, `gnumake`, `ripgrep`, `fd`, `tree-sitter`, `curl`, `unzip`, `gnutar`, `gzip`) in `environment.systemPackages`.
-- **Declarative Store Symlink (`systemd.tmpfiles.rules`)**: Links `/home/laurent/.config/nvim` (`L+`) to the shared starter files in `modules/core/dotfiles/nvim/`, while directing `lazy.nvim`'s lockfile to `~/.local/share/nvim/lazy-lock.json` so plugin updates work with a read-only `/nix/store` config directory.
+- **Declarative Store Symlink (`systemd.tmpfiles.rules`)**: Links `/home/laurent/.config/nvim` (`L+`) to the shared starter files in `modules/core/dotfiles/nvim/` (including the declarative `nord` colorscheme spec in `lua/plugins/colorscheme.lua`), while directing `lazy.nvim`'s lockfile to `~/.local/share/nvim/lazy-lock.json` so plugin updates work with a read-only `/nix/store` config directory.
 - **Impermanence State Persistence on `homelab` (`modules/core/preservation.nix`)**: Persists `.local/share/nvim` (cloned LazyVim plugins, `lazy-lock.json`, and compiled Tree-sitter parsers) and `.local/state/nvim` (undo history, ShaDa registers, and session state) under `/persistent/home/laurent` across reboots.
 - **Desktop GUI Editors (`modules/desktop/editors.nix`)**: Graphical editors (VS Code, Zed) and Wayland clipboard integration (`wl-clipboard`) remain scoped exclusively to `desktop-pc`.
 

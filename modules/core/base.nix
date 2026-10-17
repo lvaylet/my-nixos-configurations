@@ -40,9 +40,9 @@
             # - https://github.com/NixOS/nixos-artwork/tree/master/wallpapers
             # - https://mynixos.com/packages/nixos-artwork.wallpapers
             # and make sure to append `.gnomeFilePath` below:
-            catppuccin-macchiato.gnomeFilePath
             mosaic-blue.gnomeFilePath
-            nineish-catppuccin-macchiato.gnomeFilePath
+            nineish-dark-gray.gnomeFilePath
+            simple-blue.gnomeFilePath
             simple-dark-gray-bootloader.gnomeFilePath
             waterfall.gnomeFilePath
           ];

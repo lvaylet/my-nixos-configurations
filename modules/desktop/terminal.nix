@@ -15,7 +15,7 @@
           config.harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' }
 
           -- Visual theme matching Neovim
-          config.color_scheme = 'Catppuccin Mocha'
+          config.color_scheme = 'nord'
 
           -- Default interactive shell
           config.default_prog = { 'fish' }
