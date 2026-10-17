@@ -34,6 +34,7 @@
       services.ssd
       services.ssh
       services.tailscale
+      services.uptime-kuma
       services.waha
     ];
 
