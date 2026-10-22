@@ -1,4 +1,4 @@
-{
+_: {
   flake.modules.core.neovim = {
     nixos = {
       pkgs,
@@ -38,5 +38,46 @@
         withPython3 = true;
       };
     };
+
+    darwin = {pkgs, ...}: {
+      # Upstream LazyVim runtime dependencies and editor for macOS
+      environment = {
+        systemPackages = with pkgs; [
+          neovim
+          git
+          gcc
+          gnumake
+          ripgrep
+          fd
+          tree-sitter
+          curl
+          unzip
+          gnutar
+          gzip
+        ];
+
+        variables = {
+          EDITOR = "nvim";
+          VISUAL = "nvim";
+        };
+
+        shellAliases = {
+          vi = "nvim";
+          vim = "nvim";
+        };
+      };
+    };
+
+    homeManager = {
+      lib,
+      pkgs,
+      ...
+    }:
+      lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+        xdg.configFile."nvim" = {
+          source = ./dotfiles/nvim;
+          recursive = true;
+        };
+      };
   };
 }

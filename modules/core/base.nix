@@ -272,10 +272,18 @@
       system.stateVersion = "26.05"; # Did you read the comment?
     };
 
-    homeManager = {vars, ...}: {
+    homeManager = {
+      lib,
+      pkgs,
+      vars,
+      ...
+    }: {
       home = {
         username = vars.userName;
-        homeDirectory = "/home/${vars.userName}";
+        homeDirectory =
+          if pkgs.stdenv.hostPlatform.isDarwin
+          then "/Users/${vars.userName}"
+          else "/home/${vars.userName}";
 
         # This value determines the Home Manager release that your configuration is
         # compatible with. This helps avoid breakage when a new Home Manager release
@@ -289,12 +297,108 @@
 
       # Whether new or changed services that are wanted by active targets should be started.
       # Additionally, stop obsolete services from the previous generation.
-      # The alternatives are
-      # - `suggest` (or `false`) : Use a very simple shell script to print suggested `systemctl`
-      #   commands to run. You will have to manually run those commands after the switch.
-      # - `sd-switch` (or `true`) : Use `sd-switch`, a tool that determines the necessary changes and
-      #   automatically apply them.
-      systemd.user.startServices = "sd-switch";
+      systemd.user.startServices = lib.mkIf pkgs.stdenv.hostPlatform.isLinux "sd-switch";
+    };
+
+    darwin = {
+      pkgs,
+      vars,
+      ...
+    }: {
+      # Allow unfree packages.
+      nixpkgs.config.allowUnfree = true;
+
+      # Configure garbage collection and store settings.
+      nix = {
+        gc = {
+          automatic = true;
+          interval = {
+            Weekday = 0;
+            Hour = 0;
+            Minute = 0;
+          };
+          options = "--delete-older-than 7d";
+        };
+        settings = {
+          trusted-users = [
+            "root"
+            vars.userName
+          ];
+          experimental-features = [
+            "nix-command"
+            "flakes"
+          ];
+        };
+      };
+
+      # Define user account for Darwin.
+      users.users.${vars.userName} = {
+        home = "/Users/${vars.userName}";
+        description = vars.fullName;
+        shell = pkgs.fish;
+      };
+
+      # Enable Touch ID for sudo authentication.
+      security.pam.services.sudo_local.touchIdAuth = true;
+
+      # System packages.
+      environment.systemPackages = with pkgs; [
+        curl
+        gh
+        git
+        htop
+        wget
+      ];
+
+      # Shell aliases for Git (reused across shells).
+      environment.shellAliases = {
+        g = "git";
+        ga = "git add";
+        gaa = "git add --all";
+        gst = "git status";
+        gco = "git checkout";
+        gcb = "git checkout -b";
+        gsw = "git switch";
+        gswc = "git switch -c";
+        gc = "git commit --verbose";
+        gcm = "git commit --message";
+        gca = "git commit --verbose --all";
+        gcam = "git commit --all --message";
+        "gc!" = "git commit --verbose --amend";
+        "gca!" = "git commit --verbose --all --amend";
+        "gcan!" = "git commit --verbose --all --no-edit --amend";
+        gd = "git diff";
+        gds = "git diff --staged";
+        gl = "git pull";
+        gp = "git push";
+        gpf = "git push --force-with-lease";
+        gb = "git branch";
+        gba = "git branch --all";
+        gbd = "git branch --delete";
+        glo = "git log --oneline --decorate";
+        glg = "git log --stat";
+        glp = "git log --patch";
+        grb = "git rebase";
+        grba = "git rebase --abort";
+        grbc = "git rebase --continue";
+        grbi = "git rebase --interactive";
+        gm = "git merge";
+        gma = "git merge --abort";
+        gmc = "git merge --continue";
+        gsta = "git stash apply";
+        gstp = "git stash pop";
+        gsts = "git stash show --patch";
+        gstd = "git stash drop";
+        grh = "git reset";
+        grhh = "git reset --hard";
+        gclean = "git clean --interactive -d";
+      };
+
+      # Enable Fish shell on Darwin.
+      programs.fish.enable = true;
+
+      # System state version for nix-darwin.
+      system.stateVersion = 6;
     };
   };
 }

@@ -1,10 +1,15 @@
 {
   flake.modules.desktop.editors = {
-    homeManager = {pkgs, ...}: {
-      home.packages = with pkgs; [
-        # Wayland clipboard integration for Niri and Neovim
-        wl-clipboard
-      ];
+    homeManager = {
+      lib,
+      pkgs,
+      ...
+    }: {
+      home.packages =
+        # Wayland clipboard integration for Niri and Neovim on Linux
+        lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+          pkgs.wl-clipboard
+        ];
 
       programs = {
         vscode = {

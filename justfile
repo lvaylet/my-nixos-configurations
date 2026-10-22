@@ -71,6 +71,25 @@ test configuration="desktop-pc" target="":
 build-iso:
   nix build .#nixosConfigurations.iso.config.system.build.isoImage
 
+# rebuild macOS host configuration closure without activating
+[group('(re)build')]
+build-darwin configuration="macbook-air-m4-15":
+  nix build .#darwinConfigurations.{{configuration}}.system
+
+# test and activate macOS host configuration without setting a new generation profile
+[group('(re)build')]
+test-darwin configuration="macbook-air-m4-15":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  echo "==> Building and testing Darwin configuration {{configuration}}..."
+  systemConfig=$(nix build --no-link --print-out-paths .#darwinConfigurations.{{configuration}}.system)
+  sudo "${systemConfig}/activate"
+
+# rebuild and switch macOS host (Darwin) creating a new generation profile
+[group('(re)build')]
+switch-darwin configuration="macbook-air-m4-15":
+  nix run nix-darwin -- switch --flake .#{{configuration}}
+
 # bootstrap and install homelab remotely from scratch using nixos-anywhere
 [group('(re)build')]
 install-homelab target:

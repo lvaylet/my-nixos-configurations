@@ -49,10 +49,10 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 
 ```text
 modules/
-├── core/                  # Systems, identity options, builder, base system, Neovim/LazyVim, checks, devShell
+├── core/                  # Systems, identity options, builder (mkHost, mkDarwinHost), base system, Neovim/LazyVim, checks, devShell
 ├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
 ├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, Uptime Kuma, WAHA, etc.
-└── hosts/                 # Machine closures (desktop-pc, homelab, iso) and hardware specs
+└── hosts/                 # Machine closures (desktop-pc, homelab, iso, macbook-air-m4-15) and hardware specs
 ```
 
 ---
@@ -67,14 +67,17 @@ Available recipes:
     default                                     # run `just --list`
 
     [(re)build]
-    boot configuration="desktop-pc" target=""   # rebuild and switch after boot (local or remote over SSH)
-    build configuration="desktop-pc" target=""  # rebuild system closure (local or remote over SSH)
-    build-iso                                   # build custom ISO image with SSH access for remote installations
-    deploy-homelab target="homelab"             # deploy configuration update to homelab without repartitioning
-    install-homelab target                      # bootstrap and install homelab remotely from scratch using nixos-anywhere
-    switch configuration="desktop-pc" target="" # rebuild and switch (local or remote over SSH)
-    test configuration="desktop-pc" target=""   # rebuild and activate temporarily (local or remote over SSH)
-    test-homelab target="homelab"               # test configuration update on remote homelab without setting boot profile
+    boot configuration="desktop-pc" target=""       # rebuild and switch after boot (local or remote over SSH)
+    build configuration="desktop-pc" target=""      # rebuild system closure (local or remote over SSH)
+    build-darwin configuration="macbook-air-m4-15"  # rebuild macOS host configuration closure without activating
+    build-iso                                       # build custom ISO image with SSH access for remote installations
+    deploy-homelab target="homelab"                 # deploy configuration update to homelab without repartitioning
+    install-homelab target                          # bootstrap and install homelab remotely from scratch using nixos-anywhere
+    switch configuration="desktop-pc" target=""     # rebuild and switch (local or remote over SSH)
+    switch-darwin configuration="macbook-air-m4-15" # rebuild and switch macOS host (Darwin) creating a new generation profile
+    test configuration="desktop-pc" target=""       # rebuild and activate temporarily (local or remote over SSH)
+    test-darwin configuration="macbook-air-m4-15"   # test and activate macOS host configuration without setting a new generation profile
+    test-homelab target="homelab"                   # test configuration update on remote homelab without setting boot profile
 
     [dev-utils]
     fix                                         # fix warnings reported by linters
@@ -107,6 +110,139 @@ just switch configuration="homelab" target="homelab"
 # Set next boot profile on a remote target:
 just boot configuration="homelab" target="homelab"
 ```
+
+### macOS Workstation Deployment (`macbook-air-m4-15`)
+
+The MacBook Air M4 runs macOS (`aarch64-darwin`) managed declaratively using [`nix-darwin`](https://github.com/LnL7/nix-darwin) and Home Manager. It shares 100% of user environments, dotfiles, editor settings, and client SSH profiles with `desktop-pc`:
+
+- **Shared Capabilities**: Fish shell, Starship prompt, system & Git aliases, Neovim/LazyVim (`dotfiles/nvim`), VS Code extensions & settings, WezTerm & Ghostty terminal configurations, FiraCode Nerd Font, core CLI utilities (`eza`, `bat`, `yazi`, `btop`, `ripgrep`, `just`, `direnv`, etc.), and client SSH configuration targeting `homelab`.
+- **Platform Separation**: Linux desktop compositors (Niri, Noctalia, Greetd, PipeWire, Nvidia) and homelab server daemons (Caddy, Jellyfin, AdGuard, etc.) remain strictly isolated to their native hosts.
+
+#### Initial Provisioning (First-Time Bootstrap on a Fresh Mac)
+
+Follow these steps when setting up the MacBook Air M4 for the very first time:
+
+1. **Install Command Line Tools & Nix**:
+   Open Terminal and install the Apple Developer Command Line Tools if not already present:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Install Nix with Flakes enabled (recommended via the [Determinate Nix Installer](https://github.com/DeterminateSystems/nix-installer)):
+
+   ```sh
+   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+   ```
+
+2. **Initialize `/etc/synthetic.conf` (Mandatory for `/run`)**:
+   On modern macOS, the root filesystem (`/`) is an APFS sealed system volume mounted in read-only mode. Apple provides `/etc/synthetic.conf` to declare synthetic virtual mount points and symlinks at root. `nix-darwin` requires `/run -> private/var/run` to host `/run/current-system`.
+
+   If `/etc/synthetic.conf` does not exist on a fresh Mac, `nix-darwin`'s activation script will fail with `stat: cannot stat '/etc/synthetic.conf': No such file or directory` and `chmod: cannot access '/etc/synthetic.conf'`. Create and initialize it beforehand:
+
+   **Bash**:
+
+   ```bash
+   # Create /etc/synthetic.conf with the tab-separated /run mapping (the \t is required):
+   printf 'run\tprivate/var/run\n' | sudo tee /etc/synthetic.conf
+   sudo chmod 644 /etc/synthetic.conf
+   sudo /System/Library/Filesystems/apfs.fs/Contents/Resources/apfs.util -t
+   ```
+
+   **Fish**:
+
+   ```fish
+   # Create /etc/synthetic.conf with the tab-separated /run mapping (the \t is required):
+   printf 'run\tprivate/var/run\n' | sudo tee /etc/synthetic.conf
+   sudo chmod 644 /etc/synthetic.conf
+   sudo /System/Library/Filesystems/apfs.fs/Contents/Resources/apfs.util -t
+   ```
+
+   *Verification*:
+
+   ```sh
+   ls -la /run
+   # Expected output: lrwxr-xr-x ... /run -> private/var/run
+   ```
+
+   *(Note: If `apfs.util -t` does not create the symlink immediately on your macOS version, restart your Mac once so APFS processes `/etc/synthetic.conf` during early boot).*
+
+3. **Initial `nix-darwin` Bootstrap & System Activation**:
+   Clone this repository, navigate into it, and perform the initial activation:
+
+   **Bash**:
+
+   ```bash
+   git clone https://github.com/lvaylet/my-nixos-configurations.git
+   cd my-nixos-configurations
+   nix run nix-darwin -- switch --flake .#macbook-air-m4-15
+   ```
+
+   **Fish**:
+
+   ```fish
+   git clone https://github.com/lvaylet/my-nixos-configurations.git
+   cd my-nixos-configurations
+   nix run nix-darwin -- switch --flake .#macbook-air-m4-15
+   ```
+
+#### Routine Maintenance & Daily Operations
+
+For day-to-day configuration adjustments, testing, and system switches:
+
+- **`build-darwin`**: Compiles the configuration closure in the Nix store without activating or touching the running system (validates syntax, types, and package builds).
+- **`test-darwin`**: Compiles and **activates** the configuration in the live session without recording a new profile generation in `/nix/var/nix/profiles/system` (direct equivalent of `nixos-rebuild test`).
+- **`switch-darwin`**: Compiles, commits a new profile generation in `/nix/var/nix/profiles/system`, and activates the live system.
+- **Rollback**: In case an issue occurs after a switch, instantly revert to the previous generation with `darwin-rebuild --rollback`.
+
+**Bash**:
+
+```bash
+# 1. Compile only (no activation):
+just build-darwin
+
+# 2. Test and activate live without saving a new generation profile:
+just test-darwin
+
+# 3. Permanently switch and record a new generation:
+just switch-darwin
+# Or using nix-darwin directly:
+nix run nix-darwin -- switch --flake .#macbook-air-m4-15
+
+# Rollback to the previous generation if needed:
+darwin-rebuild --rollback
+
+# Update flake dependencies:
+just up
+```
+
+**Fish**:
+
+```fish
+# 1. Compile only (no activation):
+just build-darwin
+
+# 2. Test and activate live without saving a new generation profile:
+just test-darwin
+
+# 3. Permanently switch and record a new generation:
+just switch-darwin
+# Or using nix-darwin directly:
+nix run nix-darwin -- switch --flake .#macbook-air-m4-15
+
+# Rollback to the previous generation if needed:
+darwin-rebuild --rollback
+
+# Update flake dependencies:
+just up
+```
+
+#### Client Access to Homelab Services
+
+From the MacBook Air, you can immediately access homelab infrastructure:
+
+- **SSH Shortcut**: Run `ssh homelab` from any terminal to connect directly to `192.168.1.180` with your user account and key (configured via shared `services.ssh`).
+- **Tailscale Web Services**: When connected to Tailscale, access all internal applications directly in your browser (e.g. `https://ha.homelab.vaylet.fr`, `https://n8n.homelab.vaylet.fr`, `https://uptime.homelab.vaylet.fr`).
 
 ### Initial Provisioning of Homelab (`nixos-anywhere` & Custom ISO)
 
@@ -373,6 +509,8 @@ git+file:///home/laurent/workspace/github.com/lvaylet/my-nixos-configurations
 │   ├───aarch64-linux
 │   ├───x86_64-darwin
 │   └───x86_64-linux: package 'pre-commit-run'
+├───darwinConfigurations
+│   └───macbook-air-m4-15: Darwin configuration
 └───nixosConfigurations
     ├───desktop-pc: NixOS configuration
     ├───homelab: NixOS configuration
@@ -494,12 +632,12 @@ Whenever source code or terminal text is displayed across the `desktop-pc` stack
 
 ### Shared Modal Editor: Neovim & LazyVim (`modules/core/neovim.nix`)
 
-Both `desktop-pc` and `homelab` share a unified, system-level [LazyVim](https://www.lazyvim.org/) editing environment via `core.neovim` without requiring Home Manager on `homelab`:
+All interactive hosts (`desktop-pc`, `homelab`, and `macbook-air-m4-15`) share a unified, system-level [LazyVim](https://www.lazyvim.org/) editing environment via `core.neovim` without requiring Home Manager on `homelab`:
 
-- **System-Level Neovim Engine**: Configured via NixOS `programs.neovim` (`defaultEditor = true`, `viAlias = true`, `vimAlias = true`, `withNodeJs = true`, `withPython3 = true`), provisioning all upstream LazyVim CLI dependencies (`git`, `gcc`, `gnumake`, `ripgrep`, `fd`, `tree-sitter`, `curl`, `unzip`, `gnutar`, `gzip`) in `environment.systemPackages`.
-- **Declarative Store Symlink (`systemd.tmpfiles.rules`)**: Links `/home/laurent/.config/nvim` (`L+`) to the shared starter files in `modules/core/dotfiles/nvim/` (including the declarative `nord` colorscheme spec in `lua/plugins/colorscheme.lua`), while directing `lazy.nvim`'s lockfile to `~/.local/share/nvim/lazy-lock.json` so plugin updates work with a read-only `/nix/store` config directory.
+- **System-Level Neovim Engine**: Configured via NixOS `programs.neovim` and Darwin `environment.systemPackages` (`defaultEditor = true`, `viAlias = true`, `vimAlias = true`), provisioning all upstream LazyVim CLI dependencies (`git`, `gcc`, `gnumake`, `ripgrep`, `fd`, `tree-sitter`, `curl`, `unzip`, `gnutar`, `gzip`) across all hosts.
+- **Declarative Configuration Symlink**: Links `~/.config/nvim` to the shared starter files in `modules/core/dotfiles/nvim/` via `systemd.tmpfiles.rules` (`L+`) on Linux/NixOS and via Home Manager `xdg.configFile."nvim"` on macOS.
 - **Impermanence State Persistence on `homelab` (`modules/core/preservation.nix`)**: Persists `.local/share/nvim` (cloned LazyVim plugins, `lazy-lock.json`, and compiled Tree-sitter parsers) and `.local/state/nvim` (undo history, ShaDa registers, and session state) under `/persistent/home/laurent` across reboots.
-- **Desktop GUI Editors (`modules/desktop/editors.nix`)**: Graphical editors (VS Code, Zed) and Wayland clipboard integration (`wl-clipboard`) remain scoped exclusively to `desktop-pc`.
+- **Desktop GUI Editors (`modules/desktop/editors.nix`)**: Graphical editors (VS Code, Zed) are shared across workstations, while Wayland clipboard integration (`wl-clipboard`) remains scoped exclusively to `desktop-pc`.
 
 ---
 
