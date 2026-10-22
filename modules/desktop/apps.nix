@@ -5,32 +5,42 @@
       services.libinput.enable = true;
     };
 
-    homeManager = {pkgs, ...}: {
-      home.packages = with pkgs; [
-        google-chrome # Freeware web browser developed by Google - https://www.google.com/chrome/
+    homeManager = {
+      lib,
+      pkgs,
+      ...
+    }: {
+      home.packages = with pkgs;
+        [
+          google-chrome # A freeware web browser developed by Google - https://www.google.com/chrome/
 
-        # Nix
-        # ---
-        alejandra # An uncompromising Nix Code Formatter - https://github.com/kamadorueda/alejandra
-        deadnix # Scan .nix files for dead code (unused variable bindings) - https://github.com/astro/deadnix
-        nixd # A Nix Language Server, based on Nix libraries - https://github.com/nix-community/nixd
-        statix # Lints and suggestions for the Nix programming language - https://github.com/oppiliappan/statix
-        nh # Yet another Nix CLI helper - https://github.com/nix-community/nh
-        cachix # A service for Nix binary cache hosting - https://github.com/cachix/cachix
-
-        # System & Partitioning Tools
-        # ---
-        efibootmgr
-        gptfdisk
-        parted
-        tparted
-        just
-        just-lsp
-      ];
+          # Nix
+          # ---
+          alejandra # An uncompromising Nix Code Formatter - https://github.com/kamadorueda/alejandra
+          deadnix # Scan .nix files for dead code (unused variable bindings) - https://github.com/astro/deadnix
+          nixd # A Nix Language Server, based on Nix libraries - https://github.com/nix-community/nixd
+          statix # Lints and suggestions for the Nix programming language - https://github.com/oppiliappan/statix
+          nh # Yet another Nix CLI helper - https://github.com/nix-community/nh
+          cachix # A service for Nix binary cache hosting - https://github.com/cachix/cachix
+          just
+          just-lsp
+        ]
+        ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+          # GUI & Partitioning Tools (Linux only)
+          # ---
+          efibootmgr
+          gptfdisk
+          parted
+          tparted
+        ];
 
       programs = {
         ghostty = {
           enable = true;
+          package =
+            if pkgs.stdenv.hostPlatform.isDarwin
+            then null
+            else pkgs.ghostty;
           settings = {
             theme = "Nord";
             font-family = "FiraCode Nerd Font";

@@ -1,6 +1,6 @@
 {
   flake.modules.desktop.terminal = {
-    homeManager = _: {
+    homeManager = {pkgs, ...}: {
       # WezTerm GPU-accelerated terminal emulator configuration.
       # Reference: https://wezfurlong.org/wezterm/
       # ---
@@ -18,10 +18,14 @@
           config.color_scheme = 'nord'
 
           -- Default interactive shell
-          config.default_prog = { 'fish' }
+          config.default_prog = { '${pkgs.fish}/bin/fish', '-l' }
 
           -- Wayland and ergonomics
-          config.enable_wayland = true
+          ${
+            if pkgs.stdenv.hostPlatform.isLinux
+            then "config.enable_wayland = true"
+            else ""
+          }
           config.window_close_confirmation = 'NeverPrompt'
           config.window_padding = {
             left = 8,
