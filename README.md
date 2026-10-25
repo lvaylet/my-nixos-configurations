@@ -239,9 +239,10 @@ just up
 
 #### Client Access to Homelab Services
 
-From the MacBook Air, you can immediately access homelab infrastructure:
+From the MacBook Air (or any device authenticated to the private tailnet), you can immediately access homelab infrastructure:
 
-- **SSH Shortcut**: Run `ssh homelab` from any terminal to connect directly to `192.168.1.180` with your user account and key (configured via shared `services.ssh`).
+- **Tailscale SSH (Dynamic Keyless Access)**: Connect from any tailnet-authenticated machine via `tailscale ssh laurent@homelab` (or `ssh laurent@100.127.199.88`) using Tailscale identity and ACLs (`modules/services/tailscale.nix` with `extraSetFlags = ["--ssh"]`), No static SSH key generation, repository commit, or `homelab` rebuild is required when onboarding a new device.
+- **Physical LAN SSH Shortcut (OpenSSH Fallback)**: Run `ssh homelab` on the local network to connect directly to `192.168.1.180` with your user account and static key (configured via shared `services.ssh`).
 - **Tailscale Web Services**: When connected to Tailscale, access all internal applications directly in your browser (e.g. `https://ha.homelab.vaylet.fr`, `https://n8n.homelab.vaylet.fr`, `https://uptime.homelab.vaylet.fr`).
 
 ### Initial Provisioning of Homelab (`nixos-anywhere` & Custom ISO)
@@ -463,7 +464,42 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
      - Set **Connection Type** to **Socket** and **Docker Daemon** to `/var/run/docker.sock` (or `/var/run/podman/podman.sock`), then click **Test** and **Save**.
      - When creating a new monitor, select **Monitor Type**: **Docker Container** and enter the exact container name as shown in Portainer (e.g. `n8n`, `waha`, `homeassistant`, `filebrowser`, `portainer`).
 
-6. **Deploy & Activate**:
+6. **Tailscale SSH Access Control Policy (Admin Console)**:
+   - Managed NixOS hosts (`homelab`, `desktop-pc`) enable Tailscale's built-in SSH server on the `tailscale0` (`100.x.y.z`) interface via `services.tailscale.extraSetFlags = ["--ssh"]` (`modules/services/tailscale.nix`), which runs `tailscale set --ssh` through `tailscaled-set.service` while leaving OpenSSH (`services.openssh`) active on physical LAN interfaces (`192.168.1.180`) as a fallback.
+   - In the [Tailscale Admin Console Access Controls](https://login.tailscale.com/admin/acls), define the `ssh` policy stanza to authorize tailnet members to connect as `laurent` and `root`:
+
+   ```jsonc
+   "ssh": [
+     {
+       "action": "check",
+       "src": ["autogroup:member"],
+       "dst": ["homelab"],
+       "users": ["laurent", "root"]
+     }
+   ]
+   ```
+
+   - Once applied, any newly authenticated tailnet device can connect without local SSH keys in `authorized_keys`:
+
+   **Bash**:
+
+   ```bash
+   export TAILSCALE_HOST=100.127.199.88
+   ssh "laurent@${TAILSCALE_HOST}"
+   # Or via MagicDNS / Tailscale CLI:
+   tailscale ssh laurent@homelab
+   ```
+
+   **Fish**:
+
+   ```fish
+   set -gx TAILSCALE_HOST 100.127.199.88
+   ssh "laurent@$TAILSCALE_HOST"
+   # Or via MagicDNS / Tailscale CLI:
+   tailscale ssh laurent@homelab
+   ```
+
+7. **Deploy & Activate**:
 
    ```sh
    just switch configuration="homelab" target="homelab"
