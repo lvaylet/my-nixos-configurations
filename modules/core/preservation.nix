@@ -59,6 +59,7 @@
               ".local/share/fish" # Fish shell history and universal variables
               ".local/share/nvim" # LazyVim plugins, lazy-lock.json, and Tree-sitter parsers
               ".local/state/nvim" # Neovim undo history, ShaDa registers, and session state
+              "workspace" # Preserved git workspaces and cloned repositories
               # ".mozilla"
               # ".local/state/wireplumber"
               # "Documents"

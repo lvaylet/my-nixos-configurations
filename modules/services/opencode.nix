@@ -25,20 +25,7 @@
         "L+ /home/${vars.userName}/.config/opencode/opencode.json - - - - ${opencodeConfigFile}"
       ];
 
-      # Dedicated system user and group for the headless daemon
-      users.users = lib.mkIf config.services.caddy.enable {
-        opencode = {
-          isSystemUser = true;
-          group = "opencode";
-          home = "/var/lib/opencode";
-          createHome = false;
-        };
-      };
-      users.groups = lib.mkIf config.services.caddy.enable {
-        opencode = {};
-      };
-
-      # Headless background server daemon on homelab
+      # Headless background server daemon on homelab running under primary user
       systemd.services.opencode-web = lib.mkIf config.services.caddy.enable {
         description = "OpenCode v2 Web Service";
         wantedBy = ["multi-user.target"];
@@ -47,7 +34,7 @@
           "local-fs.target"
         ];
         environment = {
-          HOME = "/var/lib/opencode";
+          HOME = "/home/${vars.userName}";
         };
         path = with pkgs; [
           git
@@ -56,23 +43,24 @@
         ];
         serviceConfig = {
           ExecStart = "${opencodePackage}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
-          WorkingDirectory = "/var/lib/opencode";
-          User = "opencode";
-          Group = "opencode";
+          WorkingDirectory = "/home/${vars.userName}";
+          User = vars.userName;
+          Group = "users";
           Restart = "always";
           RestartSec = 5;
           EnvironmentFile = "-/var/lib/opencode/opencode.env";
           StateDirectory = "opencode";
+          StateDirectoryMode = "0750";
           PrivateTmp = true;
         };
         preStart = ''
-          ${pkgs.coreutils}/bin/install -d -m 0750 -o opencode -g opencode /var/lib/opencode
+          ${pkgs.coreutils}/bin/install -d -m 0750 -o ${vars.userName} -g users /var/lib/opencode
           if [ ! -s /var/lib/opencode/opencode.env ]; then
             umask 0077
             printf 'OPENCODE_SERVER_PASSWORD=%s\n' "$(${pkgs.coreutils}/bin/head -c 32 /dev/urandom | ${pkgs.coreutils}/bin/od -An -tx1 | ${pkgs.coreutils}/bin/tr -d ' \n')" > /var/lib/opencode/opencode.env
           fi
           ${pkgs.coreutils}/bin/chmod 0600 /var/lib/opencode/opencode.env
-          ${pkgs.coreutils}/bin/chown opencode:opencode /var/lib/opencode/opencode.env
+          ${pkgs.coreutils}/bin/chown ${vars.userName}:users /var/lib/opencode/opencode.env
         '';
       };
 
@@ -91,14 +79,20 @@
       ];
 
       # State preservation across ephemeral tmpfs reboots on homelab
-      preservation.preserveAt."/persistent".directories = lib.mkIf config.services.caddy.enable [
-        {
-          directory = "/var/lib/opencode";
-          user = "opencode";
-          group = "opencode";
-          mode = "0750";
-        }
-      ];
+      preservation.preserveAt."/persistent" = lib.mkIf config.services.caddy.enable {
+        directories = [
+          {
+            directory = "/var/lib/opencode";
+            user = vars.userName;
+            group = "users";
+            mode = "0750";
+          }
+        ];
+        users.${vars.userName}.directories = [
+          ".local/share/opencode"
+          ".local/state/opencode"
+        ];
+      };
     };
 
     homeManager = {
