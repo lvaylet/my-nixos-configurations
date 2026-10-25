@@ -28,6 +28,7 @@
       services.n8n
       services.network
       services.nix-ld
+      services.opencode
       services.podman
       services.portainer
       services.qbittorrent

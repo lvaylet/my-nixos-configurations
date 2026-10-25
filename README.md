@@ -51,7 +51,7 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 modules/
 ├── core/                  # Systems, identity options, builder (mkHost, mkDarwinHost), base system, Neovim/LazyVim, checks, devShell
 ├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
-├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, Uptime Kuma, WAHA, etc.
+├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, OpenCode, Uptime Kuma, WAHA, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso, macbook-air-m4-15) and hardware specs
 ```
 
@@ -115,7 +115,7 @@ just boot configuration="homelab" target="homelab"
 
 The MacBook Air M4 runs macOS (`aarch64-darwin`) managed declaratively using [`nix-darwin`](https://github.com/LnL7/nix-darwin) and Home Manager. It shares 100% of user environments, dotfiles, editor settings, and client SSH profiles with `desktop-pc`:
 
-- **Shared Capabilities**: Fish shell, Starship prompt, system & Git aliases, Neovim/LazyVim (`dotfiles/nvim`), VS Code extensions & settings, WezTerm & Ghostty terminal configurations, FiraCode Nerd Font, core CLI utilities (`eza`, `bat`, `yazi`, `btop`, `ripgrep`, `just`, `direnv`, etc.), and client SSH configuration targeting `homelab`.
+- **Shared Capabilities**: Fish shell, Starship prompt, system & Git aliases, Neovim/LazyVim (`dotfiles/nvim`), VS Code extensions & settings, WezTerm & Ghostty terminal configurations, FiraCode Nerd Font, OpenCode v2 (with Nord theme), core CLI utilities (`eza`, `bat`, `yazi`, `btop`, `ripgrep`, `just`, `direnv`, etc.), and client SSH configuration targeting `homelab`.
 - **Platform Separation**: Linux desktop compositors (Niri, Noctalia, Greetd, PipeWire, Nvidia) and homelab server daemons (Caddy, Jellyfin, AdGuard, etc.) remain strictly isolated to their native hosts.
 
 #### Initial Provisioning (First-Time Bootstrap on a Fresh Mac)
@@ -344,6 +344,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Portainer CE** | OCI Container | `443` (HTTPS via Caddy), `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
 | **n8n** (+ `n8n-runners`) | OCI Containers | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor, webhook integration, and isolated `n8nio/runners` sidecar for native Python 3 and JavaScript `Code` nodes. |
 | **Uptime Kuma** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/uptime-kuma`, Docker socket | Self-hosted monitoring tool for tracking service availability, Portainer/Podman container status, response latency, and TLS certificate expiration with real-time alerts. |
+| **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
 | **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
 | **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
 | **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
@@ -357,6 +358,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 | **Home Assistant** | `https://ha.homelab.vaylet.fr` | `127.0.0.1:8123` | `http://homelab:8123` |
 | **n8n** | `https://n8n.homelab.vaylet.fr` | `127.0.0.1:5679` | N/A (loopback bound) |
 | **Uptime Kuma** | `https://uptime.homelab.vaylet.fr` | `127.0.0.1:3002` | N/A (loopback bound) |
+| **OpenCode** | `https://opencode.homelab.vaylet.fr` | `127.0.0.1:4096` | N/A (loopback bound) |
 | **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | N/A (loopback bound) |
 | **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | `http://homelab:8081` |
 | **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | `https://homelab:9443` |
@@ -499,7 +501,29 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
    tailscale ssh laurent@homelab
    ```
 
-7. **Deploy & Activate**:
+7. **OpenCode v2 Initial Setup & Access**:
+   - **Terminal Shell**: Connect to `homelab` via SSH (`ssh homelab`) and launch `opencode` to start an interactive agent session styled with the shared Nord theme.
+   - **Web Interface**: Open `https://opencode.homelab.vaylet.fr` in your browser.
+   - **User Execution & Workspace Access**: The web daemon runs natively under the primary user account (`laurent:users`) with `WorkingDirectory = "/home/laurent"` and `HOME = "/home/laurent"`, granting OpenCode direct read and write access to cloned Git repositories in `/home/laurent/workspace/` (e.g. `/home/laurent/workspace/github.com/lvaylet/`) as well as user Git configurations (`.gitconfig`).
+   - **Systemd Sandboxing (`PrivateTmp`)**: Isolated with `PrivateTmp = true` so the daemon has its own dedicated `/tmp` namespace, avoiding `/tmp/opencode` permission conflicts with interactive CLI shell sessions.
+   - **State & Workspace Preservation**: Across ephemeral tmpfs reboots, `/var/lib/opencode` (environment credentials and daemon state), `/home/laurent/workspace` (cloned Git repositories), and `/home/laurent/.local/share/opencode` / `/home/laurent/.local/state/opencode` (session history, database, and logs) are preserved under `/persistent`.
+   - **Server Password Retrieval**: On first launch, a secure random password is automatically generated in `/persistent/var/lib/opencode/opencode.env`. Retrieve it with:
+
+     **Bash**:
+
+     ```bash
+     ssh laurent@homelab "sudo cat /var/lib/opencode/opencode.env"
+     ```
+
+     **Fish**:
+
+     ```fish
+     ssh laurent@homelab "sudo cat /var/lib/opencode/opencode.env"
+     ```
+
+   - **Sign In**: Log in using username `opencode` and the retrieved password.
+
+8. **Deploy & Activate**:
 
    ```sh
    just switch configuration="homelab" target="homelab"

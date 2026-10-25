@@ -41,6 +41,12 @@
     # Seamless integration of Git hooks with Nix.
     git-hooks.url = "github:cachix/git-hooks.nix";
 
+    # OpenCode AI coding agent (v2)
+    opencode = {
+      url = "github:anomalyco/opencode/v2.1.4";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Dendritic pattern framework & tree discovery
     flake-parts.url = "github:hercules-ci/flake-parts";
     import-tree.url = "github:denful/import-tree";

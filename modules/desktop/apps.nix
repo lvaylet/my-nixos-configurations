@@ -213,13 +213,6 @@
 
         nnn.enable = true;
 
-        opencode = {
-          enable = true;
-          tui = {
-            theme = "nord";
-          };
-        };
-
         pyenv.enable = true;
       };
     };

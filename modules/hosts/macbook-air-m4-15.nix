@@ -18,6 +18,7 @@
       desktop.terminal
 
       # Services
+      services.opencode
       services.ssh
     ];
 
