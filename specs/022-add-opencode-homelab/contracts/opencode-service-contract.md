@@ -62,6 +62,8 @@ When enabled on `homelab`:
   - `Restart = "always"`
   - `RestartSec = 5`
   - `EnvironmentFile = "-/var/lib/opencode/opencode.env"`
+  - `PrivateTmp = true`
+  - `Environment = "HOME=/var/lib/opencode"`
 - **Pre-Start**:
   - Ensures `/var/lib/opencode` exists with permissions `0750` owned by `opencode:opencode`.
   - If `/var/lib/opencode/opencode.env` does not exist, generates a secure random password `OPENCODE_SERVER_PASSWORD=<random>` with permissions `0600`.

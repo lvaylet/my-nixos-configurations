@@ -46,6 +46,9 @@
           "network.target"
           "local-fs.target"
         ];
+        environment = {
+          HOME = "/var/lib/opencode";
+        };
         path = with pkgs; [
           git
           ripgrep
@@ -60,6 +63,7 @@
           RestartSec = 5;
           EnvironmentFile = "-/var/lib/opencode/opencode.env";
           StateDirectory = "opencode";
+          PrivateTmp = true;
         };
         preStart = ''
           ${pkgs.coreutils}/bin/install -d -m 0750 -o opencode -g opencode /var/lib/opencode
