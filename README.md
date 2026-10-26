@@ -22,15 +22,18 @@ devbox run lint
 devbox run fmt
 ```
 
-### Option 2: Native Nix Flakes (`nix develop`)
+### Option 2: Native Nix Flakes (`direnv` & `nix develop`)
 
-On any system with the Nix package manager and Flakes enabled:
+On managed NixOS and Darwin hosts (`desktop-pc`, `homelab`, `macbook-air-m4-15`), `direnv` (with `nix-direnv`) and the core Nix development and deployment stack (`just`, `just-lsp`, `nh`, `alejandra`, `deadnix`, `statix`, `nixd`, `cachix`) are pre-installed at the system level via `modules/core/base.nix`. Navigating into the repository and authorizing `.envrc` once automatically activates the flake development shell and installs the `pre-commit` hooks in both **Bash** and **Fish**:
 
 ```sh
-# Enter the nix development shell (automatically sets up pre-commit hooks):
+# Authorize automatic flake devShell activation (.envrc -> `use flake`):
+direnv allow
+
+# Or enter the nix development shell manually on any system with Nix + Flakes:
 nix develop
 
-# Format and lint:
+# Format, lint, and run checks:
 just fmt
 just lint
 just check
@@ -308,17 +311,20 @@ To perform an automated, headless bootstrap of the impermanent `homelab` server 
    ssh "laurent@$TARGET_IP"
    ```
 
-   For routine updates that do not require repartitioning the storage device:
+   For routine updates that do not require repartitioning the storage device, you can deploy either **locally from `homelab` itself** (in an SSH session or via OpenCode, where `just` automatically detects the `homelab` hostname) or **remotely from another workstation**:
 
    **Bash**:
 
    ```bash
-   # Deploy and switch the configuration (using SSH alias 'homelab' or custom TARGET_IP):
+   # Directly on homelab (auto-detects local hostname 'homelab'):
+   just test
+   just switch
+
+   # Or remotely from another workstation (using SSH alias 'homelab' or custom TARGET_IP):
    just switch homelab
-   # Or with an explicit target IP:
    just switch configuration="homelab" target="${TARGET_IP}"
 
-   # Or test the configuration temporarily without setting a new boot profile:
+   # Or test the configuration remotely without setting a new boot profile:
    just test homelab
    just test configuration="homelab" target="${TARGET_IP}"
    ```
@@ -326,12 +332,15 @@ To perform an automated, headless bootstrap of the impermanent `homelab` server 
    **Fish**:
 
    ```fish
-   # Deploy and switch the configuration (using SSH alias 'homelab' or custom TARGET_IP):
+   # Directly on homelab (auto-detects local hostname 'homelab'):
+   just test
+   just switch
+
+   # Or remotely from another workstation (using SSH alias 'homelab' or custom TARGET_IP):
    just switch homelab
-   # Or with an explicit target IP:
    just switch configuration="homelab" target="$TARGET_IP"
 
-   # Or test the configuration temporarily without setting a new boot profile:
+   # Or test the configuration remotely without setting a new boot profile:
    just test homelab
    just test configuration="homelab" target="$TARGET_IP"
    ```
@@ -524,9 +533,9 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 7. **OpenCode v2 Initial Setup & Access**:
    - **Terminal Shell**: Connect to `homelab` via SSH (`ssh homelab`) and launch `opencode` to start an interactive agent session styled with the shared Nord theme.
    - **Web Interface**: Open `https://opencode.homelab.vaylet.fr` in your browser.
-   - **User Execution & Workspace Access**: The web daemon runs natively under the primary user account (`laurent:users`) with `WorkingDirectory = "/home/laurent"` and `HOME = "/home/laurent"`, granting OpenCode direct read and write access to cloned Git repositories in `/home/laurent/workspace/` (e.g. `/home/laurent/workspace/github.com/lvaylet/`) as well as user Git configurations (`.gitconfig`).
+   - **User Execution & Workspace Access**: The web daemon runs natively under the primary user account (`laurent:users`) with `WorkingDirectory = "/home/laurent"` and `HOME = "/home/laurent"`, granting OpenCode direct read and write access to cloned Git repositories in `/home/laurent/workspace/` (e.g. `/home/laurent/workspace/github.com/lvaylet/`) as well as user Git configurations (`.gitconfig`). Its systemd `PATH` includes `/run/wrappers/bin` (`sudo`), `/run/current-system/sw/bin`, and the full Nix development and deployment stack (`just`, `nh`, `direnv`, `nix`, `nixos-rebuild`, `bash`, `git`, `gh`, `ripgrep`) for local validation and self-deployment.
    - **Systemd Sandboxing (`PrivateTmp`)**: Isolated with `PrivateTmp = true` so the daemon has its own dedicated `/tmp` namespace, avoiding `/tmp/opencode` permission conflicts with interactive CLI shell sessions.
-   - **State & Workspace Preservation**: Across ephemeral tmpfs reboots, `/var/lib/opencode` (environment credentials and daemon state), `/home/laurent/workspace` (cloned Git repositories), and `/home/laurent/.local/share/opencode` / `/home/laurent/.local/state/opencode` (session history, database, and logs) are preserved under `/persistent`.
+   - **State & Workspace Preservation**: Across ephemeral tmpfs reboots, `/var/lib/opencode` (environment credentials and daemon state), `/home/laurent/workspace` (cloned Git repositories), `/home/laurent/.local/share/direnv` (`direnv allow` authorizations), and `/home/laurent/.local/share/opencode` / `/home/laurent/.local/state/opencode` (session history, database, and logs) are preserved under `/persistent`.
    - **Server Password Retrieval**: On first launch, a secure random password is automatically generated in `/persistent/var/lib/opencode/opencode.env`. Retrieve it with:
 
      **Bash**:
