@@ -59,56 +59,54 @@ modules/
 
 ## Operational Recipes (`justfile`)
 
-All common workflows are defined in the [`justfile`](justfile):
+All common workflows are defined in the [`justfile`](justfile) using a unified set of lifecycle verbs (`build`, `test`, `switch`, `boot`, `install`) across all hosts (`desktop-pc`, `homelab`, `macbook-air-m4-15`). When `configuration` is omitted, `just` automatically detects the local machine (`macbook-air-m4-15` on macOS, or the current NixOS hostname `desktop-pc` / `homelab` on Linux):
 
 ```sh
 $ just
 Available recipes:
-    default                                     # run `just --list`
+    default                                # run `just --list`
 
     [(re)build]
-    boot configuration="desktop-pc" target=""       # rebuild and switch after boot (local or remote over SSH)
-    build configuration="desktop-pc" target=""      # rebuild system closure (local or remote over SSH)
-    build-darwin configuration="macbook-air-m4-15"  # rebuild macOS host configuration closure without activating
-    build-iso                                       # build custom ISO image with SSH access for remote installations
-    deploy-homelab target="homelab"                 # deploy configuration update to homelab without repartitioning
-    install-homelab target                          # bootstrap and install homelab remotely from scratch using nixos-anywhere
-    switch configuration="desktop-pc" target=""     # rebuild and switch (local or remote over SSH)
-    switch-darwin configuration="macbook-air-m4-15" # rebuild and switch macOS host (Darwin) creating a new generation profile
-    test configuration="desktop-pc" target=""       # rebuild and activate temporarily (local or remote over SSH)
-    test-darwin configuration="macbook-air-m4-15"   # test and activate macOS host configuration without setting a new generation profile
-    test-homelab target="homelab"                   # test configuration update on remote homelab without setting boot profile
+    boot configuration="" target=""        # rebuild and set boot default (NixOS local or remote over SSH)
+    build configuration="" target=""       # rebuild system closure without activating (NixOS or Darwin)
+    build-iso                              # build custom ISO image with SSH access for remote installations
+    install target configuration="homelab" # bootstrap and install NixOS host remotely from scratch using nixos-anywhere
+    switch configuration="" target=""      # rebuild and switch live profile (NixOS or Darwin, local or remote over SSH)
+    test configuration="" target=""        # rebuild and test live without saving generation (NixOS or Darwin, local or remote over SSH)
 
     [dev-utils]
-    fix                                         # fix warnings reported by linters
-    fmt                                         # format code recursively
-    lint                                        # run linters
+    fix                                    # fix warnings reported by linters
+    fmt                                    # format code recursively
+    lint                                   # run linters
 
     [flake-management]
-    check                                       # check whether the flake evaluates and run its tests
-    show                                        # show the flake outputs
-    up                                          # update all inputs and `flake.lock` file
+    check                                  # check whether the flake evaluates and run its tests
+    show                                   # show the flake outputs
+    up                                     # update all inputs and `flake.lock` file
 
     [garbage-collection]
-    clean keep="1"                              # clean the current user's profiles
-    clean-all keep="1"                          # clean all profiles
-    collect-garbage                             # delete all unreachable store objects
-    delete-old-generations                      # delete all unreachable store objects and old generations of profiles
+    clean keep="1"                         # clean the current user's profiles
+    clean-all keep="1"                     # clean all profiles
+    collect-garbage                        # delete all unreachable store objects
+    delete-old-generations                 # delete all unreachable store objects and old generations of profiles
 ```
 
 ### Remote Deployments over SSH
 
-To deploy to a remote NixOS host from any Linux machine:
+To test or deploy to a remote NixOS host over SSH from another workstation (when `target` is omitted and `configuration` differs from the local hostname, `target` automatically defaults to `configuration`):
 
 ```sh
 # Temporarily test a configuration on a remote target:
-just test configuration="homelab" target="homelab"
+just test homelab
 
 # Permanently deploy and switch a remote target:
-just switch configuration="homelab" target="homelab"
+just switch homelab
 
 # Set next boot profile on a remote target:
-just boot configuration="homelab" target="homelab"
+just boot homelab
+
+# Or specify an explicit IP / SSH host:
+just switch configuration="homelab" target="192.168.1.180"
 ```
 
 ### macOS Workstation Deployment (`macbook-air-m4-15`)
@@ -188,29 +186,29 @@ Follow these steps when setting up the MacBook Air M4 for the very first time:
 
 #### Routine Maintenance & Daily Operations
 
-For day-to-day configuration adjustments, testing, and system switches:
+For day-to-day configuration adjustments, testing, and system switches on macOS (when run on `macbook-air-m4-15`, `just` automatically selects `macbook-air-m4-15`):
 
-- **`build-darwin`**: Compiles the configuration closure in the Nix store without activating or touching the running system (validates syntax, types, and package builds).
-- **`test-darwin`**: Compiles and **activates** the configuration in the live session without recording a new profile generation in `/nix/var/nix/profiles/system` (direct equivalent of `nixos-rebuild test`).
-- **`switch-darwin`**: Compiles, commits a new profile generation in `/nix/var/nix/profiles/system`, and activates the live system.
-- **Rollback**: In case an issue occurs after a switch, instantly revert to the previous generation with `darwin-rebuild --rollback`.
+- **`just build`**: Compiles the configuration closure in the Nix store without activating or touching the running system (validates syntax, types, and package builds).
+- **`just test`**: Compiles and **activates** the configuration in the live session with `sudo` without recording a new profile generation in `/nix/var/nix/profiles/system` (direct equivalent of `nixos-rebuild test`).
+- **`just switch`**: Compiles, commits a new profile generation in `/nix/var/nix/profiles/system`, and activates the live system with `sudo`.
+- **Rollback**: In case an issue occurs after a switch, instantly revert to the previous generation with `sudo darwin-rebuild --rollback`.
 
 **Bash**:
 
 ```bash
 # 1. Compile only (no activation):
-just build-darwin
+just build
 
 # 2. Test and activate live without saving a new generation profile:
-just test-darwin
+just test
 
 # 3. Permanently switch and record a new generation:
-just switch-darwin
+just switch
 # Or using nix-darwin directly:
-nix run nix-darwin -- switch --flake .#macbook-air-m4-15
+sudo nix run nix-darwin -- switch --flake .#macbook-air-m4-15
 
 # Rollback to the previous generation if needed:
-darwin-rebuild --rollback
+sudo darwin-rebuild --rollback
 
 # Update flake dependencies:
 just up
@@ -220,18 +218,18 @@ just up
 
 ```fish
 # 1. Compile only (no activation):
-just build-darwin
+just build
 
 # 2. Test and activate live without saving a new generation profile:
-just test-darwin
+just test
 
 # 3. Permanently switch and record a new generation:
-just switch-darwin
+just switch
 # Or using nix-darwin directly:
-nix run nix-darwin -- switch --flake .#macbook-air-m4-15
+sudo nix run nix-darwin -- switch --flake .#macbook-air-m4-15
 
 # Rollback to the previous generation if needed:
-darwin-rebuild --rollback
+sudo darwin-rebuild --rollback
 
 # Update flake dependencies:
 just up
@@ -270,8 +268,8 @@ To perform an automated, headless bootstrap of the impermanent `homelab` server 
    ```bash
    export TARGET_IP=<target-ip>
 
-   # Using the dedicated just recipe:
-   just install-homelab "${TARGET_IP}"
+   # Using the unified just recipe (defaults to configuration="homelab"):
+   just install "${TARGET_IP}"
 
    # Or invoking nixos-anywhere directly:
    nix run github:nix-community/nixos-anywhere -- --flake .#homelab "root@${TARGET_IP}"
@@ -282,8 +280,8 @@ To perform an automated, headless bootstrap of the impermanent `homelab` server 
    ```fish
    set -gx TARGET_IP <target-ip>
 
-   # Using the dedicated just recipe:
-   just install-homelab "$TARGET_IP"
+   # Using the unified just recipe (defaults to configuration="homelab"):
+   just install "$TARGET_IP"
 
    # Or invoking nixos-anywhere directly:
    nix run github:nix-community/nixos-anywhere -- --flake .#homelab "root@$TARGET_IP"
@@ -315,21 +313,27 @@ To perform an automated, headless bootstrap of the impermanent `homelab` server 
    **Bash**:
 
    ```bash
-   # Deploy and switch the configuration:
-   just deploy-homelab target="${TARGET_IP}"
+   # Deploy and switch the configuration (using SSH alias 'homelab' or custom TARGET_IP):
+   just switch homelab
+   # Or with an explicit target IP:
+   just switch configuration="homelab" target="${TARGET_IP}"
 
    # Or test the configuration temporarily without setting a new boot profile:
-   just test-homelab target="${TARGET_IP}"
+   just test homelab
+   just test configuration="homelab" target="${TARGET_IP}"
    ```
 
    **Fish**:
 
    ```fish
-   # Deploy and switch the configuration:
-   just deploy-homelab target="$TARGET_IP"
+   # Deploy and switch the configuration (using SSH alias 'homelab' or custom TARGET_IP):
+   just switch homelab
+   # Or with an explicit target IP:
+   just switch configuration="homelab" target="$TARGET_IP"
 
    # Or test the configuration temporarily without setting a new boot profile:
-   just test-homelab target="$TARGET_IP"
+   just test homelab
+   just test configuration="homelab" target="$TARGET_IP"
    ```
 
 ### Homelab Hosted Services
@@ -542,7 +546,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 8. **Deploy & Activate**:
 
    ```sh
-   just switch configuration="homelab" target="homelab"
+   just switch homelab
    ```
 
 #### Shared Multimedia Storage (`/data`)
@@ -555,10 +559,10 @@ Downloading, file management, and media streaming services collaborate using a c
 
 ### Local / Non-NixOS Building
 
-On a non-NixOS Linux workstation, build a target system closure without requiring root privileges:
+On a non-NixOS Linux or macOS workstation, build a target system closure without requiring root privileges:
 
 ```sh
-just build configuration="homelab"
+just build homelab
 ```
 
 ---
@@ -602,8 +606,8 @@ All contributions and configuration changes follow the repository's constitution
 3. **Formatting**: Run `just fmt` (or `nix fmt .`) to format all `.nix` files with `alejandra` and execute pre-commit formatters.
 4. **Linting & Diagnostics**: Run `just lint` (`deadnix` and `statix check`); auto-fixable warnings can be resolved with `just fix`.
 5. **Flake Integrity & Checks**: Run `just check` (`nix flake check`) to validate syntax, evaluate derivations, and run all hermetic pre-commit sandbox checks with a 100% pass rate.
-6. **Activation Testing**: Run `just test configuration="<host>"` (`nh os test .#<host>`) to safely test configuration activation without modifying bootloader entries.
-7. **Deployment & Switch**: Run `just switch configuration="<host>"` (`nh os switch .#<host>`) or `just boot` to finalize system generation updates.
+6. **Activation Testing**: Run `just test [<host>]` (e.g. `just test` locally or `just test homelab`) to safely test configuration activation without modifying bootloader entries or generation profiles.
+7. **Deployment & Switch**: Run `just switch [<host>]` (e.g. `just switch` locally or `just switch homelab`) or `just boot [<host>]` to finalize system generation updates.
 
 ## Continuous Integration
 
