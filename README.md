@@ -338,6 +338,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 
 | **Service** | **Type** | **Network / Ports** | **Storage / Data** | **Description** |
 | --- | --- | --- | --- | --- |
+| **Tailscale** | Native Service | `41641/udp` (WireGuard), `22` (Tailscale SSH on `tailscale0`) | `/var/lib/tailscale` | Private mesh VPN, Tailscale SSH server, and LocalAPI TLS certificate provider for Caddy (`root:root`, `0700` preserved under `/persistent`). |
 | **Caddy** | Native Service | `443` (HTTPS) | `/var/lib/caddy` | Central reverse proxy with Cloudflare DNS-01 ACME plugin and Let's Encrypt TLS. |
 | **Filebrowser Quantum** | OCI Container | `443` (HTTPS via Caddy), `8081` (LAN HTTP) | `/data:/srv`, `/var/lib/filebrowser` | Web-based file manager for browsing, uploading, and organizing files. |
 | **Home Assistant** | OCI Container | `443` (HTTPS via Caddy), `8123` (LAN HTTP) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery and Tailscale HTTPS access. |
@@ -468,6 +469,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 
 6. **Tailscale SSH Access Control Policy (Admin Console)**:
    - Managed NixOS hosts (`homelab`, `desktop-pc`) enable Tailscale's built-in SSH server on the `tailscale0` (`100.x.y.z`) interface via `services.tailscale.extraSetFlags = ["--ssh"]` (`modules/services/tailscale.nix`), which runs `tailscale set --ssh` through `tailscaled-set.service` while leaving OpenSSH (`services.openssh`) active on physical LAN interfaces (`192.168.1.180`) as a fallback.
+   - **State & Node Key Preservation on `homelab`**: Across ephemeral `tmpfs` reboots, `/var/lib/tailscale` (`root:root`, `0700`) is preserved under `/persistent/var/lib/tailscale` via `preservation.preserveAt."/persistent".directories`, retaining the node private key, tailnet authentication credentials (`tailscaled.state`), and `--ssh` daemon state automatically on every reboot.
    - In the [Tailscale Admin Console Access Controls](https://login.tailscale.com/admin/acls), define the `ssh` policy stanza to authorize tailnet members to connect as `laurent` and `root`:
 
    ```jsonc
