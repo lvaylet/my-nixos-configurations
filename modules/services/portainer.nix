@@ -15,11 +15,8 @@
           "/var/lib/portainer:/data" # Persistent volume
         ];
         ports = [
-          "8000:8000" # Optional port for Edge Agents
-          "9443:9443" # Web interface over HTTPS
-        ];
-        extraOptions = [
-          "--privileged" # Recommended so Portainer can run low-level operations on container engine.
+          # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 443.
+          "127.0.0.1:9443:9443"
         ];
       };
 
@@ -41,12 +38,6 @@
           '';
         };
       };
-
-      # Open default Portainer ports in firewall.
-      networking.firewall.allowedTCPPorts = [
-        8000
-        9443
-      ];
 
       preservation.preserveAt."/persistent".directories = lib.mkIf (config.virtualisation.oci-containers.containers ? portainer) [
         # Persist Portainer data.
