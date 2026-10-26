@@ -12,7 +12,7 @@
         image = "ghcr.io/gtsteffaniak/filebrowser:2-stable";
         volumes = [
           "/data:/srv"
-          # "/var/lib/filebrowser:/config" # TODO Is that relevant/required?
+          "/var/lib/filebrowser:/config"
         ];
         environment = {
           PUID = "992"; # Match `filebrowser` user UID in `multimedia.nix`.
@@ -22,7 +22,8 @@
           # FILEBROWSER_DATABASE = "/config/filebrowser.db"; # TODO Is that relevant/required?
         };
         ports = [
-          "8081:80" # host:container
+          # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 443.
+          "127.0.0.1:8081:80"
         ];
         extraOptions = [
           "--group-add=995" # Ensure access to `multimedia` group.
@@ -47,9 +48,9 @@
         };
       };
 
-      # Open default Filebrowser port in firewall.
+      # Open HTTPS port in firewall.
       networking.firewall.allowedTCPPorts = [
-        8081
+        443
       ];
 
       preservation.preserveAt."/persistent".directories = lib.mkIf (config.virtualisation.oci-containers.containers ? filebrowser) [
