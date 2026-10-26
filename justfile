@@ -6,133 +6,206 @@ default:
 # (Re)build
 ###################################
 
-# rebuild
+# rebuild system closure without activating (NixOS or Darwin)
 [group('(re)build')]
-build configuration="desktop-pc" target="":
+build configuration="" target="":
   #!/usr/bin/env bash
   set -euo pipefail
-  if [ -z "{{target}}" ]; then
-    if command -v nh >/dev/null 2>&1 && [ -e /etc/NIXOS ]; then
-      nh os build .#{{configuration}}
+  CONFIG="{{configuration}}"
+  TARGET="{{target}}"
+  if [ -z "${CONFIG}" ]; then
+    if [ "$(uname -s)" = "Darwin" ]; then
+      CONFIG="macbook-air-m4-15"
     else
-      nix build .#nixosConfigurations.{{configuration}}.config.system.build.toplevel
+      HOST="$(hostname -s 2>/dev/null || uname -n)"
+      if [ "${HOST}" = "homelab" ] || [ "${HOST}" = "desktop-pc" ]; then
+        CONFIG="${HOST}"
+      else
+        CONFIG="desktop-pc"
+      fi
     fi
+  fi
+  if [ "${CONFIG}" = "macbook-air-m4-15" ]; then
+    echo "==> Building Darwin configuration ${CONFIG}..."
+    nix build ".#darwinConfigurations.${CONFIG}.system"
   else
-    nixos-rebuild build --flake .#{{configuration}} --target-host {{target}}
+    if [ -z "${TARGET}" ]; then
+      if command -v nh >/dev/null 2>&1 && [ -e /etc/NIXOS ]; then
+        nh os build ".#${CONFIG}"
+      else
+        nix build ".#nixosConfigurations.${CONFIG}.config.system.build.toplevel"
+      fi
+    else
+      echo "==> Building NixOS configuration ${CONFIG} on ${TARGET}..."
+      if command -v nh >/dev/null 2>&1; then
+        nh os build ".#${CONFIG}" --target-host "${TARGET}"
+      else
+        nixos-rebuild build --flake ".#${CONFIG}" --target-host "${TARGET}"
+      fi
+    fi
   fi
 
-# rebuild and switch
+# rebuild and switch live profile (NixOS or Darwin, local or remote over SSH)
 [group('(re)build')]
-switch configuration="desktop-pc" target="":
+switch configuration="" target="":
   #!/usr/bin/env bash
   set -euo pipefail
-  if [ -z "{{target}}" ]; then
-    if [ ! -e /etc/NIXOS ]; then
-      echo "Error: Local system is not NixOS. To deploy to a remote NixOS host, specify the target parameter, e.g.: just switch {{configuration}} <target-host>" >&2
+  CONFIG="{{configuration}}"
+  TARGET="{{target}}"
+  if [ -z "${CONFIG}" ]; then
+    if [ "$(uname -s)" = "Darwin" ]; then
+      CONFIG="macbook-air-m4-15"
+    else
+      HOST="$(hostname -s 2>/dev/null || uname -n)"
+      if [ "${HOST}" = "homelab" ] || [ "${HOST}" = "desktop-pc" ]; then
+        CONFIG="${HOST}"
+      else
+        CONFIG="desktop-pc"
+      fi
+    fi
+  fi
+  if [ "${CONFIG}" = "macbook-air-m4-15" ]; then
+    if [ "$(uname -s)" != "Darwin" ]; then
+      echo "Error: Darwin configuration '${CONFIG}' can only be switched on macOS." >&2
       exit 1
     fi
-    nh os switch .#{{configuration}}
+    echo "==> Switching Darwin configuration ${CONFIG}..."
+    sudo nix run nix-darwin -- switch --flake ".#${CONFIG}"
   else
-    nixos-rebuild switch --flake .#{{configuration}} --target-host {{target}} --use-remote-sudo
+    HOST="$(hostname -s 2>/dev/null || uname -n)"
+    if [ -z "${TARGET}" ] && { [ ! -e /etc/NIXOS ] || [ "${HOST}" != "${CONFIG}" ]; }; then
+      TARGET="${CONFIG}"
+    fi
+    if [ -z "${TARGET}" ]; then
+      echo "==> Switching NixOS configuration ${CONFIG} locally..."
+      if command -v nh >/dev/null 2>&1; then
+        nh os switch ".#${CONFIG}"
+      else
+        sudo nixos-rebuild switch --flake ".#${CONFIG}"
+      fi
+    else
+      echo "==> Switching NixOS configuration ${CONFIG} on ${TARGET}..."
+      if command -v nh >/dev/null 2>&1; then
+        nh os switch ".#${CONFIG}" --elevation-strategy passwordless --target-host "${TARGET}"
+      else
+        nixos-rebuild switch --flake ".#${CONFIG}" --target-host "${TARGET}" --use-remote-sudo
+      fi
+    fi
   fi
 
-# rebuild and switch after boot
+# rebuild and set boot default (NixOS local or remote over SSH)
 [group('(re)build')]
-boot configuration="desktop-pc" target="":
+boot configuration="" target="":
   #!/usr/bin/env bash
   set -euo pipefail
-  if [ -z "{{target}}" ]; then
-    if [ ! -e /etc/NIXOS ]; then
-      echo "Error: Local system is not NixOS. To set boot entry on a remote NixOS host, specify the target parameter, e.g.: just boot {{configuration}} <target-host>" >&2
+  CONFIG="{{configuration}}"
+  TARGET="{{target}}"
+  if [ -z "${CONFIG}" ]; then
+    if [ "$(uname -s)" = "Darwin" ]; then
+      echo "Error: 'just boot' is only supported for NixOS configurations. Specify a NixOS target, e.g.: just boot homelab" >&2
       exit 1
     fi
-    nh os boot .#{{configuration}}
+    HOST="$(hostname -s 2>/dev/null || uname -n)"
+    if [ "${HOST}" = "homelab" ] || [ "${HOST}" = "desktop-pc" ]; then
+      CONFIG="${HOST}"
+    else
+      CONFIG="desktop-pc"
+    fi
+  fi
+  if [ "${CONFIG}" = "macbook-air-m4-15" ]; then
+    echo "Error: 'just boot' is only supported for NixOS configurations, not Darwin ('${CONFIG}')." >&2
+    exit 1
+  fi
+  HOST="$(hostname -s 2>/dev/null || uname -n)"
+  if [ -z "${TARGET}" ] && { [ ! -e /etc/NIXOS ] || [ "${HOST}" != "${CONFIG}" ]; }; then
+    TARGET="${CONFIG}"
+  fi
+  if [ -z "${TARGET}" ]; then
+    echo "==> Setting boot NixOS configuration ${CONFIG} locally..."
+    if command -v nh >/dev/null 2>&1; then
+      nh os boot ".#${CONFIG}"
+    else
+      sudo nixos-rebuild boot --flake ".#${CONFIG}"
+    fi
   else
-    nixos-rebuild boot --flake .#{{configuration}} --target-host {{target}} --use-remote-sudo
+    echo "==> Setting boot NixOS configuration ${CONFIG} on ${TARGET}..."
+    if command -v nh >/dev/null 2>&1; then
+      nh os boot ".#${CONFIG}" --elevation-strategy passwordless --target-host "${TARGET}"
+    else
+      nixos-rebuild boot --flake ".#${CONFIG}" --target-host "${TARGET}" --use-remote-sudo
+    fi
   fi
 
-# rebuild and activate but not switch
+# rebuild and test live without saving generation (NixOS or Darwin, local or remote over SSH)
 [group('(re)build')]
-test configuration="desktop-pc" target="":
+test configuration="" target="":
   #!/usr/bin/env bash
   set -euo pipefail
-  if [ -z "{{target}}" ]; then
-    if [ ! -e /etc/NIXOS ]; then
-      echo "Error: Local system is not NixOS. To test on a remote NixOS host, specify the target parameter, e.g.: just test {{configuration}} <target-host>" >&2
+  CONFIG="{{configuration}}"
+  TARGET="{{target}}"
+  if [ -z "${CONFIG}" ]; then
+    if [ "$(uname -s)" = "Darwin" ]; then
+      CONFIG="macbook-air-m4-15"
+    else
+      HOST="$(hostname -s 2>/dev/null || uname -n)"
+      if [ "${HOST}" = "homelab" ] || [ "${HOST}" = "desktop-pc" ]; then
+        CONFIG="${HOST}"
+      else
+        CONFIG="desktop-pc"
+      fi
+    fi
+  fi
+  if [ "${CONFIG}" = "macbook-air-m4-15" ]; then
+    if [ "$(uname -s)" != "Darwin" ]; then
+      echo "Error: Darwin configuration '${CONFIG}' can only be tested on macOS." >&2
       exit 1
     fi
-    nh os test .#{{configuration}}
+    echo "==> Building and testing Darwin configuration ${CONFIG}..."
+    systemConfig=$(nix build --no-link --print-out-paths ".#darwinConfigurations.${CONFIG}.system")
+    sudo "${systemConfig}/activate"
   else
-    nixos-rebuild test --flake .#{{configuration}} --target-host {{target}} --use-remote-sudo
+    HOST="$(hostname -s 2>/dev/null || uname -n)"
+    if [ -z "${TARGET}" ] && { [ ! -e /etc/NIXOS ] || [ "${HOST}" != "${CONFIG}" ]; }; then
+      TARGET="${CONFIG}"
+    fi
+    if [ -z "${TARGET}" ]; then
+      echo "==> Testing NixOS configuration ${CONFIG} locally..."
+      if command -v nh >/dev/null 2>&1; then
+        nh os test ".#${CONFIG}"
+      else
+        sudo nixos-rebuild test --flake ".#${CONFIG}"
+      fi
+    else
+      echo "==> Testing NixOS configuration ${CONFIG} on ${TARGET}..."
+      if command -v nh >/dev/null 2>&1; then
+        nh os test ".#${CONFIG}" --elevation-strategy passwordless --target-host "${TARGET}"
+      else
+        nixos-rebuild test --flake ".#${CONFIG}" --target-host "${TARGET}" --use-remote-sudo
+      fi
+    fi
   fi
+
+# bootstrap and install NixOS host remotely from scratch using nixos-anywhere
+[group('(re)build')]
+install target configuration="homelab":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  CONFIG="{{configuration}}"
+  if [ "${CONFIG}" = "macbook-air-m4-15" ]; then
+    echo "Error: 'just install' with nixos-anywhere is only supported for NixOS configurations, not Darwin ('${CONFIG}')." >&2
+    exit 1
+  fi
+  TARGET_HOST="{{target}}"
+  if [[ "${TARGET_HOST}" != *"@"* ]]; then
+    TARGET_HOST="root@${TARGET_HOST}"
+  fi
+  echo "==> Installing ${CONFIG} to ${TARGET_HOST} with nixos-anywhere..."
+  nix run github:nix-community/nixos-anywhere -- --flake ".#${CONFIG}" "${TARGET_HOST}"
 
 # build custom ISO image with SSH access for remote installations
 [group('(re)build')]
 build-iso:
   nix build .#nixosConfigurations.iso.config.system.build.isoImage
-
-# rebuild macOS host configuration closure without activating
-[group('(re)build')]
-build-darwin configuration="macbook-air-m4-15":
-  nix build .#darwinConfigurations.{{configuration}}.system
-
-# test and activate macOS host configuration without setting a new generation profile
-[group('(re)build')]
-test-darwin configuration="macbook-air-m4-15":
-  #!/usr/bin/env bash
-  set -euo pipefail
-  echo "==> Building and testing Darwin configuration {{configuration}}..."
-  systemConfig=$(nix build --no-link --print-out-paths .#darwinConfigurations.{{configuration}}.system)
-  sudo "${systemConfig}/activate"
-
-# rebuild and switch macOS host (Darwin) creating a new generation profile
-[group('(re)build')]
-switch-darwin configuration="macbook-air-m4-15":
-  nix run nix-darwin -- switch --flake .#{{configuration}}
-
-# bootstrap and install homelab remotely from scratch using nixos-anywhere
-[group('(re)build')]
-install-homelab target:
-  #!/usr/bin/env bash
-  set -euo pipefail
-  TARGET_HOST="{{target}}"
-  if [[ "${TARGET_HOST}" != *"@"* ]]; then
-    TARGET_HOST="root@${TARGET_HOST}"
-  fi
-  echo "==> Deploying homelab to ${TARGET_HOST} with nixos-anywhere..."
-  nix run github:nix-community/nixos-anywhere -- --flake .#homelab "${TARGET_HOST}"
-
-# deploy configuration update to homelab without repartitioning
-[group('(re)build')]
-deploy-homelab target="homelab":
-  #!/usr/bin/env bash
-  set -euo pipefail
-  TARGET_HOST="{{target}}"
-  if [[ "${TARGET_HOST}" != *"@"* ]]; then
-    TARGET_HOST="root@${TARGET_HOST}"
-  fi
-  echo "==> Switching configuration on homelab (${TARGET_HOST})..."
-  if command -v nh >/dev/null 2>&1; then
-    nh os switch . -H homelab --target-host "${TARGET_HOST}"
-  else
-    nixos-rebuild switch --flake .#homelab --target-host "${TARGET_HOST}"
-  fi
-
-# test configuration update on remote homelab without setting boot profile
-[group('(re)build')]
-test-homelab target="homelab":
-  #!/usr/bin/env bash
-  set -euo pipefail
-  TARGET_HOST="{{target}}"
-  if [[ "${TARGET_HOST}" != *"@"* ]]; then
-    TARGET_HOST="root@${TARGET_HOST}"
-  fi
-  echo "==> Testing configuration on homelab (${TARGET_HOST})..."
-  if command -v nh >/dev/null 2>&1; then
-    nh os test . -H homelab --target-host "${TARGET_HOST}"
-  else
-    nixos-rebuild test --flake .#homelab --target-host "${TARGET_HOST}"
-  fi
 
 ###################################
 # Dev Utils
@@ -207,5 +280,5 @@ clean-all keep="1":
   if command -v nh >/dev/null 2>&1 && [ -e /etc/NIXOS ]; then
     nh clean all --keep {{keep}} # keep at least this number of generations
   else
-    nix-collect-garbage --delete-old
+    sudo nix-collect-garbage --delete-old
   fi
