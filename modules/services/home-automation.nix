@@ -45,12 +45,6 @@
         };
       };
 
-      # Open default Home Assistant port (direct LAN HTTP) and Caddy HTTPS port in firewall.
-      networking.firewall.allowedTCPPorts = [
-        443
-        8123
-      ];
-
       preservation.preserveAt."/persistent".directories = lib.mkIf (config.virtualisation.oci-containers.containers ? homeassistant) [
         # Persist Home Assistant configuration and data in Podman volume.
         {

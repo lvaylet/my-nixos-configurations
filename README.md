@@ -341,8 +341,8 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Tailscale** | Native Service | `41641/udp` (WireGuard), `22` (Tailscale SSH on `tailscale0`) | `/var/lib/tailscale` | Private mesh VPN, Tailscale SSH server, and LocalAPI TLS certificate provider for Caddy (`root:root`, `0700` preserved under `/persistent`). |
 | **Caddy** | Native Service | `443` (HTTPS) | `/var/lib/caddy` | Central reverse proxy with Cloudflare DNS-01 ACME plugin and Let's Encrypt TLS. |
 | **Filebrowser Quantum** | OCI Container | `443` (HTTPS via Caddy) | `/data:/srv`, `/var/lib/filebrowser:/config` | Web-based file manager for browsing, uploading, and organizing files. |
-| **Home Assistant** | OCI Container | `443` (HTTPS via Caddy), `8123` (LAN HTTP) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery and Tailscale HTTPS access. |
-| **Portainer CE** | OCI Container | `443` (HTTPS via Caddy), `9443` (HTTPS), `8000` (TCP) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
+| **Home Assistant** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery and Tailscale HTTPS access. |
+| **Portainer CE** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
 | **n8n** (+ `n8n-runners`) | OCI Containers | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor, webhook integration, and isolated `n8nio/runners` sidecar for native Python 3 and JavaScript `Code` nodes. |
 | **Uptime Kuma** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/uptime-kuma`, Docker socket | Self-hosted monitoring tool for tracking service availability, Portainer/Podman container status, response latency, and TLS certificate expiration with real-time alerts. |
 | **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
@@ -356,13 +356,13 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 
 | **Service** | **Subdomain / External URL** | **Upstream Target** | **LAN Direct URL** |
 | --- | --- | --- | --- |
-| **Home Assistant** | `https://ha.homelab.vaylet.fr` | `127.0.0.1:8123` | `http://homelab:8123` |
+| **Home Assistant** | `https://ha.homelab.vaylet.fr` | `127.0.0.1:8123` | N/A (loopback bound) |
 | **n8n** | `https://n8n.homelab.vaylet.fr` | `127.0.0.1:5679` | N/A (loopback bound) |
 | **Uptime Kuma** | `https://uptime.homelab.vaylet.fr` | `127.0.0.1:3002` | N/A (loopback bound) |
 | **OpenCode** | `https://opencode.homelab.vaylet.fr` | `127.0.0.1:4096` | N/A (loopback bound) |
 | **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | N/A (loopback bound) |
 | **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | N/A (loopback bound) |
-| **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | `https://homelab:9443` |
+| **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | N/A (loopback bound) |
 | **Jellyfin** | `https://jellyfin.homelab.vaylet.fr` | `127.0.0.1:8096` | `http://homelab:8096` |
 | **qBittorrent** | `https://qbittorrent.homelab.vaylet.fr` | `127.0.0.1:8080` | `http://homelab:8080` |
 
@@ -406,7 +406,21 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 
 3. **Home Assistant Reverse Proxy Authorization (UI Configuration)**:
    - Modern Home Assistant releases (>= 2026.10) manage reverse proxy trust directly in the Web UI, ignoring legacy `http:` YAML blocks in `configuration.yaml`.
-   - Access Home Assistant initially from the local LAN at `http://homelab:8123` (or `http://192.168.1.181:8123`).
+   - Because direct LAN access to port `8123` is blocked by the host firewall, forward port `8123` over SSH from your workstation to reach the local loopback listener for initial setup:
+
+   **Bash**:
+
+   ```bash
+   ssh -L 8123:127.0.0.1:8123 laurent@homelab
+   ```
+
+   **Fish**:
+
+   ```fish
+   ssh -L 8123:127.0.0.1:8123 laurent@homelab
+   ```
+
+   - Open `http://127.0.0.1:8123` in your local browser.
    - Navigate to **Settings** > **System** > **Network** (**Paramètres** > **Système** > **Réseau**).
    - In the **Reverse Proxy** (**Proxy inverse**) section:
      - Check **Use reverse proxy** (**Utiliser un proxy inverse**).
