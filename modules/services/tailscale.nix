@@ -1,6 +1,10 @@
 {
   flake.modules.services.tailscale = {
     nixos = {
+      config,
+      lib,
+      ...
+    }: {
       # Tailscale
       # Reference: https://mynixos.com/nixpkgs/options/services.tailscale
       services.tailscale = {
@@ -20,6 +24,15 @@
         partOf = ["tailscaled.service"];
         serviceConfig.RemainAfterExit = true;
       };
+
+      preservation.preserveAt."/persistent".directories = lib.mkIf config.services.tailscale.enable [
+        {
+          directory = "/var/lib/tailscale";
+          user = "root";
+          group = "root";
+          mode = "0700";
+        }
+      ];
     };
   };
 }
