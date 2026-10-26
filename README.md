@@ -49,7 +49,7 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 
 ```text
 modules/
-├── core/                  # Systems, identity options, builder (mkHost, mkDarwinHost), base system, Neovim/LazyVim, checks, devShell
+├── core/                  # Systems, identity options, builder (mkHost, mkDarwinHost), base system, bootloaders (limine, grub), Neovim/LazyVim, checks, devShell
 ├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
 ├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, OpenCode, Uptime Kuma, WAHA, etc.
 └── hosts/                 # Machine closures (desktop-pc, homelab, iso, macbook-air-m4-15) and hardware specs
@@ -617,11 +617,11 @@ Continuous integration runs on GitHub Actions using a two-stage gated pipeline (
 
 ## Shell Environment & Aliases (Bash & Fish Duality)
 
-Managed NixOS hosts (`desktop-pc`, `homelab`, `iso`) operate with a dual-shell architecture across user accounts and operational contexts:
+Managed NixOS (`desktop-pc`, `homelab`, `iso`) and Darwin (`macbook-air-m4-15`) hosts operate with a dual-shell architecture across user accounts and operational contexts:
 
-- **Fish (`pkgs.fish`)**: Configured as the default interactive login shell for the primary user (`laurent`) across all hosts (`users.users.laurent.shell = pkgs.fish` in `modules/core/base.nix`), enriched with native command-wrapping autocompletions (`complete -c <alias> -w "<command>"`).
+- **Fish (`pkgs.fish`)**: Configured as the default interactive login shell for the primary user (`laurent`) across all hosts (`users.users.${vars.userName}.shell = pkgs.fish` in `modules/core/base.nix`), enriched with native Fish abbreviations (`programs.fish.shellAbbrs`) that expand inline and automatically provide full argument autocompletions without manual `complete -c` wrapper scripts.
 - **Bash (`pkgs.bashInteractive`)**: Retained as the default login shell for `root`, the custom headless installer ISO (`modules/core/iso.nix`), non-NixOS bootstrap hosts, and `justfile` execution recipes.
-- **Shared System-Wide Aliases (`environment.shellAliases`)**: Declared in `modules/core/base.nix` and automatically registered by NixOS in **both Bash and Fish**, ensuring identical `systemctl`, `journalctl`, and `git` shortcuts whether logged in as `laurent` (Fish) or `root` (Bash).
+- **Shared System-Wide Aliases & Abbreviations (`environment.shellAliases` & `programs.fish.shellAbbrs`)**: Declared once in `modules/core/base.nix` (`systemdAliases` and `gitAliases`) and shared across NixOS and Darwin, ensuring identical `systemctl`, `journalctl`, and `git` shortcuts whether logged in as `laurent` (Fish) or `root` (Bash).
 
 ### Service Management (`systemctl`)
 

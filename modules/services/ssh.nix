@@ -14,14 +14,14 @@
       };
     };
 
-    homeManager = _: {
+    homeManager = {vars, ...}: {
       programs.ssh = {
         enable = true;
         enableDefaultConfig = false;
         settings = {
           "homelab" = {
             HostName = "192.168.1.180";
-            User = "laurent";
+            User = vars.userName;
             IdentityFile = "~/.ssh/id_ed25519";
             CheckHostIP = false;
           };

@@ -12,6 +12,7 @@
       # Base Settings
       core.base
       core.git
+      core.limine
       core.neovim
 
       # Desktop & Shell
