@@ -15,12 +15,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Manage Neovim with `nvf`.
-    nvf = {
-      url = "github:NotAShelf/nvf";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Noctalia Wayland desktop shell.
     noctalia = {
       url = "github:noctalia-dev/noctalia";
