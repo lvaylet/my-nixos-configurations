@@ -1,54 +1,81 @@
-{
+let
+  # Shell shortcuts for systemd and journalctl (NixOS)
+  systemdAliases = {
+    # systemctl management
+    sc = "systemctl";
+    sc-status = "systemctl status";
+    sc-restart = "systemctl restart";
+    sc-reload = "systemctl reload";
+    sc-start = "systemctl start";
+    sc-stop = "systemctl stop";
+    sc-failed = "systemctl --failed";
+
+    # Shorthand aliases
+    scs = "systemctl status";
+    scr = "systemctl restart";
+    scl = "systemctl reload";
+
+    # journalctl logging
+    jc = "journalctl";
+    jcb = "journalctl -b"; # Current boot
+    jce = "journalctl -e"; # End of journal
+    jcf = "journalctl -f"; # Follow journal
+    jcu = "journalctl -u"; # Unit logs, e.g.: jcu jellyfin
+    jcuf = "journalctl -f -u"; # Follow unit logs, e.g.: jcuf jellyfin
+    logs = "journalctl -u"; # Unit logs, e.g.: logs jellyfin
+    logsf = "journalctl -f -u"; # Follow unit logs, e.g.: logsf jellyfin
+  };
+
+  # Git (Oh-My-Zsh style shortcuts shared across NixOS and Darwin)
+  gitAliases = {
+    g = "git";
+    ga = "git add";
+    gaa = "git add --all";
+    gst = "git status";
+    gco = "git checkout";
+    gcb = "git checkout -b";
+    gsw = "git switch";
+    gswc = "git switch -c";
+    gc = "git commit --verbose";
+    gcm = "git commit --message";
+    gca = "git commit --verbose --all";
+    gcam = "git commit --all --message";
+    "gc!" = "git commit --verbose --amend";
+    "gca!" = "git commit --verbose --all --amend";
+    "gcan!" = "git commit --verbose --all --no-edit --amend";
+    gd = "git diff";
+    gds = "git diff --staged";
+    gl = "git pull";
+    gp = "git push";
+    gpf = "git push --force-with-lease";
+    gb = "git branch";
+    gba = "git branch --all";
+    gbd = "git branch --delete";
+    glo = "git log --oneline --decorate";
+    glg = "git log --stat";
+    glp = "git log --patch";
+    grb = "git rebase";
+    grba = "git rebase --abort";
+    grbc = "git rebase --continue";
+    grbi = "git rebase --interactive";
+    gm = "git merge";
+    gma = "git merge --abort";
+    gmc = "git merge --continue";
+    gsta = "git stash apply";
+    gstp = "git stash pop";
+    gsts = "git stash show --patch";
+    gstd = "git stash drop";
+    grh = "git reset";
+    grhh = "git reset --hard";
+    gclean = "git clean --interactive -d";
+  };
+in {
   flake.modules.core.base = {
     nixos = {
       pkgs,
       vars,
       ...
     }: {
-      boot.loader = {
-        efi.canTouchEfiVariables = true;
-
-        limine = {
-          # A modern, advanced, portable, multi-protocol bootloader and boot manager.
-          # For additional Limine module configuration options, check:
-          # https://search.nixos.org/options?channel=unstable&show=boot.loader.limine
-          enable = true;
-
-          maxGenerations = 5; # Maximum number of latest generations in the boot menu.
-
-          # Prepend extra settings to `limine.conf`.
-          # The config format can be found here:
-          # https://github.com/limine-bootloader/limine/blob/trunk/CONFIG.md
-          extraConfig = ''
-            remember_last_entry: yes
-          '';
-
-          # Append extra entries to the end of `limine.conf`.
-          #
-          # For Windows 11, follow these instructions to copy the Windows bootloader to Limine's ESP
-          # and avoid using `uuid()`: https://github.com/basecamp/omarchy/discussions/1604
-          #
-          # Reference: https://wiki.archlinux.org/title/Limine#Windows_entry_(UEFI)
-          extraEntries = ''
-            /Windows 11
-              protocol: efi
-              path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
-          '';
-
-          style.wallpapers = with pkgs.nixos-artwork.wallpapers; [
-            # Check available wallpapers here:
-            # - https://github.com/NixOS/nixos-artwork/tree/master/wallpapers
-            # - https://mynixos.com/packages/nixos-artwork.wallpapers
-            # and make sure to append `.gnomeFilePath` below:
-            mosaic-blue.gnomeFilePath
-            nineish-dark-gray.gnomeFilePath
-            simple-blue.gnomeFilePath
-            simple-dark-gray-bootloader.gnomeFilePath
-            waterfall.gnomeFilePath
-          ];
-        };
-      };
-
       # Allow unfree packages.
       nixpkgs.config.allowUnfree = true;
 
@@ -142,125 +169,13 @@
         wget
       ];
 
-      # Shell aliases for systemd and journalctl
-      environment.shellAliases = {
-        # systemctl management
-        sc = "systemctl";
-        sc-status = "systemctl status";
-        sc-restart = "systemctl restart";
-        sc-reload = "systemctl reload";
-        sc-start = "systemctl start";
-        sc-stop = "systemctl stop";
-        sc-failed = "systemctl --failed";
+      # Shell aliases for systemd, journalctl, and Git (available in Bash and non-Fish shells)
+      environment.shellAliases = systemdAliases // gitAliases;
 
-        # Shorthand aliases
-        scs = "systemctl status";
-        scr = "systemctl restart";
-        scl = "systemctl reload";
-
-        # journalctl logging
-        jc = "journalctl";
-        jcb = "journalctl -b"; # Current boot
-        jce = "journalctl -e"; # End of journal
-        jcf = "journalctl -f"; # Follow journal
-        jcu = "journalctl -u"; # Unit logs, e.g.: jcu jellyfin
-        jcuf = "journalctl -f -u"; # Follow unit logs, e.g.: jcuf jellyfin
-        logs = "journalctl -u"; # Unit logs, e.g.: logs jellyfin
-        logsf = "journalctl -f -u"; # Follow unit logs, e.g.: logsf jellyfin
-
-        # Git (Oh-My-Zsh style aliases)
-        g = "git";
-        ga = "git add";
-        gaa = "git add --all";
-        gst = "git status";
-        gco = "git checkout";
-        gcb = "git checkout -b";
-        gsw = "git switch";
-        gswc = "git switch -c";
-        gc = "git commit --verbose";
-        gcm = "git commit --message";
-        gca = "git commit --verbose --all";
-        gcam = "git commit --all --message";
-        "gc!" = "git commit --verbose --amend";
-        "gca!" = "git commit --verbose --all --amend";
-        "gcan!" = "git commit --verbose --all --no-edit --amend";
-        gd = "git diff";
-        gds = "git diff --staged";
-        gl = "git pull";
-        gp = "git push";
-        gpf = "git push --force-with-lease";
-        gb = "git branch";
-        gba = "git branch --all";
-        gbd = "git branch --delete";
-        glo = "git log --oneline --decorate";
-        glg = "git log --stat";
-        glp = "git log --patch";
-        grb = "git rebase";
-        grba = "git rebase --abort";
-        grbc = "git rebase --continue";
-        grbi = "git rebase --interactive";
-        gm = "git merge";
-        gma = "git merge --abort";
-        gmc = "git merge --continue";
-        gsta = "git stash apply";
-        gstp = "git stash pop";
-        gsts = "git stash show --patch";
-        gstd = "git stash drop";
-        grh = "git reset";
-        grhh = "git reset --hard";
-        gclean = "git clean --interactive -d";
-      };
-
-      # Configure Fish shell and completions for aliases across all configurations
+      # Configure Fish shell with native abbreviations (interactive expansion + automatic completions)
       programs.fish = {
         enable = true;
-        interactiveShellInit = ''
-          # Completions for systemctl and journalctl aliases
-          complete -c sc -w systemctl
-          complete -c scs -w "systemctl status"
-          complete -c sc-status -w "systemctl status"
-          complete -c scr -w "systemctl restart"
-          complete -c sc-restart -w "systemctl restart"
-          complete -c scl -w "systemctl reload"
-          complete -c sc-reload -w "systemctl reload"
-          complete -c sc-start -w "systemctl start"
-          complete -c sc-stop -w "systemctl stop"
-          complete -c sc-failed -w "systemctl --failed"
-          complete -c jc -w journalctl
-          complete -c jcb -w "journalctl -b"
-          complete -c jce -w "journalctl -e"
-          complete -c jcf -w "journalctl -f"
-          complete -c jcu -w "journalctl -u"
-          complete -c jcuf -w "journalctl -f -u"
-          complete -c logs -w "journalctl -u"
-          complete -c logsf -w "journalctl -f -u"
-
-          # Completions for git aliases
-          complete -c g -w git
-          complete -c ga -w "git add"
-          complete -c gaa -w "git add"
-          complete -c gst -w "git status"
-          complete -c gco -w "git checkout"
-          complete -c gcb -w "git checkout -b"
-          complete -c gsw -w "git switch"
-          complete -c gswc -w "git switch -c"
-          complete -c gc -w "git commit"
-          complete -c gca -w "git commit"
-          complete -c gd -w "git diff"
-          complete -c gds -w "git diff"
-          complete -c gl -w "git pull"
-          complete -c gp -w "git push"
-          complete -c gpf -w "git push"
-          complete -c gb -w "git branch"
-          complete -c gba -w "git branch"
-          complete -c gbd -w "git branch"
-          complete -c grb -w "git rebase"
-          complete -c gm -w "git merge"
-          complete -c grh -w "git reset"
-          complete -c grhh -w "git reset"
-          complete -c gsta -w "git stash apply"
-          complete -c gstp -w "git stash pop"
-        '';
+        shellAbbrs = systemdAliases // gitAliases;
       };
 
       # This value determines the NixOS release from which the default
@@ -350,52 +265,14 @@
         wget
       ];
 
-      # Shell aliases for Git (reused across shells).
-      environment.shellAliases = {
-        g = "git";
-        ga = "git add";
-        gaa = "git add --all";
-        gst = "git status";
-        gco = "git checkout";
-        gcb = "git checkout -b";
-        gsw = "git switch";
-        gswc = "git switch -c";
-        gc = "git commit --verbose";
-        gcm = "git commit --message";
-        gca = "git commit --verbose --all";
-        gcam = "git commit --all --message";
-        "gc!" = "git commit --verbose --amend";
-        "gca!" = "git commit --verbose --all --amend";
-        "gcan!" = "git commit --verbose --all --no-edit --amend";
-        gd = "git diff";
-        gds = "git diff --staged";
-        gl = "git pull";
-        gp = "git push";
-        gpf = "git push --force-with-lease";
-        gb = "git branch";
-        gba = "git branch --all";
-        gbd = "git branch --delete";
-        glo = "git log --oneline --decorate";
-        glg = "git log --stat";
-        glp = "git log --patch";
-        grb = "git rebase";
-        grba = "git rebase --abort";
-        grbc = "git rebase --continue";
-        grbi = "git rebase --interactive";
-        gm = "git merge";
-        gma = "git merge --abort";
-        gmc = "git merge --continue";
-        gsta = "git stash apply";
-        gstp = "git stash pop";
-        gsts = "git stash show --patch";
-        gstd = "git stash drop";
-        grh = "git reset";
-        grhh = "git reset --hard";
-        gclean = "git clean --interactive -d";
-      };
+      # Shell aliases for Git (available in Bash and non-Fish shells).
+      environment.shellAliases = gitAliases;
 
-      # Enable Fish shell on Darwin.
-      programs.fish.enable = true;
+      # Enable Fish shell with native Git abbreviations on Darwin.
+      programs.fish = {
+        enable = true;
+        shellAbbrs = gitAliases;
+      };
 
       # System state version for nix-darwin.
       system.stateVersion = 6;
