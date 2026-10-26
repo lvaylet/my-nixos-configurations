@@ -167,15 +167,31 @@ in {
         git
         htop
         wget
+
+        # Nix Development & Deployment Stack
+        alejandra
+        cachix
+        deadnix
+        just
+        just-lsp
+        nh
+        nixd
+        statix
       ];
 
       # Shell aliases for systemd, journalctl, and Git (available in Bash and non-Fish shells)
       environment.shellAliases = systemdAliases // gitAliases;
 
-      # Configure Fish shell with native abbreviations (interactive expansion + automatic completions)
-      programs.fish = {
-        enable = true;
-        shellAbbrs = systemdAliases // gitAliases;
+      # Configure Direnv (with nix-direnv) and Fish shell with native abbreviations
+      programs = {
+        direnv = {
+          enable = true;
+          nix-direnv.enable = true;
+        };
+        fish = {
+          enable = true;
+          shellAbbrs = systemdAliases // gitAliases;
+        };
       };
 
       # This value determines the NixOS release from which the default
@@ -263,15 +279,31 @@ in {
         git
         htop
         wget
+
+        # Nix Development & Deployment Stack
+        alejandra
+        cachix
+        deadnix
+        just
+        just-lsp
+        nh
+        nixd
+        statix
       ];
 
       # Shell aliases for Git (available in Bash and non-Fish shells).
       environment.shellAliases = gitAliases;
 
-      # Enable Fish shell with native Git abbreviations on Darwin.
-      programs.fish = {
-        enable = true;
-        shellAbbrs = gitAliases;
+      # Enable Direnv (with nix-direnv) and Fish shell with native Git abbreviations on Darwin.
+      programs = {
+        direnv = {
+          enable = true;
+          nix-direnv.enable = true;
+        };
+        fish = {
+          enable = true;
+          shellAbbrs = gitAliases;
+        };
       };
 
       # System state version for nix-darwin.

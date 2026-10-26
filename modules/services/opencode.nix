@@ -36,11 +36,24 @@
         environment = {
           HOME = "/home/${vars.userName}";
         };
-        path = with pkgs; [
-          git
-          ripgrep
-          coreutils
-        ];
+        path =
+          [
+            "/run/wrappers"
+            "/run/current-system/sw"
+          ]
+          ++ (with pkgs; [
+            bash
+            coreutils
+            direnv
+            gh
+            git
+            just
+            nh
+            nix
+            nixos-rebuild
+            openssh
+            ripgrep
+          ]);
         serviceConfig = {
           ExecStart = "${opencodePackage}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
           WorkingDirectory = "/home/${vars.userName}";
