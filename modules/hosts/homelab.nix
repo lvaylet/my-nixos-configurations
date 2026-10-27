@@ -33,6 +33,7 @@
       services.podman
       services.portainer
       services.qbittorrent
+      services.sgdf-utils
       services.ssd
       services.ssh
       services.tailscale
