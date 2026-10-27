@@ -21,7 +21,10 @@
 
       # Conditional preservation mapping (integrated as sub-attribute of config, keeping it top-level clean)
       preservation.preserveAt."/persistent".directories = lib.mkIf config.virtualisation.podman.enable [
-        "/var/tmp" # Podman's default for temporary storage location of downloaded container images.
+        {
+          directory = "/var/tmp"; # Podman's default for temporary storage location of downloaded container images.
+          mode = "1777";
+        }
         "/var/lib/containers" # Podman's default for images and containers in rootful mode.
       ];
     };

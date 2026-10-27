@@ -19,7 +19,10 @@
             "/var/lib/bluetooth"
             "/etc/NetworkManager/system-connections"
 
-            "/tmp" # widely used by build tools and editors, may accidentally fill up `tmpfs` root working on big videos or big projects.
+            {
+              directory = "/tmp"; # widely used by build tools and editors, may accidentally fill up `tmpfs` root working on big videos or big projects.
+              mode = "1777";
+            }
           ];
 
           files = [
