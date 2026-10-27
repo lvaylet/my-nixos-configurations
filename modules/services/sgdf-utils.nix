@@ -19,7 +19,6 @@
         host = "127.0.0.1";
         port = 8000;
         dataDir = "/var/lib/sgdf-utils";
-        environmentFile = "/var/lib/sgdf-utils/sgdf-utils.env";
       };
 
       # Use a static system user and group so `/var/lib/sgdf-utils` can be bind-mounted
@@ -41,15 +40,16 @@
           User = "sgdf-utils";
           Group = "sgdf-utils";
           StateDirectoryMode = "0750";
+          # Leading '-' allows ExecStartPre (`preStart`) to run and create `sgdf-utils.env` on first boot
+          # before `ExecStart` loads it (without '-', systemd aborts before spawning `start-pre` when the file is missing).
+          EnvironmentFile = "-/var/lib/sgdf-utils/sgdf-utils.env";
         };
         preStart = ''
-          ${pkgs.coreutils}/bin/install -d -m 0750 -o sgdf-utils -g sgdf-utils /var/lib/sgdf-utils
           if [ ! -s /var/lib/sgdf-utils/sgdf-utils.env ]; then
             umask 0077
             printf 'SGDF_API_KEY=%s\n' "$(${pkgs.coreutils}/bin/head -c 32 /dev/urandom | ${pkgs.coreutils}/bin/od -An -tx1 | ${pkgs.coreutils}/bin/tr -d ' \n')" > /var/lib/sgdf-utils/sgdf-utils.env
           fi
           ${pkgs.coreutils}/bin/chmod 0600 /var/lib/sgdf-utils/sgdf-utils.env
-          ${pkgs.coreutils}/bin/chown sgdf-utils:sgdf-utils /var/lib/sgdf-utils/sgdf-utils.env
         '';
       };
 
