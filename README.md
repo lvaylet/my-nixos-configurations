@@ -360,6 +360,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Uptime Kuma** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/uptime-kuma`, Docker socket | Self-hosted monitoring tool for tracking service availability, Portainer/Podman container status, response latency, and TLS certificate expiration with real-time alerts. |
 | **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.agents`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface, declarative AI engineering skills (Matt Pocock & Addy Osmani), Node.js/Python tool runners (`npm`, `npx`, `uv`, `uvx`), and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
 | **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
+| **SGDF Contacts API** (`sgdf-utils`) | Native Service | `443` (HTTPS via Caddy) | `/var/lib/sgdf-utils` | FastAPI HTTP REST API and SQLite repository (`sgdf.sqlite3`) managing SGDF La Rochelle parent contacts for n8n and WAHA (`sgdf-utils:sgdf-utils`, `0750` preserved under `/persistent`). |
 | **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/var/cache/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding (`jellyfin:multimedia`, `0750` preserved under `/persistent`). |
 | **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
 
@@ -374,6 +375,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 | **Uptime Kuma** | `https://uptime.homelab.vaylet.fr` | `127.0.0.1:3002` | N/A (loopback bound) |
 | **OpenCode** | `https://opencode.homelab.vaylet.fr` | `127.0.0.1:4096` | N/A (loopback bound) |
 | **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | N/A (loopback bound) |
+| **SGDF Contacts API** (`sgdf-utils`) | `https://sgdf.homelab.vaylet.fr` | `127.0.0.1:8000` | N/A (loopback bound) |
 | **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | N/A (loopback bound) |
 | **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | N/A (loopback bound) |
 | **Jellyfin** | `https://jellyfin.homelab.vaylet.fr` | `127.0.0.1:8096` | `http://homelab:8096` |
@@ -579,7 +581,26 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 
    - **Sign In**: Log in using username `opencode` and the retrieved password.
 
-8. **Deploy & Activate**:
+8. **SGDF Contacts API (`sgdf-utils`) Setup & n8n Integration**:
+   - The native `sgdf-utils` systemd service runs on `127.0.0.1:8000` under the dedicated `sgdf-utils:sgdf-utils` system user and is exposed via Caddy at `https://sgdf.homelab.vaylet.fr` (Swagger UI at `https://sgdf.homelab.vaylet.fr/docs`).
+   - Across ephemeral tmpfs reboots, `/var/lib/sgdf-utils` (storing the SQLite database `/var/lib/sgdf-utils/sgdf.sqlite3` and the API key file `/var/lib/sgdf-utils/sgdf-utils.env`) is preserved under `/persistent/var/lib/sgdf-utils` (`0750`).
+   - **API Key Retrieval (for n8n `X-API-Key` Header Auth)**: On first launch, a secure random `SGDF_API_KEY` is automatically generated in `/var/lib/sgdf-utils/sgdf-utils.env`. Retrieve it with:
+
+     **Bash**:
+
+     ```bash
+     ssh laurent@homelab "sudo cat /var/lib/sgdf-utils/sgdf-utils.env"
+     ```
+
+     **Fish**:
+
+     ```fish
+     ssh laurent@homelab "sudo cat /var/lib/sgdf-utils/sgdf-utils.env"
+     ```
+
+   - **Calling from n8n**: In n8n `HTTP Request` nodes, configure *Header Auth* (`X-API-Key`) with the retrieved key and query `https://sgdf.homelab.vaylet.fr/api/v1/parents?active_only=true`.
+
+9. **Deploy & Activate**:
 
    ```sh
    just switch homelab

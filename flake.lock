@@ -276,7 +276,28 @@
         "nixpkgs": "nixpkgs_2",
         "noctalia": "noctalia",
         "opencode": "opencode",
-        "preservation": "preservation"
+        "preservation": "preservation",
+        "sgdf-utils": "sgdf-utils"
+      }
+    },
+    "sgdf-utils": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793120769,
+        "narHash": "sha256-wgHQRBclH1BMUfEuEXSqAnheD2bb8VFFkLTpzeHyV3c=",
+        "owner": "lvaylet",
+        "repo": "sgdf-utils",
+        "rev": "21ef86f41cb8a2aa7b2440d4dc979c3a08da8d0a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lvaylet",
+        "repo": "sgdf-utils",
+        "type": "github"
       }
     }
   },

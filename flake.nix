@@ -51,6 +51,12 @@
       flake = false;
     };
 
+    # SGDF La Rochelle parent contacts REST API & CLI tools
+    sgdf-utils = {
+      url = "github:lvaylet/sgdf-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Dendritic pattern framework & tree discovery
     flake-parts.url = "github:hercules-ci/flake-parts";
     import-tree.url = "github:denful/import-tree";
