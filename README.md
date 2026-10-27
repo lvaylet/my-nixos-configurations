@@ -360,7 +360,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Uptime Kuma** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/uptime-kuma`, Docker socket | Self-hosted monitoring tool for tracking service availability, Portainer/Podman container status, response latency, and TLS certificate expiration with real-time alerts. |
 | **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.agents`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface, declarative AI engineering skills (Matt Pocock & Addy Osmani), Node.js/Python tool runners (`npm`, `npx`, `uv`, `uvx`), and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
 | **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
-| **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
+| **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/var/cache/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding (`jellyfin:multimedia`, `0750` preserved under `/persistent`). |
 | **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
 
 #### Reverse Proxy & Secure HTTPS Access (Caddy & Cloudflare DNS-01)
@@ -589,7 +589,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 
 Downloading, file management, and media streaming services collaborate using a coordinated permission model (`modules/services/media.nix`):
 
-- **Group `multimedia` (GID `995`)**: Shared by `qbittorrent` (UID `991`), `filebrowser` (UID `992`), `jellyfin`, and the primary user `laurent`.
+- **Group `multimedia` (GID `995`)**: Shared by `qbittorrent` (UID `991`), `filebrowser` (UID `992`), `jellyfin` (including its preserved `/var/lib/jellyfin` and `/var/cache/jellyfin` directories), and the primary user `laurent`.
 - **SetGID Bit (`2775`)**: Automatically propagates group ownership to all new files written in `/data/downloads` and `/data/media`.
 - **Systemd Tmpfiles (`z` rules)**: Enforces permissions after preservation mounts without race conditions.
 

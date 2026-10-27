@@ -19,7 +19,14 @@
             "/var/lib/bluetooth"
             "/etc/NetworkManager/system-connections"
 
-            "/tmp" # widely used by build tools and editors, may accidentally fill up `tmpfs` root working on big videos or big projects.
+            {
+              directory = "/tmp"; # widely used by build tools and editors, may accidentally fill up `tmpfs` root working on big videos or big projects.
+              # Mode 1777 (rwxrwxrwt): Required standard permissions for temporary directories.
+              # Grants read/write/execute access to all unprivileged users (777) while the sticky
+              # bit (1) prevents users from deleting or renaming files owned by others. Without it,
+              # preservation defaults to 0755 (root-only write) and breaks user tools like direnv/nix.
+              mode = "1777";
+            }
           ];
 
           files = [

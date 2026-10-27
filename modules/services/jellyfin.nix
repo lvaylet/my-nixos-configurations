@@ -38,14 +38,14 @@
         {
           directory = "/var/lib/jellyfin";
           user = "jellyfin";
-          group = "jellyfin";
-          mode = "0750"; # TODO Why these permissions? Check current owners (user and group).
+          group = config.services.jellyfin.group;
+          mode = "0750";
         }
         {
           directory = "/var/cache/jellyfin";
           user = "jellyfin";
-          group = "jellyfin";
-          mode = "0750"; # TODO Why these permissions? Check current owners (user and group).
+          group = config.services.jellyfin.group;
+          mode = "0750";
         }
       ];
     };
