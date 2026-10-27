@@ -1,4 +1,48 @@
-{
+let
+  mkOpencodeSkillsDir = {
+    inputs,
+    pkgs,
+  }:
+    pkgs.runCommandLocal "opencode-skills" {} ''
+      mkdir -p "$out"
+
+      link_skill() {
+        local skill_dir="$1"
+        local skill_name
+        skill_name="$(basename "$skill_dir")"
+
+        if [ ! -f "$skill_dir/SKILL.md" ]; then
+          echo "Error: OpenCode skill directory missing SKILL.md: $skill_dir" >&2
+          exit 1
+        fi
+
+        if [ -e "$out/$skill_name" ]; then
+          echo "Error: Duplicate OpenCode skill directory name collision: $skill_name" >&2
+          exit 1
+        fi
+
+        ln -s "$skill_dir" "$out/$skill_name"
+      }
+
+      for skill_dir in "${inputs.addyosmani-agent-skills}"/skills/*; do
+        if [ -d "$skill_dir" ]; then
+          link_skill "$skill_dir"
+        fi
+      done
+
+      if [ -d "${inputs.addyosmani-agent-skills}/references" ]; then
+        ln -s "${inputs.addyosmani-agent-skills}/references" "$out/references"
+      fi
+
+      for category in engineering productivity; do
+        for skill_dir in "${inputs.mattpocock-skills}/skills/$category"/*; do
+          if [ -d "$skill_dir" ]; then
+            link_skill "$skill_dir"
+          fi
+        done
+      done
+    '';
+in {
   flake.modules.services.opencode = {
     nixos = {
       config,
@@ -9,6 +53,7 @@
       ...
     }: let
       opencodePackage = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+      opencodeSkillsDir = mkOpencodeSkillsDir {inherit inputs pkgs;};
       opencodeConfigFile = pkgs.writeText "opencode.json" (builtins.toJSON {
         theme = "nord";
       });
@@ -16,14 +61,20 @@
       # Shell package availability for homelab and NixOS hosts
       environment.systemPackages = [
         opencodePackage
+        pkgs.nodejs
+        pkgs.uv
       ];
 
-      # Declarative user configuration symlink for interactive shell sessions
-      systemd.tmpfiles.rules = [
-        "d /home/${vars.userName}/.config 0755 ${vars.userName} users -"
-        "d /home/${vars.userName}/.config/opencode 0755 ${vars.userName} users -"
-        "L+ /home/${vars.userName}/.config/opencode/opencode.json - - - - ${opencodeConfigFile}"
-      ];
+      # Declarative user configuration and skills symlinks for interactive shell sessions
+      systemd.tmpfiles.rules =
+        [
+          "d /home/${vars.userName}/.config 0755 ${vars.userName} users -"
+          "d /home/${vars.userName}/.config/opencode 0755 ${vars.userName} users -"
+          "L+ /home/${vars.userName}/.config/opencode/opencode.json - - - - ${opencodeConfigFile}"
+        ]
+        ++ lib.optionals (!(config ? home-manager)) [
+          "L+ /home/${vars.userName}/.config/opencode/skills - - - - ${opencodeSkillsDir}"
+        ];
 
       # Headless background server daemon on homelab running under primary user
       systemd.services.opencode-web = lib.mkIf config.services.caddy.enable {
@@ -51,8 +102,10 @@
             nh
             nix
             nixos-rebuild
+            nodejs
             openssh
             ripgrep
+            uv
           ]);
         serviceConfig = {
           ExecStart = "${opencodePackage}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
@@ -102,6 +155,7 @@
           }
         ];
         users.${vars.userName}.directories = [
+          ".agents"
           ".local/share/opencode"
           ".local/state/opencode"
         ];
@@ -114,13 +168,23 @@
       ...
     }: let
       opencodePackage = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+      opencodeSkillsDir = mkOpencodeSkillsDir {inherit inputs pkgs;};
     in {
       programs.opencode = {
         enable = true;
         package = opencodePackage;
+        extraPackages = with pkgs; [
+          nodejs
+          uv
+        ];
         tui = {
           theme = "nord";
         };
+      };
+
+      xdg.configFile."opencode/skills" = {
+        source = opencodeSkillsDir;
+        recursive = true;
       };
     };
 
@@ -133,6 +197,8 @@
     in {
       environment.systemPackages = [
         opencodePackage
+        pkgs.nodejs
+        pkgs.uv
       ];
     };
   };
