@@ -41,6 +41,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Declarative AI agent skills
+    mattpocock-skills = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
+    addyosmani-agent-skills = {
+      url = "github:addyosmani/agent-skills";
+      flake = false;
+    };
+
     # Dendritic pattern framework & tree discovery
     flake-parts.url = "github:hercules-ci/flake-parts";
     import-tree.url = "github:denful/import-tree";

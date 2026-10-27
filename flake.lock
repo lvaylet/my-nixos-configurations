@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "addyosmani-agent-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791922866,
+        "narHash": "sha256-HxaYbxuZwVo2wybYazM05YUJG/udQNQP6X0qA5wfYIs=",
+        "owner": "addyosmani",
+        "repo": "agent-skills",
+        "rev": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "addyosmani",
+        "repo": "agent-skills",
+        "type": "github"
+      }
+    },
     "darwin": {
       "inputs": {
         "nixpkgs": [
@@ -128,6 +144,22 @@
         "type": "github"
       }
     },
+    "mattpocock-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793087052,
+        "narHash": "sha256-CkNJKbSlW8bUSfvHqfl7JTPnq8o1iYdzI24LGDMojE4=",
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "59db609eb1e18aaf59b63284d0e52255aff0c63c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mattpocock",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1787631388,
@@ -233,12 +265,14 @@
     },
     "root": {
       "inputs": {
+        "addyosmani-agent-skills": "addyosmani-agent-skills",
         "darwin": "darwin",
         "disko": "disko",
         "flake-parts": "flake-parts",
         "git-hooks": "git-hooks",
         "home-manager": "home-manager",
         "import-tree": "import-tree",
+        "mattpocock-skills": "mattpocock-skills",
         "nixpkgs": "nixpkgs_2",
         "noctalia": "noctalia",
         "opencode": "opencode",

@@ -116,7 +116,7 @@ just switch configuration="homelab" target="192.168.1.180"
 
 The MacBook Air M4 runs macOS (`aarch64-darwin`) managed declaratively using [`nix-darwin`](https://github.com/LnL7/nix-darwin) and Home Manager. It shares 100% of user environments, dotfiles, editor settings, and client SSH profiles with `desktop-pc`:
 
-- **Shared Capabilities**: Fish shell, Starship prompt, system & Git aliases, Neovim/LazyVim (`dotfiles/nvim`), VS Code extensions & settings, WezTerm & Ghostty terminal configurations, FiraCode Nerd Font, OpenCode v2 (with Nord theme), core CLI utilities (`eza`, `bat`, `yazi`, `btop`, `ripgrep`, `just`, `direnv`, etc.), and client SSH configuration targeting `homelab`.
+- **Shared Capabilities**: Fish shell, Starship prompt, system & Git aliases, Neovim/LazyVim (`dotfiles/nvim`), VS Code extensions & settings, WezTerm & Ghostty terminal configurations, FiraCode Nerd Font, OpenCode v2 (with Nord theme, declarative AI skills from Matt Pocock & Addy Osmani, and `nodejs` / `uv` package runners), core CLI utilities (`eza`, `bat`, `yazi`, `btop`, `ripgrep`, `just`, `direnv`, etc.), and client SSH configuration targeting `homelab`.
 - **Platform Separation**: Linux desktop compositors (Niri, Noctalia, Greetd, PipeWire, Nvidia) and homelab server daemons (Caddy, Jellyfin, AdGuard, etc.) remain strictly isolated to their native hosts.
 
 #### Initial Provisioning (First-Time Bootstrap on a Fresh Mac)
@@ -358,7 +358,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **Portainer CE** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
 | **n8n** (+ `n8n-runners`) | OCI Containers | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor, webhook integration, and isolated `n8nio/runners` sidecar for native Python 3 and JavaScript `Code` nodes. |
 | **Uptime Kuma** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/uptime-kuma`, Docker socket | Self-hosted monitoring tool for tracking service availability, Portainer/Podman container status, response latency, and TLS certificate expiration with real-time alerts. |
-| **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
+| **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.agents`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface, declarative AI engineering skills (Matt Pocock & Addy Osmani), Node.js/Python tool runners (`npm`, `npx`, `uv`, `uvx`), and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
 | **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
 | **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding. |
 | **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
@@ -533,9 +533,36 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 7. **OpenCode v2 Initial Setup & Access**:
    - **Terminal Shell**: Connect to `homelab` via SSH (`ssh homelab`) and launch `opencode` to start an interactive agent session styled with the shared Nord theme.
    - **Web Interface**: Open `https://opencode.homelab.vaylet.fr` in your browser.
-   - **User Execution & Workspace Access**: The web daemon runs natively under the primary user account (`laurent:users`) with `WorkingDirectory = "/home/laurent"` and `HOME = "/home/laurent"`, granting OpenCode direct read and write access to cloned Git repositories in `/home/laurent/workspace/` (e.g. `/home/laurent/workspace/github.com/lvaylet/`) as well as user Git configurations (`.gitconfig`). Its systemd `PATH` includes `/run/wrappers/bin` (`sudo`), `/run/current-system/sw/bin`, and the full Nix development and deployment stack (`just`, `nh`, `direnv`, `nix`, `nixos-rebuild`, `bash`, `git`, `gh`, `ripgrep`) for local validation and self-deployment.
+   - **Declarative AI Agent Skills (`mattpocock/skills` & `addyosmani/agent-skills`)**: Pinned as non-flake inputs in `flake.nix` and assembled into a unified 52-skill bundle in `modules/services/opencode.nix`, all 27 official engineering/productivity skills from [Matt Pocock](https://github.com/mattpocock/skills) (`grill-me`, `grill-with-docs`, `tdd`, `to-spec`, `to-tickets`, `code-review`, `domain-modeling`, etc.) and all 25 software lifecycle skills from [Addy Osmani](https://github.com/addyosmani/agent-skills) (`spec-driven-development`, `test-driven-development`, `incremental-implementation`, `code-review-and-quality`, `interview-me`, `debugging-and-error-recovery`, etc.) are linked declaratively into `~/.config/opencode/skills` across `homelab`, `desktop-pc`, and `macbook-air-m4-15`.
+   - **Node.js & Python Package Runners (`npm`, `npx`, `uv`, `uvx`)**: Both `pkgs.nodejs` (`node`, `npm`, `npx`) and `pkgs.uv` (`uv`, `uvx`) are installed in the system environment and in the `opencode-web` service `PATH`. While core skills are managed declaratively via Nix, you can use `npx skills` or `uvx` at any time to browse/install project-local or ad-hoc global skills (`~/.agents/skills/`) and run MCP servers:
+
+     **Bash**:
+
+     ```bash
+     # Browse or install ad-hoc skills via the skills CLI:
+     npx skills add <owner/repo> --list
+     npx skills add <owner/repo>
+
+     # Run Python or Node.js CLI tools / MCP servers on demand:
+     uvx <python-tool>
+     npx <npm-package>
+     ```
+
+     **Fish**:
+
+     ```fish
+     # Browse or install ad-hoc skills via the skills CLI:
+     npx skills add <owner/repo> --list
+     npx skills add <owner/repo>
+
+     # Run Python or Node.js CLI tools / MCP servers on demand:
+     uvx <python-tool>
+     npx <npm-package>
+     ```
+
+   - **User Execution & Workspace Access**: The web daemon runs natively under the primary user account (`laurent:users`) with `WorkingDirectory = "/home/laurent"` and `HOME = "/home/laurent"`, granting OpenCode direct read and write access to cloned Git repositories in `/home/laurent/workspace/` (e.g. `/home/laurent/workspace/github.com/lvaylet/`) as well as user Git configurations (`.gitconfig`). Its systemd `PATH` includes `/run/wrappers/bin` (`sudo`), `/run/current-system/sw/bin`, the full Nix development and deployment stack (`just`, `nh`, `direnv`, `nix`, `nixos-rebuild`, `bash`, `git`, `gh`, `ripgrep`), and the Node.js/Python tool runners (`node`, `npm`, `npx`, `uv`, `uvx`) for local validation and self-deployment.
    - **Systemd Sandboxing (`PrivateTmp`)**: Isolated with `PrivateTmp = true` so the daemon has its own dedicated `/tmp` namespace, avoiding `/tmp/opencode` permission conflicts with interactive CLI shell sessions.
-   - **State & Workspace Preservation**: Across ephemeral tmpfs reboots, `/var/lib/opencode` (environment credentials and daemon state), `/home/laurent/workspace` (cloned Git repositories), `/home/laurent/.local/share/direnv` (`direnv allow` authorizations), and `/home/laurent/.local/share/opencode` / `/home/laurent/.local/state/opencode` (session history, database, and logs) are preserved under `/persistent`.
+   - **State & Workspace Preservation**: Across ephemeral tmpfs reboots, `/var/lib/opencode` (environment credentials and daemon state), `/home/laurent/workspace` (cloned Git repositories), `/home/laurent/.agents` (user-installed global agent skills), `/home/laurent/.local/share/direnv` (`direnv allow` authorizations), and `/home/laurent/.local/share/opencode` / `/home/laurent/.local/state/opencode` (session history, database, and logs) are preserved under `/persistent`.
    - **Server Password Retrieval**: On first launch, a secure random password is automatically generated in `/persistent/var/lib/opencode/opencode.env`. Retrieve it with:
 
      **Bash**:
