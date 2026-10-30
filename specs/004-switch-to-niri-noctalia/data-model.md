@@ -82,7 +82,9 @@ erDiagram
 ## Entities & Attributes
 
 ### 1. `HOST_CONFIGURATION`
+
 Represents the system-level target configuration (`machines/desktop-pc/configuration.nix` and `modules/nixos/desktop.nix`).
+
 - **`hostName`** (string): Machine hostname (`desktop-pc`).
 - **`niri_enabled`** (boolean): Whether the system-level Niri compositor package and session wrapper are enabled (`programs.niri.enable = true`).
 - **`display_manager`** (string): System display manager service (`greetd`).
@@ -92,20 +94,26 @@ Represents the system-level target configuration (`machines/desktop-pc/configura
   - `displayManager.cosmic-greeter.enable` MUST be `false` (or removed).
 
 ### 2. `DESKTOP_SESSION_PROFILE`
+
 Encapsulates runtime Wayland session attributes.
+
 - **`compositor`** (string): The window manager / compositor binary (`niri`).
 - **`session_binary`** (string): Path or command to initiate the session (`niri-session`).
 - **`display_server`** (string): Standard display protocol (`wayland`).
 - **`portal_implementations`** (string): Portals for screen sharing, open-file dialogs, and desktop settings (`xdg-desktop-portal-gnome`, `xdg-desktop-portal-gtk`).
 
 ### 3. `USER_ENVIRONMENT_PROFILE`
+
 Home Manager user configuration root (`machines/desktop-pc/configuration.nix` -> `home-manager.users.${vars.userName}`).
+
 - **`userName`** (string): System user identifier (`laurent`).
 - **`homeDirectory`** (string): User home directory (`/home/laurent`).
 - **`stateVersion`** (string): Home Manager compatibility pin (`26.05`).
 
 ### 4. `DESKTOP_SHELL_CONFIG`
+
 Noctalia desktop shell settings (`modules/home-manager/noctalia.nix`).
+
 - **`shell_name`** (string): `noctalia`.
 - **`config_format`** (string): TOML.
 - **`bar_enabled`** (boolean): Whether top/bottom system status bar is displayed.
@@ -116,7 +124,9 @@ Noctalia desktop shell settings (`modules/home-manager/noctalia.nix`).
   - Automatically launched or executed when Niri session starts.
 
 ### 5. `TERMINAL_PROFILE`
+
 WezTerm terminal emulator configuration (`modules/home-manager/wezterm.nix`).
+
 - **`emulator`** (string): `wezterm`.
 - **`config_format`** (string): Lua.
 - **`color_scheme`** (string): Terminal palette (`Catppuccin Mocha`).
@@ -125,7 +135,9 @@ WezTerm terminal emulator configuration (`modules/home-manager/wezterm.nix`).
 - **`default_prog`** (list of strings): Shell execution vector (`["fish"]`).
 
 ### 6. `SHELL_PROFILE`
+
 Fish interactive shell configuration (`modules/home-manager/fish.nix`).
+
 - **`shell_name`** (string): `fish`.
 - **`syntax_highlighting`** (boolean): Native command highlighting (MUST be `true`).
 - **`autosuggestions`** (boolean): Inline history completion (MUST be `true`).
@@ -134,14 +146,18 @@ Fish interactive shell configuration (`modules/home-manager/fish.nix`).
   - Non-interactive scripts and `/bin/sh` executions MUST NOT run through Fish to preserve POSIX compatibility.
 
 ### 7. `TYPOGRAPHY_PROFILE`
+
 System and user typography configuration (`modules/home-manager/fonts.nix`).
+
 - **`primary_font`** (string): `FiraCode Nerd Font`.
 - **`font_family`** (string): Monospace font family name (`FiraCode Nerd Font`).
 - **`opentype_features`** (string): Contextual alternates (`calt=1`, `clig=1`, `liga=1`).
 - **`ligatures_active`** (boolean): Active state for code comparison and arrow symbols.
 
 ### 8. `EDITOR_PROFILE`
+
 Neovim editor environment (`modules/nixos/neovim.nix`).
+
 - **`editor_name`** (string): `neovim`.
 - **`manager`** (string): `nvf` (Neovim configuration framework via Flake).
 - **`theme`** (string): `catppuccin` style `mocha`.

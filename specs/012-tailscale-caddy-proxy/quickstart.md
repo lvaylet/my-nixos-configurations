@@ -27,6 +27,7 @@ just lint
 ```
 
 **Expected Outcome**:
+
 - All `.nix` files format cleanly with zero modifications needed after `just fmt`.
 - `deadnix` and `statix check` complete with exit code 0 and zero warnings.
 
@@ -48,6 +49,7 @@ nix eval .#nixosConfigurations.iso.config.system.build.toplevel.drvPath
 ```
 
 **Expected Outcome**:
+
 - All three evaluation commands succeed, returning valid `.drv` store paths without syntax, type, or evaluation errors.
 
 ---
@@ -67,6 +69,7 @@ nix eval .#nixosConfigurations.homelab.config.systemd.services.caddy.after
 ```
 
 **Expected Outcome**:
+
 - Caddy is authorized to fetch Tailscale certificates.
 - Caddy service orders after `tailscaled.service` and `local-fs.target`.
 
@@ -95,6 +98,7 @@ nix eval .#nixosConfigurations.homelab.config.virtualisation.oci-containers.cont
 ```
 
 **Expected Outcome**:
+
 - Both virtual hosts route correctly to their respective local backend ports.
 - n8n container port 5678 binds strictly to loopback (`127.0.0.1:5679`).
 
@@ -109,6 +113,7 @@ nix eval .#nixosConfigurations.homelab.config.networking.firewall.allowedTCPPort
 ```
 
 **Expected Outcome**:
+
 - Output includes ports `443` (Home Assistant HTTPS), `5678` (n8n HTTPS), and `8123` (Home Assistant direct LAN access).
 
 ---
@@ -122,6 +127,7 @@ nix eval .#nixosConfigurations.homelab.config.preservation.preserveAt."/persiste
 ```
 
 **Expected Outcome**:
+
 - Output contains `/var/lib/caddy` owned by `caddy:caddy` (mode `0750`).
 - Output contains `/var/lib/n8n` owned by `1000:1000` (mode `0750`).
 
@@ -136,6 +142,7 @@ just check
 ```
 
 **Expected Outcome**:
+
 - All pre-commit hooks, secret scanners, formatters, and flake check derivations pass with exit code 0.
 
 ---
@@ -143,14 +150,18 @@ just check
 ## Scenario 8: Live Operational Verification (Post-Deployment)
 
 1. Deploy or test configuration on `homelab`:
+
    ```bash
    just test configuration="homelab"
    ```
+
 2. On a client device connected to the tailnet, open:
    - `https://homelab.<tailscaleDomain>`: Home Assistant dashboard loads over HTTPS with a trusted certificate; WebSockets connect without error.
    - `https://homelab.<tailscaleDomain>:5678`: n8n workflow editor loads over HTTPS with a trusted certificate.
 3. Verify TLS certificate in browser or via curl:
+
    ```bash
    curl -Iv https://homelab.<tailscaleDomain>
    ```
+
    Confirm TLS handshake succeeds with a Let's Encrypt certificate matching the Tailscale domain name.

@@ -47,6 +47,7 @@ This contract defines the public outputs exposed by `flake.nix` and `flake-parts
 ## 2. Supported Systems
 
 The multi-system outputs (`checks`, `formatter`, `devShells`) MUST evaluate for all target systems:
+
 - `x86_64-linux`
 - `aarch64-linux`
 - `x86_64-darwin`

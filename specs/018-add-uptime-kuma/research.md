@@ -137,6 +137,7 @@ preservation.preserveAt."/persistent".directories = lib.mkIf config.services.upt
 ### Decision
 
 Update `README.md` within the same branch in accordance with Constitution Principle VI (*Living Documentation & Dual-Shell Parity*):
+
 1. Add `Uptime Kuma` to the `modules/services/` architecture tree comment.
 2. Add a row for **Uptime Kuma** in the **Homelab Hosted Services** table (`Native Service`, `443 (HTTPS via Caddy)`, `/var/lib/uptime-kuma`).
 3. Add a row for **Uptime Kuma** in the **Reverse Proxy & Secure HTTPS Access** table (`https://uptime.homelab.vaylet.fr`, `127.0.0.1:3002`, `N/A (loopback bound)`).

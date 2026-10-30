@@ -24,6 +24,7 @@ The Tailscale service module MUST declare permissions allowing the `caddy` syste
 ```
 
 ### Behavioral Guarantees
+
 - Sets `TS_PERMIT_CERT_UID=caddy` in the `tailscaled.service` environment.
 - Tailscale daemon authorizes LocalAPI certificate fetching over `/run/tailscale/tailscaled.sock` for user `caddy`.
 
@@ -104,6 +105,7 @@ The centralized Caddy reverse proxy module MUST adhere to the following specific
 ```
 
 ### Behavioral Guarantees
+
 1. **Startup Ordering**: `systemd.services.caddy` waits for both `local-fs.target` (ensuring `/var/lib/caddy` is mounted from `/persistent`) and `tailscaled.service`.
 2. **Environment File Injection**: Caddy reads `CLOUDFLARE_API_TOKEN` from `/var/lib/caddy/cloudflare.env` without exposing credentials in Nix store files or git.
 3. **State Preservation**: All Let's Encrypt certificates retrieved and cached in `/var/lib/caddy` survive host reboots.

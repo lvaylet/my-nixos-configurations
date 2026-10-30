@@ -57,11 +57,13 @@ All three derivations evaluate and build successfully without errors.
 ## Scenario 3: Pull Request Validation & Cloud Gating
 
 1. Create a branch and push a commit to GitHub:
+
    ```bash
    git checkout -b test-ci-validation
    git commit --allow-empty -m "ci: test pull request validation"
    git push -u origin test-ci-validation
    ```
+
 2. Open a Pull Request targeting `main`.
 3. In the GitHub UI under **Checks**:
    - Verify `check` (Flake Check & Static Analysis) runs first.
@@ -79,6 +81,7 @@ All jobs report a green checkmark (`✔`), status check passes, and PR is marked
 2. Push the commit and inspect the GitHub Actions run.
 
 **Expected Outcome**:
+
 - `check` stage fails with actionable error messages highlighting the offending line.
 - `build` matrix stage is skipped automatically (`needs: [check]`).
 - The pull request is blocked from merging.

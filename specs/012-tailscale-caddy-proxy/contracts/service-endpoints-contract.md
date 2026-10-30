@@ -28,12 +28,15 @@ networking.firewall.allowedTCPPorts = [
 ```
 
 ### Upstream Proxy Trust Invariant
+
 In Home Assistant (>= 2026.10), reverse proxy trust is configured via the Web UI (**Settings** > **System** > **Network**):
+
 - **Use reverse proxy**: Enabled
 - **Trusted proxies**: `127.0.0.1` and `::1`
 (The legacy `http:` YAML block in `configuration.yaml` is deprecated and ignored).
 
 ### Behavioral Guarantees
+
 - Remote clients accessing `https://ha.homelab.vaylet.fr` connect to port 443 with a valid Let's Encrypt TLS certificate.
 - Caddy reverse-proxies requests to Home Assistant at `127.0.0.1:8123`.
 - Long-lived WebSocket connections (`/api/websocket`) for real-time dashboard events are sustained without disconnect timeouts.
@@ -74,6 +77,7 @@ networking.firewall.allowedTCPPorts = [
 ```
 
 ### Behavioral Guarantees
+
 - Remote clients accessing `https://n8n.homelab.vaylet.fr` connect to port 443 with a valid Let's Encrypt TLS certificate.
 - Unencrypted n8n HTTP traffic on container port 5678 is bound strictly to `127.0.0.1:5679` and is never exposed directly on physical or VPN network interfaces.
 - Incoming webhook triggers and REST API calls preserve original client headers (`X-Forwarded-For`, `X-Forwarded-Proto`).

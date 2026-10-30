@@ -11,6 +11,7 @@
 ## Clarifications
 
 ### Session 2026-08-12
+
 - Q: How should sensitive credentials and secret configuration data be managed and decrypted across target machines? → A: Declarative in-repo encryption using SOPS and Age host keys (Option A).
 - Q: How should system updates and configuration changes be deployed to remote targets such as the headless home server? → A: Local host execution via SSH session and the standardized local task runner (Option A).
 - Q: What networking and remote access model should be supported across managed devices? → A: Local LAN/direct SSH by default with optional mesh network overlay (Tailscale) module for remote interconnectivity (Option A).

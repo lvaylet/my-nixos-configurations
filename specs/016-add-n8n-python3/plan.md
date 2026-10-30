@@ -22,6 +22,7 @@ Add Python 3 on the `homelab` server and enable n8n to execute Python 3 scripts 
 **Language/Version**: Nix (Flakes, Nixpkgs unstable), Python 3 (`pkgs.python3` on host + Python 3.13 in `docker.io/n8nio/runners:latest`)
 
 **Primary Dependencies**:
+
 - `pkgs.python3` (NixOS host system package)
 - `virtualisation.oci-containers` (Podman backend configured in `modules/services/podman.nix`)
 - `docker.io/n8nio/n8n:latest` & `docker.io/n8nio/runners:latest` OCI container images
@@ -29,12 +30,14 @@ Add Python 3 on the `homelab` server and enable n8n to execute Python 3 scripts 
 - `flake-parts` (`github:hercules-ci/flake-parts`) & `import-tree` (`github:mightyiam/import-tree`)
 
 **Storage**:
+
 - Persistent host directory `/var/lib/n8n` preserved at `/persistent/var/lib/n8n` (`user = "1000"`, `group = "1000"`, `mode = "0750"`):
   - `/var/lib/n8n/database.sqlite` & `/var/lib/n8n/config` (existing workflows, credentials, encryption key)
   - `/var/lib/n8n/runners.env` (`0600`, auto-generated shared `N8N_RUNNERS_AUTH_TOKEN` loaded via `environmentFiles`)
 - Read-only Nix store file `n8n-task-runners.json` mounted at `/etc/n8n-task-runners.json:ro` in `n8n-runners`.
 
 **Testing**:
+
 - Formatting & static analysis: `just fmt` (`alejandra`), `just lint` (`statix`, `deadnix`).
 - Flake evaluation: `nix eval .#nixosConfigurations.homelab.config.system.build.toplevel.drvPath`.
 - Target regression checks: `desktop-pc` and `iso` toplevel evaluation.
@@ -46,16 +49,19 @@ Add Python 3 on the `homelab` server and enable n8n to execute Python 3 scripts 
 **Project Type**: Infrastructure as Code (Nix Flake, NixOS system configuration).
 
 **Performance Goals**:
+
 - Python 3 `Code` nodes processing standard workflow payloads complete within 2 seconds (`SC-002`).
 - Zero local compilation overhead by using pre-built upstream `docker.io/n8nio/runners:latest` and cached `pkgs.python3`.
 
 **Constraints**:
+
 - Strict Dendritic Pattern compliance: all n8n service and runner definitions remain encapsulated in `modules/services/n8n.nix`; `modules/hosts/homelab.nix` contains zero inline service logic.
 - Zero plaintext secrets in Git: `N8N_RUNNERS_AUTH_TOKEN` is generated at runtime in `/var/lib/n8n/runners.env`.
 - Internal-only broker networking: the task broker port (`5679` inside the `n8n` container) is only reachable on the internal Podman bridge network (`http://n8n:5679`) and never exposed externally.
 - Full `README.md` synchronization within the same branch (Principle VI) and dedicated branch/PR isolation (Principle VII).
 
 **Scale/Scope**:
+
 - 1 feature module updated: `modules/services/n8n.nix`.
 - 1 documentation file updated: `README.md`.
 

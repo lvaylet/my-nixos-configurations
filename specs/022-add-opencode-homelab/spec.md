@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Aide-moi à installer OpenCode v2 sur la machine `homelab`. Réutilise et mutualise la configuration d'OpenCode des autres machines. OpenCode devra être accessible dans un shell et aussi via un navigateur et exposé sur https://opencode.homelab.vaylet.fr"
+**Input**: User description: "Aide-moi à installer OpenCode v2 sur la machine `homelab`. Réutilise et mutualise la configuration d'OpenCode des autres machines. OpenCode devra être accessible dans un shell et aussi via un navigateur et exposé sur <https://opencode.homelab.vaylet.fr>"
 
 ## User Scenarios & Testing *(mandatory)*
 

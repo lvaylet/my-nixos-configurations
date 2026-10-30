@@ -174,6 +174,7 @@ in {
         deadnix
         just
         just-lsp
+        markdownlint-cli2
         nh
         nixd
         statix
@@ -294,6 +295,7 @@ in {
         deadnix
         just
         just-lsp
+        markdownlint-cli2
         nh
         nixd
         statix

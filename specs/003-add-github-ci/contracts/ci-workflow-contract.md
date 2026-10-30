@@ -13,6 +13,7 @@
 | **Cancel In Progress** | `true` | Instantly cancels superseded workflow runs |
 
 ### Trigger Definitions
+
 ```yaml
 on:
   pull_request:
@@ -31,6 +32,7 @@ on:
 ## 2. Job 1 Contract: `check` (Quality Gate)
 
 ### Requirements & Behavior
+
 - **Job ID**: `check`
 - **Display Name**: `Flake Check & Static Analysis`
 - **Runner**: `ubuntu-latest`
@@ -46,6 +48,7 @@ on:
 ## 3. Job 2 Contract: `build` (Matrix System Closures)
 
 ### Requirements & Behavior
+
 - **Job ID**: `build`
 - **Display Name**: `Build System (${{ matrix.target }})`
 - **Dependencies**: `needs: [check]`

@@ -70,9 +70,11 @@ just check
 
 1. **Populate Wallpapers**: Place one or more image files (`.png`, `.jpg`, `.webp`) into `assets/wallpapers/`.
 2. **Deploy Configuration**:
+
    ```sh
    just switch configuration="desktop-pc"
    ```
+
 3. **Verify Startup Randomization**:
    - Log out and log back in (or restart the desktop session).
    - Confirm Noctalia displays a wallpaper chosen randomly from `~/Pictures/wallpapers`.

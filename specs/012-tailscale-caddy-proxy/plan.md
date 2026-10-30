@@ -15,6 +15,7 @@ Implement secure remote access for internal homelab services (Home Assistant and
 **Language/Version**: Nix (Flakes, Nixpkgs unstable)
 
 **Primary Dependencies**:
+
 - Caddy reverse proxy (`services.caddy`)
 - Tailscale mesh networking daemon (`services.tailscale`)
 - Podman container engine (`virtualisation.oci-containers`)
@@ -22,11 +23,13 @@ Implement secure remote access for internal homelab services (Home Assistant and
 - Flake architecture (`github:hercules-ci/flake-parts`, `github:denful/import-tree`)
 
 **Storage**:
+
 - `/var/lib/caddy`: Persistent host directory containing Let's Encrypt TLS certificates, keys, and reverse proxy state, preserved under `/persistent/var/lib/caddy`.
 - `/var/lib/n8n`: Persistent storage for workflows, credentials, and SQLite database preserved under `/persistent/var/lib/n8n`.
 - `/var/lib/home-assistant`: Persistent configuration directory preserved under `/persistent/var/lib/home-assistant`.
 
 **Testing**:
+
 - Formatting & linting: `just fmt` (`alejandra`), `just lint` (`statix`, `deadnix`).
 - Flake evaluation: `nix eval .#nixosConfigurations.homelab.config.system.build.toplevel.drvPath`.
 - Target regression testing: `desktop-pc` and `iso` toplevel evaluation.
@@ -37,11 +40,13 @@ Implement secure remote access for internal homelab services (Home Assistant and
 **Project Type**: Infrastructure as Code (Nix Flake, NixOS system configuration).
 
 **Performance Goals**:
+
 - Dashboard load times under 3 seconds over Tailscale overlay connections.
 - Proxy routing overhead under 200 milliseconds.
 - Bi-directional WebSocket streaming without connection timeouts or dropouts.
 
 **Constraints**:
+
 - Strict Dendritic Pattern compliance: `modules/hosts/homelab.nix` must only assemble hardware and feature modules; zero inline service definitions.
 - Declarative state preservation: `/var/lib/caddy` must survive ephemeral tmpfs root reboots.
 - Zero plaintext secrets committed to version control.
@@ -49,6 +54,7 @@ Implement secure remote access for internal homelab services (Home Assistant and
 - No regressions on `desktop-pc` or `iso` targets.
 
 **Scale/Scope**:
+
 - 1 variable option added: `tailscaleDomain` in `modules/core/vars.nix`.
 - 4 service modules updated:
   - `modules/services/tailscale.nix` (`permitCertUid = "caddy"`)

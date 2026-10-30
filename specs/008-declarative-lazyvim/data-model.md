@@ -32,6 +32,7 @@ Represents the dendritic feature module managing text editors (Neovim/LazyVim, V
 | | `pkgs.curl`, `pkgs.unzip`, `pkgs.tar`, `pkgs.gzip` | Packages | Archiving utilities for downloading and unpacking plugins |
 
 #### Relationships
+
 - **Composed into**: `modules/hosts/desktop-pc.nix` via `config.flake.modules.desktop.editors`.
 - **References**: `modules/desktop/dotfiles/nvim` as source for `xdg.configFile."nvim"`.
 - **Replaces**: Legacy `nvf` NixOS module (`programs.nvf`) previously defined in `modules/desktop/editors.nix`.

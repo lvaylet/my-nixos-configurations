@@ -56,13 +56,16 @@ By omitting the host bind IP in `ports`, Podman binds TCP port `8081` to `0.0.0.
 ### Decision
 
 1. Bind the container port strictly to `127.0.0.1`:
+
    ```nix
    ports = [
      # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 443.
      "127.0.0.1:8081:80"
    ];
    ```
+
 2. Replace `8081` with `443` in `networking.firewall.allowedTCPPorts` (matching the exact convention in `modules/services/n8n.nix`, `modules/services/waha.nix`, and `modules/services/uptime-kuma.nix`):
+
    ```nix
    # Open HTTPS port in firewall.
    networking.firewall.allowedTCPPorts = [

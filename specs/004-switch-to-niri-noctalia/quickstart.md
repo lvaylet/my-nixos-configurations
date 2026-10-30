@@ -58,6 +58,7 @@ just test configuration="desktop-pc"
 ```
 
 **Expected Outcome**:
+
 - System services switch cleanly without error.
 - Greetd / tuigreet is initialized as the display greeter.
 - Prior COSMIC desktop services (`cosmic-session`, `cosmic-greeter`) are inactive.
@@ -85,10 +86,12 @@ Smooth Wayland compositor rendering at native refresh rate with responsive shell
 In WezTerm:
 
 1. Check interactive shell:
+
    ```fish
    echo $SHELL
    # Should report /run/current-system/sw/bin/fish or user fish path
    ```
+
 2. Type an intentional syntax error (e.g. `nonexistentcmd`) and observe immediate red syntax highlighting.
 3. Type a valid command (e.g. `git status`) and verify green highlighting and inline gray history autosuggestions.
 4. Verify Starship prompt displays Git branch and directory status.
@@ -103,16 +106,21 @@ Fish shell renders prompt in under 50ms with active autosuggestions and syntax h
 In WezTerm and Neovim:
 
 1. In WezTerm, print common programming comparison and arrow sequences:
+
    ```bash
    printf "!= == === <= >= -> => <=> /* */\n"
    ```
+
 2. Open a source file in Neovim:
+
    ```bash
    nvim test.nix
    ```
+
 3. Type ligature sequences (`!=`, `->`, `==`, `=>`).
 
 **Expected Outcome**:
+
 - Character sequences merge visually into single cohesive ligature glyphs.
 - Nerd Font icons in Neovim statusline (`lualine`) and file tree (`nvimTree`) display crisply with zero missing glyph boxes.
 

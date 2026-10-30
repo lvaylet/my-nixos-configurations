@@ -15,6 +15,7 @@ Migrate the entire NixOS configuration codebase to the **Dendritic Pattern** usi
 **Language/Version**: Nix (Flakes, Nixpkgs unstable)
 
 **Primary Dependencies**:
+
 - `flake-parts` (`github:hercules-ci/flake-parts`)
 - `import-tree` (`github:denful/import-tree`)
 - `home-manager` (`github:nix-community/home-manager`)
@@ -25,6 +26,7 @@ Migrate the entire NixOS configuration codebase to the **Dendritic Pattern** usi
 **Storage**: Declarative `/nix/store` immutable derivations, symlinked dotfiles under `~/.config/` via Home Manager.
 
 **Testing**:
+
 - Formatting & linting: `just fmt` (`alejandra`), `just lint` (`statix`, `deadnix`).
 - Hermetic pre-commit sandboxes: `just check` (`nix flake check`).
 - Target closure builds: `just build configuration="desktop-pc"`, `just build configuration="homelab"`, `just build-iso`.
@@ -35,10 +37,12 @@ Migrate the entire NixOS configuration codebase to the **Dendritic Pattern** usi
 **Project Type**: Infrastructure as Code (Nix Flake, NixOS modules, Home Manager modules).
 
 **Performance Goals**:
+
 - Flake evaluation duration within 10% of pre-migration baseline.
 - Automated feature discovery with zero perceptible evaluation overhead.
 
 **Constraints**:
+
 - Atomic migration across all targets with zero functional regression.
 - Adherence to repository constitution quality principles (I, III, IV, V).
 - Principle II architecture evolved to ratify the dendritic paradigm via formal constitution amendment (v2.0.0).

@@ -9,7 +9,7 @@
 **Input**: User description: "Help me fix this warning reported on every build:
 
 > Building NixOS configuration
-evaluation warning: laurent profile: `programs.ssh.matchBlocks` defined in `/nix/store/rhsxvv1380jmchb5p3a43d24mhlmp2ry-source/flake.nix' is deprecated. Use `programs.ssh.settings`."
+evaluation warning: laurent profile: `programs.ssh.matchBlocks` defined in `/nix/store/rhsxvv1380jmchb5p3a43d24mhlmp2ry-source/flake.nix' is deprecated. Use`programs.ssh.settings`."
 
 ## User Scenarios & Testing *(mandatory)*
 

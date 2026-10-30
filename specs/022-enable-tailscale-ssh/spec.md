@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Travaille sur l'Issue 37 : https://github.com/lvaylet/my-nixos-configurations/issues/37 — Enable Tailscale SSH for dynamic tailnet access without static key distribution"
+**Input**: User description: "Travaille sur l'Issue 37 : <https://github.com/lvaylet/my-nixos-configurations/issues/37> — Enable Tailscale SSH for dynamic tailnet access without static key distribution"
 
 ## User Scenarios & Testing *(mandatory)*
 

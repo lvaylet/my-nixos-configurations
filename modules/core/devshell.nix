@@ -15,6 +15,7 @@
         enabledPackages
         ++ (with pkgs; [
           just
+          markdownlint-cli2
           nh
         ]);
     };
