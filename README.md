@@ -756,6 +756,16 @@ The `desktop-pc` workstation and shared CLI/editor modules use the Arctic, bluis
 - **Code Editors**: Neovim/LazyVim (`gbprod/nord.nvim` with `colorscheme = "nord"`), VS Code (`arcticicestudio.nord-visual-studio-code`), and Zed (`nord` extension with `Nord` dark theme).
 - **Shell, Prompt & TUI Utilities**: Starship (`[palettes.nord]`), Fish syntax and pager colors, OpenCode TUI (`theme = "nord"`), Bat (`theme = "Nord"`), Fzf (`colors`), Yazi (`theme`), Btop (`color_theme = "nord"`), and Lazygit (`gui.theme`).
 
+### Dynamic Noctalia Wallpapers (`desktop-pc`)
+
+On `desktop-pc`, wallpapers are managed declaratively through the Git repository and rotated dynamically by Noctalia:
+
+- **Versioned Asset Directory**: Images are versioned in `assets/wallpapers/` (tracked via `.gitkeep`) and deployed to `~/Pictures/wallpapers` via Home Manager (`modules/desktop/session.nix`).
+- **Startup Randomization & Nord Fallback**: Noctalia is configured (`modules/desktop/dotfiles/noctalia.toml`) with `directory = "~/Pictures/wallpapers"`, `fill_mode = "crop"`, `fill_color = "#2e3440"` (Nord Polar Night fallback when the folder has no images), and `[wallpaper.automation]` (`order = "random"`, `interval_seconds = 86400`) to automatically select a random wallpaper on session startup without automatic mid-session timer disruptions.
+- **Niri Desktop Keybindings**:
+  - `Mod + Shift + W`: Picks and applies a new random wallpaper immediately (`noctalia msg wallpaper-random`).
+  - `Mod + Ctrl + W`: Toggles Noctalia's interactive graphical wallpaper picker panel (`noctalia msg panel-toggle wallpaper`).
+
 ### Unified Code Typography: FiraCode Nerd Font (`modules/desktop/fonts.nix`)
 
 Whenever source code or terminal text is displayed across the `desktop-pc` stack, **FiraCode Nerd Font** (`pkgs.nerd-fonts.fira-code`) is used with OpenType programming ligatures (`calt`, `clig`, `liga`) and Nerd Font v3 symbol glyphs enabled:
