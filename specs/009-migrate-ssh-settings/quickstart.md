@@ -27,6 +27,7 @@ nix eval .#nixosConfigurations.homelab.config.system.build.toplevel.drvPath
 ```
 
 **Expected Outcome**:
+
 - Both commands output valid `.drv` paths.
 - Stderr contains **zero** warnings regarding `programs.ssh.matchBlocks` or `programs.ssh.settings`.
 
@@ -42,7 +43,9 @@ nix eval --raw .#nixosConfigurations.desktop-pc.config.home-manager.users.lauren
 ```
 
 **Expected Outcome**:
+
 - Output contains the blocks:
+
   ```text
   Host homelab
     CheckHostIP no
@@ -50,6 +53,7 @@ nix eval --raw .#nixosConfigurations.desktop-pc.config.home-manager.users.lauren
     IdentityFile ~/.ssh/id_ed25519
     User laurent
   ```
+
 - The target hostname, user, identity file, and security options match the intended configuration.
 
 ---
@@ -67,6 +71,7 @@ just lint
 ```
 
 **Expected Outcome**:
+
 - `just fmt` passes cleanly with no formatting diff.
 - `just lint` completes with exit code 0 and zero warnings.
 
@@ -82,4 +87,5 @@ just check
 ```
 
 **Expected Outcome**:
+
 - All git-hooks checks pass with exit code 0.

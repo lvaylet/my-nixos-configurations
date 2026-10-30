@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Mets à jour la configuration de Niri dans @modules/desktop/dotfiles/niri/config.kdl pour reprendre un maximum de paramètres et de commentaires de la configuration par défaut dans https://github.com/niri-wm/niri/blob/main/resources/default-config.kdl. Conserve les spécificités de ma configuration, par exemple l'usage de Noctalia et WezTerm."
+**Input**: User description: "Mets à jour la configuration de Niri dans @modules/desktop/dotfiles/niri/config.kdl pour reprendre un maximum de paramètres et de commentaires de la configuration par défaut dans <https://github.com/niri-wm/niri/blob/main/resources/default-config.kdl>. Conserve les spécificités de ma configuration, par exemple l'usage de Noctalia et WezTerm."
 
 ## Clarifications
 

@@ -7,6 +7,7 @@
 ## Summary
 
 Implement declarative, reproducible, and interactive random wallpaper management for the Noctalia desktop shell on `desktop-pc`:
+
 1. **Versioned Wallpaper Assets & Home Manager Deployment**: Create and version `assets/wallpapers/` at repository root (tracked in Git via `.gitkeep`) and link it to `~/Pictures/wallpapers` in `modules/desktop/session.nix`.
 2. **Startup Randomization & Nord Fallback in Noctalia**: In `modules/desktop/dotfiles/noctalia.toml`, strip stale hardcoded `/nix/store/...` paths and configure `directory = "~/Pictures/wallpapers"`, Nord Polar Night fallback (`fill_color = "#2e3440"`), and startup automation (`order = "random"`, `recursive = true`, `interval_seconds = 86400`) so wallpapers rotate at login without unwanted mid-session timer disruptions.
 3. **Interactive Shortcuts in Niri**: In `modules/desktop/dotfiles/niri/config.kdl`, configure `Mod+Shift+W` to trigger `noctalia msg wallpaper-random` and `Mod+Ctrl+W` to toggle `noctalia msg panel-toggle wallpaper`.

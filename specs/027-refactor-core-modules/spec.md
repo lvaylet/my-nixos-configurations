@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Travaille sur https://github.com/lvaylet/my-nixos-configurations/issues/36. Avance de manière autonome sur les étapes "/speckit.plan", "/speckit.tasks" puis "/speckit.implement" si aucune intervention de ma part n'est nécessaire, par exemple pour clarifier ou analyser tes propositions. Après la phase d'implémentation, crée une Pull Request dédiée. Je la validerai manuellement."
+**Input**: User description: "Travaille sur <https://github.com/lvaylet/my-nixos-configurations/issues/36>. Avance de manière autonome sur les étapes "/speckit.plan", "/speckit.tasks" puis "/speckit.implement" si aucune intervention de ma part n'est nécessaire, par exemple pour clarifier ou analyser tes propositions. Après la phase d'implémentation, crée une Pull Request dédiée. Je la validerai manuellement."
 
 ## User Scenarios & Testing *(mandatory)*
 

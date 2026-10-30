@@ -7,6 +7,7 @@
 ## Summary
 
 Resolve GitHub Issue #36 by:
+
 1. Replacing the hardcoded `"laurent"` username in `modules/services/ssh.nix` with `vars.userName`.
 2. Decoupling bootloader configurations from `modules/core/base.nix` into modular core features (`core.limine` and `core.grub` in `modules/core/bootloader.nix`), enabling `core.limine` on `desktop-pc` and `core.grub` on `homelab` without `lib.mkForce` overrides.
 3. Deduplicating the ~42 Git shell aliases across NixOS and Darwin in `modules/core/base.nix` via shared `let` bindings (`systemdAliases`, `gitAliases`) and adopting native `programs.fish.shellAbbrs` on both platforms to replace ~45 lines of manual `complete -c` wrapper commands.

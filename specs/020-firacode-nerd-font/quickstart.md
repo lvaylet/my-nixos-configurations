@@ -30,6 +30,7 @@ nix eval .#nixosConfigurations.desktop-pc.config.home-manager.users.laurent.prog
 ```
 
 **Expected Outcome**:
+
 - `defaultFonts.monospace` returns `["FiraCode Nerd Font","FiraCode Nerd Font Mono"]`.
 - `ghostty.settings` includes `"font-family":"FiraCode Nerd Font"` and `"font-feature":["calt","clig","liga"]`.
 - `zed-editor.userSettings` includes `"buffer_font_family":"FiraCode Nerd Font"` and `"terminal":{"font_family":"FiraCode Nerd Font","font_size":12}`.
@@ -59,6 +60,7 @@ just switch configuration="desktop-pc"
 ```
 
 Verify `FiraCode Nerd Font` rendering across applications:
+
 1. **Fontconfig Monospace Default**: Run `fc-match monospace` and confirm it outputs `FiraCodeNerdFont-Regular.ttf: "FiraCode Nerd Font" "Regular"`.
 2. **VS Code & Zed**: Open a `.nix` or `.lua` file and the integrated terminal in both `code` and `zeditor`; confirm `FiraCode Nerd Font` ligatures (`!=`, `==`, `->`, `=>`) and Nerd Font icons render in both the editor buffer and integrated terminal.
 3. **WezTerm, Ghostty & Neovim**: Open `wezterm` and `ghostty`, launch `nvim`, `bat`, and `lazygit`, and confirm identical `FiraCode Nerd Font` ligatures and statusline/file-tree icons.

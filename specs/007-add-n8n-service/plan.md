@@ -15,6 +15,7 @@ Deploy a self-hosted n8n workflow automation service on the `homelab` host. Foll
 **Language/Version**: Nix (Flakes, Nixpkgs unstable)
 
 **Primary Dependencies**:
+
 - `virtualisation.oci-containers` (Podman backend)
 - `docker.io/n8nio/n8n:latest` OCI container image
 - `preservation` (`github:nix-community/preservation`)
@@ -24,6 +25,7 @@ Deploy a self-hosted n8n workflow automation service on the `homelab` host. Foll
 **Storage**: Persistent host directory `/var/lib/n8n` bound to container path `/home/node/.n8n`, backed by SQLite (`database.sqlite`), declaratively preserved at `/persistent/var/lib/n8n`.
 
 **Testing**:
+
 - Formatting & linting: `just fmt` (`alejandra`), `just lint` (`statix`, `deadnix`).
 - Flake evaluation: `nix eval .#nixosConfigurations.homelab.config.system.build.toplevel.drvPath`.
 - Regression evaluation: `desktop-pc` and `iso` toplevel evaluation.
@@ -34,17 +36,20 @@ Deploy a self-hosted n8n workflow automation service on the `homelab` host. Foll
 **Project Type**: Infrastructure as Code (Nix Flake, NixOS system configuration).
 
 **Performance Goals**:
+
 - Web UI and webhook response times under 3 seconds on local network.
 - Scheduled triggers execute within 1 second of scheduled time.
 - Low memory footprint utilizing embedded SQLite without external database overhead.
 
 **Constraints**:
+
 - Strict Dendritic Pattern compliance: `modules/hosts/homelab.nix` must only assemble hardware and feature modules, with zero inline service definitions.
 - Declarative state preservation: `/var/lib/n8n` must be preserved under `/persistent` to survive ephemeral tmpfs root reboots.
 - Zero plaintext secrets committed to version control.
 - No regressions on `desktop-pc` or `iso` targets.
 
 **Scale/Scope**:
+
 - 1 new feature module: `modules/services/n8n.nix`.
 - 1 host definition updated: `modules/hosts/homelab.nix`.
 

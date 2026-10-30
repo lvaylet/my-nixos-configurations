@@ -27,6 +27,7 @@ just lint
 ```
 
 **Expected Outcome**:
+
 - All files format cleanly without changes needed after `just fmt`.
 - `deadnix` and `statix check` complete with exit code 0 and zero warnings.
 
@@ -48,6 +49,7 @@ nix eval .#nixosConfigurations.iso.config.system.build.toplevel.drvPath
 ```
 
 **Expected Outcome**:
+
 - All three commands succeed, returning valid `.drv` store paths without evaluation errors.
 
 ---
@@ -71,6 +73,7 @@ nix eval .#nixosConfigurations.homelab.config.disko.devices.disk.main.content.pa
 ```
 
 **Expected Outcome**:
+
 - Root filesystem is `tmpfs`.
 - `/persistent` and `/nix` are mounted as btrfs subvolumes.
 - Swap partition is configured with `4G`.
@@ -90,6 +93,7 @@ nix eval --raw .#nixosConfigurations.homelab.config.preservation.preserveAt."/pe
 ```
 
 **Expected Outcome**:
+
 - Returns the full list of persistent directories including `/var/lib/containers`, `/var/lib/jellyfin`, `/var/lib/filebrowser`, `/data/downloads`, and `/data/media`.
 
 ---
@@ -125,6 +129,7 @@ nix eval .#nixosConfigurations.homelab.config.services.adguardhome.enable
 ```
 
 **Expected Outcome**:
+
 - All source repository services evaluate to `true` with their configured container images or native service options.
 - Legacy services like `adguardhome` evaluate to `false`.
 
@@ -139,4 +144,5 @@ just check
 ```
 
 **Expected Outcome**:
+
 - All git hooks and flake check derivations succeed with exit code 0.

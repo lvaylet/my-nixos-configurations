@@ -27,7 +27,8 @@ homeManager = _: {
 };
 ```
 
-### Invariants:
+### Invariants
+
 1. `programs.ssh.matchBlocks` MUST NOT be declared or referenced.
 2. `programs.ssh.enableDefaultConfig` MUST remain `false`.
 3. Keys within `programs.ssh.settings` MUST be bare host alias strings.
@@ -47,7 +48,8 @@ Host homelab
   User laurent
 ```
 
-### Invariants:
+### Invariants
+
 1. **Header Format**: `Host <alias>` opens each block.
 2. **Indentation**: Directives indented by two spaces (`  `).
 3. **Boolean Rendering**: `CheckHostIP = false` renders as `CheckHostIP no`.
@@ -58,9 +60,10 @@ Host homelab
 ## 3. Evaluation Diagnostics Contract
 
 Running any flake evaluation command:
+
 - `nix eval .#nixosConfigurations.desktop-pc.config.system.build.toplevel.drvPath`
 - `nix flake check`
 - `just check`
 
 MUST NOT produce stderr matching:
-`evaluation warning: .* `programs.ssh.matchBlocks` .* is deprecated. Use `programs.ssh.settings`.`
+`evaluation warning: .*`programs.ssh.matchBlocks` .* is deprecated. Use `programs.ssh.settings`.`

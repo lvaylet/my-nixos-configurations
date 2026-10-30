@@ -9,6 +9,7 @@ This document consolidates architectural decisions, rationale, best practices, a
 ## 1. Orchestration Engine & Module Auto-Discovery
 
 ### Decision
+
 Adopt **`flake-parts`** (`github:hercules-ci/flake-parts`) as the top-level module system framework paired with **`import-tree`** (`github:denful/import-tree`) to automatically discover and evaluate all modules within `modules/`.
 
 ```nix
@@ -46,12 +47,14 @@ Adopt **`flake-parts`** (`github:hercules-ci/flake-parts`) as the top-level modu
 ```
 
 ### Rationale
+
 - **Community Reference Standard**: `flake-parts` combined with `import-tree` is the established, battle-tested standard for the Dendritic Pattern in the Nix ecosystem (pioneered by Shahar "Dawn" Or, Pol Dellaiera, and Victor Borja).
 - **Minimal Root Flake**: `flake.nix` becomes a declarative, 30-line entrypoint that never needs modification when adding new features or machine configurations.
 - **Unified Class Evaluation**: Every non-entrypoint file in `modules/` is evaluated as a top-level `flake-parts` module, giving it direct access to `inputs`, `self`, `config`, and `pkgs`.
 - **Built-in Multi-System Support**: `flake-parts` natively provides `perSystem` outputs (`checks`, `formatter`, `devShells`), eliminating manual `forAllSystems` helper boilerplate.
 
 ### Alternatives Considered
+
 - **`vic/den` Framework**: Explored by the community for aspect-oriented programming. While conceptually powerful, Den introduces a higher learning curve, custom schema layers (`den.schema`, `den.aspects`), and mutual-provider routing complexity between hosts and users. Rejected in favor of the cleaner, standard `flake-parts` approach.
 - **Pure `lib.evalModules` without `flake-parts`**: Feasible but requires re-implementing multi-system dispatch, output schemas, and CLI compatibility from scratch. Rejected due to unnecessary maintenance overhead.
 
@@ -60,6 +63,7 @@ Adopt **`flake-parts`** (`github:hercules-ci/flake-parts`) as the top-level modu
 ## 2. Directory Hierarchy & Domain Grouping
 
 ### Decision
+
 Organize the entire codebase under a unified `modules/` tree, segmented into clear functional domains:
 
 ```text
@@ -104,11 +108,13 @@ modules/
 ```
 
 ### Rationale
+
 - **Feature Colocation**: Eliminates the artificial split between `modules/nixos/` and `modules/home-manager/`.
 - **Single Traversal Root**: `import-tree ./modules` traverses the entire repository structure seamlessly.
 - **Domain Cohesion**: Files are organized by their practical business capability (desktop, services, core, hosts).
 
 ### Alternatives Considered
+
 - **Flat `modules/*.nix` layout**: Over 40 files in a single flat directory creates navigation clutter. Domain grouping is significantly cleaner.
 - **Separate `features/` and `hosts/` roots**: Requires multiple `import-tree` invocations in `flake.nix`. A single `modules/` root is more idiomatic.
 
@@ -117,6 +123,7 @@ modules/
 ## 3. Feature Modeling & Host Composition Pattern
 
 ### Decision
+
 Model features as modular building blocks aggregated under `flake.modules.nixos` and `flake.modules.homeManager` (or combined host-composition helpers):
 
 ```nix
@@ -168,6 +175,7 @@ in
 ```
 
 ### Rationale
+
 - **Inversion of Control**: Host definitions simply declare their role by enumerating feature names.
 - **Automatic Home Manager Embedding**: The `mkHost` helper automatically injects `home-manager.nixosModules.home-manager` and maps user modules into `home-manager.users.${config.flake.vars.user}`.
 - **Zero Duplication**: Feature logic is defined exactly once.
@@ -177,6 +185,7 @@ in
 ## 4. Shared Variables & Identity Management
 
 ### Decision
+
 Centralize repository identity and configuration options in `modules/core/vars.nix` as a `flake-parts` module option:
 
 ```nix
@@ -203,6 +212,7 @@ Centralize repository identity and configuration options in `modules/core/vars.n
 All other modules can directly reference `config.flake.vars` without parameter plumbing. For compatibility with lower-level module functions that take `vars` as an argument, `mkHost` passes `vars = config.flake.vars` into `specialArgs` and `extraSpecialArgs`.
 
 ### Rationale
+
 - **Type Safety**: Nixpkgs module options enforce types and defaults.
 - **Eliminates `vars.nix` File Imports**: Replaces imperative `import ./vars.nix` calls across modules with declarative `config.flake.vars`.
 
@@ -211,7 +221,9 @@ All other modules can directly reference `config.flake.vars` without parameter p
 ## 5. Migration Strategy & Operational Continuity
 
 ### Decision
+
 Execute an **atomic conversion**:
+
 1. Add `flake-parts` and `denful/import-tree` to `flake.nix`.
 2. Construct the new `modules/` tree (`core/`, `desktop/`, `services/`, `hosts/`).
 3. Port all NixOS and Home Manager logic from legacy folders into the new domain modules.
@@ -220,5 +232,6 @@ Execute an **atomic conversion**:
 6. Validate with `just check`, `just lint`, `just fmt`, and closure dry-runs.
 
 ### Rationale
+
 - Prevents split-brain architectures where two conflicting module systems coexist.
 - Guarantees immediate verification of the complete target closure graph.

@@ -20,6 +20,7 @@ just --list
 ```
 
 **Expected Outcome**:
+
 - `(re)build` group displays `boot`, `build`, `build-iso`, `install`, `switch`, and `test`.
 - Zero occurrences of `deploy-homelab`, `test-homelab`, `install-homelab`, `build-darwin`, `test-darwin`, or `switch-darwin`.
 
@@ -47,6 +48,7 @@ just --dry-run switch macbook-air-m4-15
 ```
 
 **Expected Outcome**:
+
 - Every command parses and interpolates cleanly with exit code 0.
 
 ### Scenario 3: Cross-OS Guard Verification
@@ -59,6 +61,7 @@ just test macbook-air-m4-15
 ```
 
 **Expected Outcome**:
+
 - Exits with non-zero status and prints a clear error message explaining the platform constraint.
 
 ### Scenario 4: Repository Quality Gates & Documentation Sync
@@ -72,4 +75,5 @@ just check
 ```
 
 **Expected Outcome**:
+
 - `just fmt`, `just lint`, and `just check` all exit with code `0`.

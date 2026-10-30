@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Corrige les bugs sur le service FileBrowser Quantum en travaillant sur https://github.com/lvaylet/my-nixos-configurations/issues/30"
+**Input**: User description: "Corrige les bugs sur le service FileBrowser Quantum en travaillant sur <https://github.com/lvaylet/my-nixos-configurations/issues/30>"
 
 ## User Scenarios & Testing *(mandatory)*
 

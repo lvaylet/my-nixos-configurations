@@ -3,6 +3,7 @@
 ## 1. Desktop Session & Window Management Contract (`modules/desktop/session.nix`, `modules/core/base.nix`)
 
 ### 1.1 Noctalia (`modules/desktop/dotfiles/noctalia.toml`)
+
 - `[theme]` MUST specify:
   - `source = "builtin"`
   - `builtin = "Nord"`
@@ -11,6 +12,7 @@
   - `builtin_ids = []` (preventing runtime mutations of read-only Home Manager symlinks)
 
 ### 1.2 Niri (`modules/desktop/dotfiles/niri/config.kdl`)
+
 - `layout.focus-ring` MUST specify:
   - `active-color "#88c0d0"`
   - `inactive-color "#4c566a"`
@@ -20,6 +22,7 @@
   - `urgent-color "#bf616a"`
 
 ### 1.3 Tuigreet (`modules/desktop/session.nix`) & Limine (`modules/core/base.nix`)
+
 - `services.greetd.settings.default_session.command` MUST include `--theme 'border=cyan;text=white;prompt=cyan;time=cyan;action=blue;button=cyan;container=black;input=white'`.
 - `boot.loader.limine.style.wallpapers` MUST NOT contain `catppuccin-macchiato` or `nineish-catppuccin-macchiato`.
 
@@ -28,10 +31,12 @@
 ## 2. Terminal Emulators & Code Editors Contract (`modules/desktop/terminal.nix`, `modules/desktop/editors.nix`, `modules/core/dotfiles/nvim/`)
 
 ### 2.1 Terminals
+
 - **WezTerm** (`modules/desktop/terminal.nix`): `config.color_scheme = 'nord'`.
 - **Ghostty** (`modules/desktop/apps.nix`): `programs.ghostty.settings.theme = "Nord"`.
 
 ### 2.2 Editors
+
 - **VS Code** (`modules/desktop/editors.nix`): `arcticicestudio.nord-visual-studio-code` in `extensions` and `"workbench.colorTheme" = "Nord"` in `userSettings`.
 - **Neovim** (`modules/core/dotfiles/nvim/`):
   - `lua/plugins/colorscheme.lua` MUST declare `"gbprod/nord.nvim"` and configure `"LazyVim/LazyVim"` with `opts = { colorscheme = "nord" }`.

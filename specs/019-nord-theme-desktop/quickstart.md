@@ -63,6 +63,7 @@ just switch configuration="desktop-pc"
 ```
 
 Verify the Nord theme across stack components:
+
 1. **Noctalia & Niri**: Panels, launcher (`Mod+D`), control center (`Mod+N`), and window focus rings (`#88C0D0` active, `#4C566A` inactive) display in Nord colors.
 2. **Terminals**: Launch `wezterm` and `ghostty`; confirm `#2E3440` Polar Night background and Nord ANSI palette.
 3. **Editors**: Launch `code`, `nvim`, and `zeditor`; confirm all three load the Nord colorscheme automatically.

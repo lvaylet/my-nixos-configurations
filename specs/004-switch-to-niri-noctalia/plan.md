@@ -15,6 +15,7 @@ Migrate the primary workstation (`desktop-pc`) from the COSMIC desktop environme
 **Language/Version**: Nix (Flakes, Nixpkgs unstable), Lua 5.4 (WezTerm configuration), Fish shell script, KDL (Niri configuration), TOML (Noctalia configuration)
 
 **Primary Dependencies**:
+
 - NixOS `programs.niri` (Wayland compositor)
 - Noctalia (`github:noctalia-dev/noctalia` via Flake input)
 - `greetd` + `tuigreet` (Wayland KMS login greeter)
@@ -26,6 +27,7 @@ Migrate the primary workstation (`desktop-pc`) from the COSMIC desktop environme
 **Storage**: Declarative `/nix/store` immutable derivations, symlinked user configuration files under `~/.config/` via Home Manager.
 
 **Testing**:
+
 - Local static analysis and formatting: `just fmt`, `just lint` (`statix`, `deadnix`)
 - Pre-commit sandbox checks: `just check` (`nix flake check`)
 - Top-level closure build dry-run: `nix build .#nixosConfigurations.desktop-pc.config.system.build.toplevel --no-link`
@@ -36,11 +38,13 @@ Migrate the primary workstation (`desktop-pc`) from the COSMIC desktop environme
 **Project Type**: Declarative NixOS system and Home Manager user configuration.
 
 **Performance Goals**:
+
 - Graphical session boot to responsive interactive state in < 5 seconds.
 - Interactive Fish terminal prompt rendering in < 50 milliseconds.
 - Wayland compositor animation and window scrolling at native display refresh rate (60+ FPS) without stutter.
 
 **Constraints**:
+
 - Absolute adherence to project constitution (Principles I through V).
 - Zero plaintext secrets committed.
 - Clean retirement of all COSMIC services (zero orphan background daemons).
@@ -104,6 +108,7 @@ modules/home-manager/
 
 **Structure Decision**:
 Follows the repository's established architecture (Constitution Article II):
+
 - Machine entrypoint (`machines/desktop-pc/configuration.nix`) remains an assembler.
 - Reusable system services reside in `modules/nixos/`.
 - User tools, shell, and typography reside in `modules/home-manager/`.

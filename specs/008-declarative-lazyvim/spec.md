@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Implémente une version déclarative de LazyVim compatible avec NixOS. Installe toutes les dépendances listées dans la section Getting Started de https://www.lazyvim.org/ et réplique la configuration de base de https://github.com/LazyVim/starter"
+**Input**: User description: "Implémente une version déclarative de LazyVim compatible avec NixOS. Installe toutes les dépendances listées dans la section Getting Started de <https://www.lazyvim.org/> et réplique la configuration de base de <https://github.com/LazyVim/starter>"
 
 ## User Scenarios & Testing *(mandatory)*
 

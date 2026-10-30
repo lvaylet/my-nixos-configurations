@@ -15,6 +15,7 @@ Migrate the user SSH client configuration in `modules/services/ssh.nix` from the
 **Language/Version**: Nix (Nixpkgs unstable, Flakes)
 
 **Primary Dependencies**:
+
 - `home-manager` (`github:nix-community/home-manager`)
 - `flake-parts` (`github:hercules-ci/flake-parts`)
 - `import-tree` (`github:denful/import-tree`)
@@ -23,6 +24,7 @@ Migrate the user SSH client configuration in `modules/services/ssh.nix` from the
 **Storage**: Declarative user configuration symlinked to `~/.ssh/config` via Home Manager.
 
 **Testing**:
+
 - Evaluation diagnostics verification: `nix eval .#nixosConfigurations.desktop-pc.config.system.build.toplevel.drvPath` (ensuring 0 warnings emitted).
 - Configuration content diffing: `nix eval --raw .#nixosConfigurations.desktop-pc.config.home-manager.users.laurent.home.file.".ssh/config".text`.
 - Formatting & static linting: `just fmt` (`alejandra`), `just lint` (`statix`, `deadnix`).
@@ -33,10 +35,12 @@ Migrate the user SSH client configuration in `modules/services/ssh.nix` from the
 **Project Type**: Infrastructure as Code (Nix Flakes, Home Manager module).
 
 **Performance Goals**:
+
 - 0 evaluation duration increase.
 - 100% elimination of evaluation warnings on all build and check operations.
 
 **Constraints**:
+
 - Strict functional parity: identical IP addresses, usernames, identity files, and security options rendered to `~/.ssh/config`.
 - Adherence to repository constitution quality gates (I, II, III, IV, V).
 - Zero secrets or private keys committed.

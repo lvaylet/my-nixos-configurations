@@ -58,6 +58,7 @@ logs podman-n8n-runners -n 30
 ```
 
 **Expected Outcome**:
+
 - `python3 --version` prints `Python 3.x.y`.
 - Both `podman-n8n.service` and `podman-n8n-runners.service` report `active (running)`.
 - `podman-n8n-runners` logs confirm that the JavaScript and Python task runners registered successfully with the task broker at `http://n8n:5679`.
@@ -97,5 +98,6 @@ logs podman-n8n-runners -n 30
 4. Click **Test step** (or **Execute step**).
 
 **Expected Outcome**:
+
 - The node executes within 2 seconds without any `"Python 3 is missing from this system"` error (`SC-001`, `SC-002`).
 - The output JSON item contains `"status": "Homelab-Python-3-Runner-OK"`, `"python_version": "3.13.x"`, and a `"timestamp"` matching `Europe/Paris` local time.

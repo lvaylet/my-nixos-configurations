@@ -55,7 +55,7 @@ As a contributor or operator reading `README.md`, I want all `just` command refe
 
 **Why this priority**: Required by Constitutional Principle VI (*Living Documentation & Dual-Shell Parity*) to prevent documentation drift across `README.md`.
 
-**Independent Test**: Can be independently tested by searching `README.md` for `just ` commands and confirming zero references remain to removed recipes (`deploy-homelab`, `test-homelab`, `install-homelab`, `build-darwin`, `test-darwin`, `switch-darwin`) and that all Bash/Fish code blocks are accurate.
+**Independent Test**: Can be independently tested by searching `README.md` for `just` commands and confirming zero references remain to removed recipes (`deploy-homelab`, `test-homelab`, `install-homelab`, `build-darwin`, `test-darwin`, `switch-darwin`) and that all Bash/Fish code blocks are accurate.
 
 **Acceptance Scenarios**:
 

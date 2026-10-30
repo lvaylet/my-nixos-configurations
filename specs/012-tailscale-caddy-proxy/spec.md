@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Je souhaite exposer les services comme Home Assistant et n8n de manière sécurisée à l'extérieur du réseau local de mon domicile grâce à Tailscale, avec HTTPS géré par Caddy. La documentation officielle de Tailscale sur NixOS explique comment combiner Tailscale et Caddy : https://wiki.nixos.org/wiki/Tailscale#Configuring_TLS"
+**Input**: User description: "Je souhaite exposer les services comme Home Assistant et n8n de manière sécurisée à l'extérieur du réseau local de mon domicile grâce à Tailscale, avec HTTPS géré par Caddy. La documentation officielle de Tailscale sur NixOS explique comment combiner Tailscale et Caddy : <https://wiki.nixos.org/wiki/Tailscale#Configuring_TLS>"
 
 ## User Scenarios & Testing *(mandatory)*
 

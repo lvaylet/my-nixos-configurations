@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Travaille sur https://github.com/lvaylet/my-nixos-configurations/issues/29 pour persister les paramètres de Tailscale."
+**Input**: User description: "Travaille sur <https://github.com/lvaylet/my-nixos-configurations/issues/29> pour persister les paramètres de Tailscale."
 
 ## User Scenarios & Testing *(mandatory)*
 

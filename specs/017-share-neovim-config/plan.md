@@ -7,6 +7,7 @@
 ## Summary
 
 Extract the declarative LazyVim Neovim setup from the desktop-only Home Manager module (`modules/desktop/editors.nix`) into a shared system-level NixOS module (`modules/core/neovim.nix` defining `flake.modules.core.neovim.nixos`) so that both `desktop-pc` and `homelab` share the exact same Neovim configuration without requiring Home Manager on `homelab`. Specifically:
+
 1. Move `modules/desktop/dotfiles/nvim/` to `modules/core/dotfiles/nvim/` to colocate the LazyVim starter files with `modules/core/neovim.nix`.
 2. Configure NixOS's native `programs.neovim` (`enable = true`, `defaultEditor = true`, `viAlias = true`, `vimAlias = true`, `withNodeJs = true`, `withPython3 = true`) and install all cross-host LazyVim runtime dependencies (`git`, `gcc`, `gnumake`, `ripgrep`, `fd`, `tree-sitter`, `curl`, `unzip`, `gnutar`, `gzip`) via `environment.systemPackages`.
 3. Create and update the `/home/${vars.userName}/.config/nvim` symlink to the Nix store via `systemd.tmpfiles.rules` (`L+`), removing the dependency on Home Manager's `xdg.configFile`.
@@ -20,6 +21,7 @@ Extract the declarative LazyVim Neovim setup from the desktop-only Home Manager 
 **Language/Version**: Nix (Flakes, Nixpkgs unstable), Lua (LuaJIT via Neovim >= 0.9.0)
 
 **Primary Dependencies**:
+
 - NixOS native `programs.neovim` module (`enable`, `defaultEditor`, `viAlias`, `vimAlias`, `withNodeJs`, `withPython3`)
 - `systemd.tmpfiles.rules` (`d` and `L+` directives for `~/.config/nvim` store symlink)
 - `pkgs.neovim` (>= 0.9.0 with LuaJIT)
@@ -28,11 +30,13 @@ Extract the declarative LazyVim Neovim setup from the desktop-only Home Manager 
 - `preservation` NixOS module (`modules/core/preservation.nix` for `homelab` state persistence)
 
 **Storage**:
+
 - Immutable declarative configuration: `/home/${vars.userName}/.config/nvim` symlinked to `${./dotfiles/nvim}` in `/nix/store` via `systemd.tmpfiles.rules`
 - Persisted user runtime data (`homelab` via `/persistent/home/${vars.userName}`): `~/.local/share/nvim` (LazyVim plugins, `lazy-lock.json`, Tree-sitter compiled parsers) and `~/.local/state/nvim` (undo history, ShaDa, sessions)
 - Transient cache: `~/.cache/nvim/`
 
 **Testing**:
+
 - Formatting & static analysis: `just fmt` (`alejandra`), `just lint` (`statix check`, `deadnix`)
 - Host evaluation checks:
   - `nix eval .#nixosConfigurations.desktop-pc.config.system.build.toplevel.drvPath`
@@ -45,16 +49,19 @@ Extract the declarative LazyVim Neovim setup from the desktop-only Home Manager 
 **Project Type**: Infrastructure as Code / NixOS Multi-Host Configuration (Nix Flakes, `flake-parts`, `import-tree`)
 
 **Performance Goals**:
+
 - Editor startup to interactive LazyVim dashboard in < 1.0 second on both `desktop-pc` and `homelab`
 - Zero plugin re-downloads or Tree-sitter parser recompilations across `homelab` reboots
 
 **Constraints**:
+
 - `homelab` MUST retain `enableHomeManager = false`
 - Strict Dendritic Pattern compliance: `modules/core/neovim.nix` discovered automatically via `import-tree ./modules`
 - Zero duplication of Neovim Lua dotfiles across hosts
 - `README.md` synchronized in the same branch with dual Bash/Fish command parity where applicable
 
 **Scale/Scope**:
+
 - 1 new module: `modules/core/neovim.nix`
 - 1 relocated dotfiles tree: `modules/desktop/dotfiles/nvim/` -> `modules/core/dotfiles/nvim/` (7 files)
 - 5 updated modules: `modules/core/base.nix`, `modules/core/preservation.nix`, `modules/desktop/editors.nix`, `modules/hosts/desktop-pc.nix`, `modules/hosts/homelab.nix`
@@ -124,6 +131,7 @@ README.md                               # Modified: reflect `core.neovim` and ho
 ```
 
 **Structure Decision**:
+
 - Moving `dotfiles/nvim` from `modules/desktop/dotfiles/nvim` to `modules/core/dotfiles/nvim` colocates the shared LazyVim starter files directly with `modules/core/neovim.nix` using relative path `${./dotfiles/nvim}`, adhering strictly to Constitution Principle II (Dendritic Modularity).
 - `modules/desktop/editors.nix` remains focused on the graphical desktop session (`wl-clipboard`, VS Code, Zed).
 

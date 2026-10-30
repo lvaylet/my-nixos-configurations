@@ -4,9 +4,11 @@
 
 - The repository root MUST maintain an `assets/wallpapers/` directory tracked in Git containing `.gitkeep`.
 - `modules/desktop/session.nix` (`homeManager` configuration for `desktop-pc`) MUST declare:
+
   ```nix
   home.file."Pictures/wallpapers".source = ../../assets/wallpapers;
   ```
+
 - Evaluated `nixosConfigurations.desktop-pc.config.home-manager.users.laurent.home.file."Pictures/wallpapers".source` MUST point to the Nix store derivation containing `assets/wallpapers`.
 
 ---
@@ -18,6 +20,7 @@
   - `[wallpaper.last]`
   - Any reference to `/nix/store/`
 - `modules/desktop/dotfiles/noctalia.toml` MUST declare:
+
   ```toml
   [wallpaper]
   directory = "~/Pictures/wallpapers"
@@ -31,6 +34,7 @@
   order = "random"
   recursive = true
   ```
+
 - `fill_color` MUST match Nord0 Polar Night (`#2e3440`).
 - `directory` MUST reference `~/Pictures/wallpapers`.
 
