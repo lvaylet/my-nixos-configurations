@@ -216,6 +216,16 @@ build-iso:
 fmt:
   nix fmt .
 
+# lint Markdown files with markdownlint-cli2 (excluding .agents)
+[group('dev-utils')]
+lint-md:
+  markdownlint-cli2
+
+# fix Markdown files with markdownlint-cli2 (excluding .agents)
+[group('dev-utils')]
+fix-md:
+  markdownlint-cli2 --fix
+
 # run linters
 [group('dev-utils')]
 lint:
@@ -227,6 +237,7 @@ lint:
 fix:
   deadnix --edit
   statix fix
+  markdownlint-cli2 --fix
 
 ###################################
 # Flake Management

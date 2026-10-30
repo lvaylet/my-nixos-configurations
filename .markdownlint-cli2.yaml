@@ -1,0 +1,13 @@
+# Declarative markdownlint-cli2 configuration for my-nixos-configurations
+globs:
+  - "**/*.md"
+
+ignores:
+  - ".agents/**"
+  - ".direnv/**"
+
+config:
+  default: true
+  MD013: false
+  MD024:
+    siblings_only: true
