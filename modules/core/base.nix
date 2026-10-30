@@ -239,10 +239,18 @@ in {
       # Allow unfree packages.
       nixpkgs.config.allowUnfree = true;
 
+      # Disable nix-darwin's management of the Nix installation: on this host
+      # the Nix installation is managed by the Determinate Nix Installer, which
+      # runs its own daemon and conflicts with nix-darwin's native Nix
+      # management. See the `nix.enable` option documentation for details.
+      nix.enable = false;
+
       # Configure garbage collection and store settings.
+      # Note: `nix.gc.automatic` requires `nix.enable`, which is now disabled;
+      # garbage collection is handled by the Determinate Nix daemon instead.
       nix = {
         gc = {
-          automatic = true;
+          automatic = false;
           interval = {
             Weekday = 0;
             Hour = 0;
