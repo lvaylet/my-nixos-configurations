@@ -24,7 +24,10 @@
           trufflehog.enable = true;
 
           # Misc
-          check-added-large-files.enable = true;
+          check-added-large-files = {
+            enable = true;
+            excludes = ["^assets/wallpapers/"];
+          };
           check-case-conflicts.enable = true;
           check-executables-have-shebangs.enable = true;
           check-shebang-scripts-are-executable.enable = true;

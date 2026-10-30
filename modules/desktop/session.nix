@@ -34,6 +34,10 @@
       # ---
       xdg.configFile."niri/config.kdl".source = ./dotfiles/niri/config.kdl;
 
+      # Wallpapers directory versioned in the repository.
+      # ---
+      home.file."Pictures/wallpapers".source = ../../assets/wallpapers;
+
       # Noctalia native Wayland desktop shell user configuration.
       # Reference: https://github.com/noctalia-dev/noctalia
       # ---

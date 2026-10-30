@@ -374,6 +374,8 @@ binds {
     Mod+Space  hotkey-overlay-title="Run an Application: noctalia launcher" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+D      hotkey-overlay-title="Run an Application: noctalia launcher" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+N      hotkey-overlay-title="Toggle Control Center: noctalia" { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+    Mod+Shift+W hotkey-overlay-title="Random Wallpaper: noctalia" { spawn "noctalia" "msg" "wallpaper-random"; }
+    Mod+Ctrl+W hotkey-overlay-title="Wallpaper Picker: noctalia" { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: noctalia" { spawn "noctalia" "msg" "session" "lock"; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.

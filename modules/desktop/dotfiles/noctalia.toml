@@ -52,8 +52,14 @@ source = "builtin"
     [theme.templates]
     builtin_ids = []
 
-[wallpaper.default]
-path = "/nix/store/vwrdyyaacmsjk1ivswzmaayya9yqkkb8-noctalia-5.1.0/share/noctalia/assets/noctalia-wallpaper.png"
+[wallpaper]
+directory = "~/Pictures/wallpapers"
+enabled = true
+fill_color = "#2e3440"
+fill_mode = "crop"
 
-[wallpaper.last]
-path = "/nix/store/vwrdyyaacmsjk1ivswzmaayya9yqkkb8-noctalia-5.1.0/share/noctalia/assets/noctalia-wallpaper.png"
+[wallpaper.automation]
+enabled = true
+interval_seconds = 86400
+order = "random"
+recursive = true
