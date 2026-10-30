@@ -19,6 +19,11 @@ ignores:
 
 config:
   default: true
+  MD013: false
+  MD024:
+    siblings_only: true
+  MD033: false
+  MD060: false
 ```
 
 ---
@@ -29,7 +34,7 @@ config:
 | --- | --- | --- |
 | **File Matching** | `globs: ["**/*.md"]` | Matches all Markdown documentation across the entire repository tree. |
 | **Directory Exemption** | `ignores: [".agents/**", ".direnv/**", ".opencode/**"]` | Strictly ignores the `.agents` and `.opencode` subfolders and all their nested files during discovery and linting passes. |
-| **Rule Baseline** | `config.default: true` | Applies official standard markdownlint rules. |
+| **Rule Baseline** | `config.default: true` | Applies official standard markdownlint rules with `MD013`, `MD033`, and `MD060` disabled, and `MD024` set to `siblings_only`. |
 
 ---
 
