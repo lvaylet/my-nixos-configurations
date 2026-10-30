@@ -46,11 +46,13 @@ No inline service logic, port definitions, or proxy directives are permitted in 
 ## 2. Living Documentation Contract (`README.md`)
 
 According to Constitution Principle VI:
+
 - `README.md` MUST be updated within the same branch whenever a service is added.
 - The service tables MUST be updated to include `code-server`.
 - All operational shell commands MUST provide explicit variants for both **Bash** and **Fish**.
 
 ### 2.1 Hosted Services Table Update
+
 The service summary table in `README.md` must include:
 
 | Service | Purpose | Upstream / Package | Storage / Persistence |
@@ -58,6 +60,7 @@ The service summary table in `README.md` must include:
 | **Code-Server** | Web-based code editor & remote IDE | Native NixOS (`services.code-server`) | Persistent extensions & settings in `~/.local/share/code-server` and `~/.config/code-server` |
 
 ### 2.2 Reverse Proxy Endpoints Table Update
+
 The Caddy endpoints table in `README.md` must include:
 
 | Service | Internal Domain | Target (LAN/Loopback) | Direct LAN Fallback |
@@ -65,9 +68,11 @@ The Caddy endpoints table in `README.md` must include:
 | **Code-Server** | `https://code.homelab.vaylet.fr` | `127.0.0.1:4444` | N/A (loopback bound) |
 
 ### 2.3 Operational Instructions Update
+
 A dedicated section detailing how to access and manage the service must be added to `README.md`, including dual-shell commands for testing and deployment:
 
 #### Bash
+
 ```bash
 # Verify NixOS flake configuration
 just check
@@ -80,6 +85,7 @@ just switch homelab
 ```
 
 #### Fish
+
 ```fish
 # Verify NixOS flake configuration
 just check

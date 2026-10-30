@@ -22,6 +22,7 @@ Validate that the new module and updated host configuration evaluate cleanly wit
 ### Execution
 
 #### Bash
+
 ```bash
 # Run code formatting check
 just fmt
@@ -34,6 +35,7 @@ just check
 ```
 
 #### Fish
+
 ```fish
 # Run code formatting check
 just fmt
@@ -46,6 +48,7 @@ just check
 ```
 
 ### Expected Outcome
+
 - `just fmt` succeeds with no unformatted `.nix` files.
 - `just lint` (`deadnix` and `statix`) succeeds with 0 errors and 0 warnings.
 - `just check` passes all derivation evaluations and pre-commit checks with exit code 0.
@@ -59,18 +62,21 @@ Test activation on `homelab` without permanently setting a new bootloader entry.
 ### Execution
 
 #### Bash
+
 ```bash
 # Safely test activation on homelab
 just test homelab
 ```
 
 #### Fish
+
 ```fish
 # Safely test activation on homelab
 just test homelab
 ```
 
 ### Expected Outcome
+
 - NixOS builds the top-level derivation for `homelab`.
 - Systemd activates `code-server.service`.
 - Caddy reloads its configuration to include `code.homelab.vaylet.fr`.
@@ -84,6 +90,7 @@ Connect to `homelab` (or inspect via remote command) to verify the service is ru
 ### Execution
 
 #### Bash
+
 ```bash
 # Check systemd status
 ssh homelab "systemctl status code-server.service"
@@ -93,6 +100,7 @@ ssh homelab "ss -tulpn | grep 4444"
 ```
 
 #### Fish
+
 ```fish
 # Check systemd status
 ssh homelab "systemctl status code-server.service"
@@ -102,6 +110,7 @@ ssh homelab "ss -tulpn | grep 4444"
 ```
 
 ### Expected Outcome
+
 - `code-server.service` is `active (running)`.
 - Process is owned by user `laurent` and group `users`.
 - Socket is bound strictly to `127.0.0.1:4444`.
@@ -113,14 +122,16 @@ ssh homelab "ss -tulpn | grep 4444"
 Test end-to-end access from a client device connected to Tailscale.
 
 ### Execution
+
 1. Open a modern web browser on a Tailscale-connected device.
 2. Navigate to `https://code.homelab.vaylet.fr`.
 
 ### Expected Outcome
+
 - Web page connects securely over HTTPS with a valid Cloudflare-issued certificate.
 - VS Code Web interface opens immediately without secondary password prompt.
 - File explorer shows `/home/laurent` as the default workspace root.
-- Integrated terminal can be opened (`Ctrl+\``) and tools like `git`, `just`, and `nix` are available.
+- Integrated terminal can be opened (`Ctrl+\``) and tools like`git`,`just`, and`nix` are available.
 
 ---
 
@@ -131,6 +142,7 @@ Verify that extensions and user configuration survive a system reboot.
 ### Execution
 
 #### Bash
+
 ```bash
 # Check preservation bindmounts on homelab
 ssh homelab "findmnt /home/laurent/.local/share/code-server"
@@ -138,6 +150,7 @@ ssh homelab "findmnt /home/laurent/.config/code-server"
 ```
 
 #### Fish
+
 ```fish
 # Check preservation bindmounts on homelab
 ssh homelab "findmnt /home/laurent/.local/share/code-server"
@@ -145,5 +158,6 @@ ssh homelab "findmnt /home/laurent/.config/code-server"
 ```
 
 ### Expected Outcome
+
 - Bind mounts point to `/persistent/home/laurent/.local/share/code-server` and `/persistent/home/laurent/.config/code-server`.
 - Files written in those directories survive host reboots.

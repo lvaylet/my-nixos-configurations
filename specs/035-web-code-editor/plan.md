@@ -9,6 +9,7 @@
 Deploy a web-based code editor on `homelab` to allow remote inspection and editing of code through a web browser when SSH connectivity is unavailable. Following user decisions and technical research, the implementation uses **`code-server`** (v4.x by Coder) via the native NixOS service module (`services.code-server`).
 
 Following the repository's dendritic module architecture, a cohesive feature module `modules/services/code-server.nix` is created to colocate:
+
 1. Native `services.code-server` configuration running under unprivileged user `laurent:users`, bound strictly to `127.0.0.1:4444`.
 2. Workspace root default set to `/home/laurent` with the development toolchain (`git`, `just`, `nh`, `nix`, `nixos-rebuild`, `ripgrep`, `direnv`) provided in the integrated terminal's `PATH`.
 3. Authentication delegated to the private Tailscale network overlay (`auth = "none"`), providing direct keyless access without secondary password prompts.
@@ -23,29 +24,34 @@ Following the repository's dendritic module architecture, a cohesive feature mod
 **Language/Version**: Nix (Flakes, Nixpkgs unstable, Flake-parts)
 
 **Primary Dependencies**:
+
 - `code-server` (packaged in `nixpkgs` via `services.code-server`)
 - `services.caddy` (Centralized Caddy reverse proxy with Cloudflare DNS-01 in `modules/services/caddy.nix`)
 - `preservation` (`github:nix-community/preservation` in `modules/core/preservation.nix`)
 - `flake-parts` (`github:hercules-ci/flake-parts`) & `import-tree` (`github:denful/import-tree`)
 
 **Storage**:
+
 - Preserved user directories under `/persistent/home/laurent`:
   - `.local/share/code-server` (`0755`, `laurent:users`) for extensions and session cache.
   - `.config/code-server` (`0755`, `laurent:users`) for user configuration and keymaps.
 - Workspace root `/home/laurent` (with `/home/laurent/workspace` already preserved across boots).
 
 **Testing**:
+
 - Formatting & static analysis: `just fmt` (`alejandra`), `just lint` (`statix`, `deadnix`).
 - Flake evaluation: `nix eval .#nixosConfigurations.homelab.config.system.build.toplevel.drvPath`.
 - Hermetic sandbox checks: `just check` (`nix flake check`).
 - Activation test on target: `just test homelab` (`nh os test .#homelab`).
 
 **Target Platform**:
+
 - Intel N150 Alder Lake-N mini PC (`homelab`, `x86_64-linux`).
 
 **Project Type**: Infrastructure as Code (Nix Flake, NixOS system configuration).
 
 **Performance Goals**:
+
 - Web code editor opens and loads files in under 5 seconds over Tailscale (`SC-001`).
 - 100% of file edits written to host filesystem reliably without corruption (`SC-002`).
 - 100% of web requests served via HTTPS with valid TLS certificate (`SC-003`).
@@ -53,6 +59,7 @@ Following the repository's dendritic module architecture, a cohesive feature mod
 - Integrated terminal executes shell commands with full parity to local terminal sessions (`SC-005`).
 
 **Constraints**:
+
 - Strict Dendritic Pattern compliance: `modules/hosts/homelab.nix` only lists `services.code-server` in `features`; zero inline service definitions (Principle II).
 - Impermanent root persistence: `.local/share/code-server` and `.config/code-server` preserved across tmpfs reboots (Principle I & II).
 - Loopback isolation: `code-server` binds strictly to `127.0.0.1:4444`, avoiding conflicts with all existing services (`3001`, `3002`, `4096`, `5679`, `8000`, `8080`, `8081`, `8096`, `8123`, `9443`).
@@ -61,6 +68,7 @@ Following the repository's dendritic module architecture, a cohesive feature mod
 - Dedicated branch workflow: Changes isolated to branch `035-web-code-editor` (Principle VII).
 
 **Scale/Scope**:
+
 - 1 new feature module: `modules/services/code-server.nix`.
 - 1 updated host definition: `modules/hosts/homelab.nix` (adding `services.code-server` to `features`).
 - 1 updated documentation file: `README.md` (updating architecture, hosted services table, reverse proxy table, and access guide with dual-shell instructions).
