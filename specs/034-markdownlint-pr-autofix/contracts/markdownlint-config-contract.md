@@ -14,6 +14,8 @@ globs:
 
 ignores:
   - ".agents/**"
+  - ".direnv/**"
+  - ".opencode/**"
 
 config:
   default: true
@@ -26,7 +28,7 @@ config:
 | Property | Directive | Enforcement |
 | --- | --- | --- |
 | **File Matching** | `globs: ["**/*.md"]` | Matches all Markdown documentation across the entire repository tree. |
-| **Directory Exemption** | `ignores: [".agents/**"]` | Strictly ignores the `.agents` subfolder and all its nested files during discovery and linting passes. |
+| **Directory Exemption** | `ignores: [".agents/**", ".direnv/**", ".opencode/**"]` | Strictly ignores the `.agents` and `.opencode` subfolders and all their nested files during discovery and linting passes. |
 | **Rule Baseline** | `config.default: true` | Applies official standard markdownlint rules. |
 
 ---

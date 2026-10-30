@@ -43,7 +43,7 @@ description: "Task list for Markdownlint Availability & Pull Request Auto-Fix"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [X] T002 Create declarative configuration in `.markdownlint-cli2.yaml` with `globs: ["**/*.md"]`, `ignores: [".agents/**"]` (`isExempt: true if path begins with .agents/`), and `config: { default: true }` per `contracts/markdownlint-config-contract.md`
+- [X] T002 Create declarative configuration in `.markdownlint-cli2.yaml` with `globs: ["**/*.md"]`, `ignores: [".agents/**", ".direnv/**", ".opencode/**"]` (`isExempt: true if path begins with .agents/ or .opencode/`), and standard options per `contracts/markdownlint-config-contract.md`
 
 **Checkpoint**: Centralized linting and exemption configuration ready - user story implementation can now begin
 
@@ -66,18 +66,18 @@ description: "Task list for Markdownlint Availability & Pull Request Auto-Fix"
 
 ---
 
-## Phase 4: User Story 2 - Strict Exemption of Agent Instruction Directory (Priority: P2)
+## Phase 4: User Story 2 - Strict Exemption of Agent and Tool Configuration Directories (Priority: P2)
 
-**Goal**: Guarantee and prove that Markdown files within `.agents/**` are strictly immune to modification by automated linting, local recipes, and CI runs.
+**Goal**: Guarantee and prove that Markdown files within `.agents/**` and `.opencode/**` are strictly immune to modification by automated linting, local recipes, and CI runs.
 
-**Independent Test**: Run `markdownlint-cli2 --fix` against a test repository state containing intentional style defects in both root documents and `.agents/**`, and verify that `.agents/**` files remain unmodified (`isExempt: true`) while non-exempt files are corrected.
+**Independent Test**: Run `markdownlint-cli2 --fix` against a test repository state containing intentional style defects in root documents, `.agents/**`, and `.opencode/**`, and verify that `.agents/**` and `.opencode/**` files remain unmodified (`isExempt: true`) while non-exempt files are corrected.
 
 ### Implementation for User Story 2
 
-- [X] T007 [US2] Verify that `.markdownlint-cli2.yaml` pattern `ignores: [".agents/**"]` is respected during recursive repository scans with zero file reads inside `.agents/`
-- [X] T008 [US2] Execute validation script or command testing `markdownlint-cli2 --fix` against files in `.agents/` to assert that zero modifications or formatting changes are introduced in `.agents/**` per `quickstart.md` Scenario 2
+- [X] T007 [US2] Verify that `.markdownlint-cli2.yaml` patterns `ignores: [".agents/**", ".opencode/**"]` are respected during recursive repository scans with zero file reads inside `.agents/` and `.opencode/`
+- [X] T008 [US2] Execute validation script or command testing `markdownlint-cli2 --fix` against files in `.agents/` and `.opencode/` to assert that zero modifications or formatting changes are introduced in `.agents/**` and `.opencode/**` per `quickstart.md` Scenario 2
 
-**Checkpoint**: User Story 2 is verified when `.agents/**` files are proven to remain byte-for-byte identical after running `markdownlint-cli2 --fix`.
+**Checkpoint**: User Story 2 is verified when `.agents/**` and `.opencode/**` files are proven to remain byte-for-byte identical after running `markdownlint-cli2 --fix`.
 
 ---
 
@@ -113,9 +113,9 @@ description: "Task list for Markdownlint Availability & Pull Request Auto-Fix"
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: No dependencies - starts immediately.
-- **Foundational (Phase 2)**: Depends on Setup (Phase 1) - creates `.markdownlint-cli2.yaml` defining baseline rules and `.agents/**` ignores.
+- **Foundational (Phase 2)**: Depends on Setup (Phase 1) - creates `.markdownlint-cli2.yaml` defining baseline rules and `.agents/**` / `.opencode/**` ignores.
 - **User Story 1 (Phase 3)**: Depends on Phase 2 - implements the GitHub Actions PR auto-fix workflow.
-- **User Story 2 (Phase 4)**: Depends on Phase 2 - verifies strict `.agents/**` exemption behavior.
+- **User Story 2 (Phase 4)**: Depends on Phase 2 - verifies strict `.agents/**` and `.opencode/**` exemption behavior.
 - **User Story 3 (Phase 5)**: Depends on Phase 2 - integrates packages into `modules/core/base.nix`, `modules/core/devshell.nix`, `justfile`, and `README.md`. Tasks T009, T010, and T011 can execute in parallel.
 - **Polish (Phase 6)**: Depends on all user story phases (Phases 3, 4, and 5) completing.
 
@@ -154,6 +154,6 @@ description: "Task list for Markdownlint Availability & Pull Request Auto-Fix"
 
 1. Setup + Foundational → Repository baseline configuration ready (`.markdownlint-cli2.yaml`)
 2. Add User Story 1 → PR auto-fix workflow active (MVP!)
-3. Add User Story 2 → Empirical test validation of `.agents/**` exemption
+3. Add User Story 2 → Empirical test validation of `.agents/**` and `.opencode/**` exemption
 4. Add User Story 3 → `markdownlint-cli2` pre-installed across all host profiles, `devshell`, `justfile` recipes, and `README.md`
 5. Polish → Flake checks and full pre-commit gate validation (`just check`)

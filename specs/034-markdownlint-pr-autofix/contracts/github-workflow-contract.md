@@ -50,13 +50,13 @@ permissions:
 | 1 | `actions/checkout@v4` with `ref: ${{ github.head_ref }}` | Checks out the branch head with full Git history for committing. |
 | 2 | `DeterminateSystems/nix-installer-action@v16` | Installs hermetic Nix package manager. |
 | 3 | `DeterminateSystems/magic-nix-cache-action@v9` | Configures remote binary caching for instant evaluation. |
-| 4 | `nix shell nixpkgs#markdownlint-cli2 -c markdownlint-cli2 --fix` | Runs markdownlint-cli2 with `--fix`. Reads root `.markdownlint-cli2.yaml` (respects `ignores: [".agents/**"]`). |
+| 4 | `nix shell nixpkgs#markdownlint-cli2 -c markdownlint-cli2 --fix` | Runs markdownlint-cli2 with `--fix`. Reads root `.markdownlint-cli2.yaml` (respects `ignores: [".agents/**", ".opencode/**"]`). |
 | 5 | `stefanzweifel/git-auto-commit-action@v5` | If changes detected: commits and pushes with message `style(markdown): auto-format markdown files with markdownlint-cli2`. If no changes: exits cleanly without creating empty commits. |
 
 ---
 
 ## 4. Failure Modes & Invariants
 
-- **Invariant 1**: Files matching `.agents/**` MUST NEVER appear in `git status` modifications created by step 4.
+- **Invariant 1**: Files matching `.agents/**` or `.opencode/**` MUST NEVER appear in `git status` modifications created by step 4.
 - **Invariant 2**: If no formatting issues exist, step 5 reports "No changes to commit" and exits with status 0.
 - **Invariant 3**: If unfixable syntax violations exist, `markdownlint-cli2` outputs rule violations to standard error for developer visibility.

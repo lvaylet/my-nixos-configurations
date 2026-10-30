@@ -17,7 +17,7 @@ Represents any Markdown file residing within the repository filesystem.
 | --- | --- | --- | --- |
 | `path` | `string` | Relative path from repository root | Must end with `.md` or `.markdown` |
 | `scope` | `enum` | Domain classification | One of `documentation`, `specification`, `agent-instruction`, `vendor` |
-| `isExempt` | `boolean` | Whether automated linting and formatting is disabled | `true` if path begins with `.agents/`, `false` otherwise |
+| `isExempt` | `boolean` | Whether automated linting and formatting is disabled | `true` if path begins with `.agents/` or `.opencode/`, `false` otherwise |
 | `formattingState` | `enum` | Conformance with markdownlint rules | One of `clean`, `auto-fixable`, `syntax-error` |
 
 #### State Transitions
@@ -26,7 +26,7 @@ Represents any Markdown file residing within the repository filesystem.
 [Modified / Added]
        │
        ▼
-Is path in .agents/** ? ──(Yes)──► [Exempt / Skipped]
+Is path in .agents/** or .opencode/** ? ──(Yes)──► [Exempt / Skipped]
        │
       (No)
        ▼
@@ -75,4 +75,4 @@ Represents the Git revision generated when formatting modifications are performe
 | `authorName` | `string` | `github-actions[bot]` |
 | `authorEmail` | `string` | `github-actions[bot]@users.noreply.github.com` |
 | `commitMessage` | `string` | `style(markdown): auto-format markdown files with markdownlint-cli2` |
-| `modifiedFiles` | `list<string>` | List of adjusted files, guaranteed to exclude `.agents/**` |
+| `modifiedFiles` | `list<string>` | List of adjusted files, guaranteed to exclude `.agents/**` and `.opencode/**` |

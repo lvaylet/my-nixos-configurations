@@ -6,7 +6,7 @@
 
 ## Summary
 
-Incorporate `markdownlint-cli2` into all repository host configurations (NixOS hosts `desktop-pc`, `homelab`, `iso`, and Darwin host `macbook-air-m4-15`) and the common development shell (`devShells.default`). Define a declarative root configuration `.markdownlint-cli2.yaml` targeting `**/*.md` while strictly exempting the `.agents/` subfolder. Implement an automated Pull Request GitHub Actions workflow (`.github/workflows/markdownlint-fix.yml`) that executes `markdownlint-cli2 --fix` on modified documentation and automatically pushes formatting corrections back to the PR branch. Add operational recipes (`lint-md`, `fix-md`) to `justfile` and update `README.md` with dual Bash and Fish documentation.
+Incorporate `markdownlint-cli2` into all repository host configurations (NixOS hosts `desktop-pc`, `homelab`, `iso`, and Darwin host `macbook-air-m4-15`) and the common development shell (`devShells.default`). Define a declarative root configuration `.markdownlint-cli2.yaml` targeting `**/*.md` while strictly exempting the `.agents/` and `.opencode/` subfolders. Implement an automated Pull Request GitHub Actions workflow (`.github/workflows/markdownlint-fix.yml`) that executes `markdownlint-cli2 --fix` on modified documentation and automatically pushes formatting corrections back to the PR branch. Add operational recipes (`lint-md`, `fix-md`) to `justfile` and update `README.md` with dual Bash and Fish documentation.
 
 ## Technical Context
 
@@ -24,7 +24,7 @@ Incorporate `markdownlint-cli2` into all repository host configurations (NixOS h
 
 **Performance Goals**: < 10 seconds execution time for linting/fixing repository Markdown files; zero perceptible CLI overhead
 
-**Constraints**: Strict exclusion of `.agents/**`; safe branch permissions (`contents: write`) for PR auto-commits; zero commit pollution on clean PRs; dual Bash/Fish operational instructions in `README.md`
+**Constraints**: Strict exclusion of `.agents/**` and `.opencode/**`; safe branch permissions (`contents: write`) for PR auto-commits; zero commit pollution on clean PRs; dual Bash/Fish operational instructions in `README.md`
 
 **Scale/Scope**: 4 primary configuration files (`modules/core/base.nix`, `modules/core/devshell.nix`, `justfile`, `README.md`), 1 root configuration (`.markdownlint-cli2.yaml`), and 1 workflow (`.github/workflows/markdownlint-fix.yml`)
 
@@ -64,7 +64,7 @@ specs/034-markdownlint-pr-autofix/
 ### Source Code (repository root)
 
 ```text
-.markdownlint-cli2.yaml                 # Centralized declarative glob patterns and .agents/** exclusion
+.markdownlint-cli2.yaml                 # Centralized declarative glob patterns and .agents/** / .opencode/** exclusion
 .github/workflows/markdownlint-fix.yml  # Pull Request auto-fix workflow running markdownlint-cli2 --fix
 modules/core/base.nix                   # Package addition for NixOS and Darwin configurations
 modules/core/devshell.nix               # Package addition for repository development shell

@@ -79,10 +79,10 @@ Available recipes:
 
     [dev-utils]
     fix                                    # fix warnings reported by linters
-    fix-md                                 # fix Markdown files with markdownlint-cli2 (excluding .agents)
+    fix-md                                 # fix Markdown files with markdownlint-cli2 (excluding .agents and .opencode)
     fmt                                    # format code recursively
     lint                                   # run linters
-    lint-md                                # lint Markdown files with markdownlint-cli2 (excluding .agents)
+    lint-md                                # lint Markdown files with markdownlint-cli2 (excluding .agents and .opencode)
 
     [flake-management]
     check                                  # check whether the flake evaluates and run its tests
@@ -662,7 +662,7 @@ All contributions and configuration changes follow the repository's constitution
 
 1. **Branch Isolation & Pull Request**: All modifications must take place in a dedicated branch associated with a Pull Request targeting `main` (direct commits to `main` are prohibited).
 2. **Living Documentation & Dual-Shell Parity**: `README.md` must be updated within the same branch whenever a service or workflow is added, modified, or removed, providing explicit **Bash** and **Fish** command variants whenever shell syntax differs.
-3. **Formatting & Markdown Quality**: Run `just fmt` (or `nix fmt .`) to format all `.nix` files with `alejandra` and execute pre-commit formatters. Run `just fix-md` to format Markdown documentation using `markdownlint-cli2 --fix` (excluding `.agents/`).
+3. **Formatting & Markdown Quality**: Run `just fmt` (or `nix fmt .`) to format all `.nix` files with `alejandra` and execute pre-commit formatters. Run `just fix-md` to format Markdown documentation using `markdownlint-cli2 --fix` (excluding `.agents/` and `.opencode/`).
 4. **Linting & Diagnostics**: Run `just lint` (`deadnix` and `statix check`) and `just lint-md` (`markdownlint-cli2`); auto-fixable warnings can be resolved with `just fix` or `just fix-md`.
 5. **Flake Integrity & Checks**: Run `just check` (`nix flake check`) to validate syntax, evaluate derivations, and run all hermetic pre-commit sandbox checks with a 100% pass rate.
 6. **Activation Testing**: Run `just test [<host>]` (e.g. `just test` locally or `just test homelab`) to safely test configuration activation without modifying bootloader entries or generation profiles.
@@ -675,7 +675,7 @@ Continuous integration runs on GitHub Actions using a two-stage gated pipeline (
 1. **Stage 1 (Quality Gate & Security)**: Runs `nix flake check` to hermetically validate code formatting (`alejandra`), static analysis (`statix`, `deadnix`), flake syntax (`flake-checker`), and secret scanning filters (`trufflehog`, `ripsecrets`, `detect-private-keys`).
 2. **Stage 2 (Matrix System Builds)**: Concurrently evaluates and builds top-level derivations for all target configurations (`desktop-pc`, `homelab`, `iso`).
 3. **Build Acceleration**: Leverages [Magic Nix Cache](https://github.com/DeterminateSystems/magic-nix-cache-action) and the Determinate Nix Installer for tokenless, zero-configuration GitHub Actions store caching.
-4. **Pull Request Markdown Auto-Fix**: A dedicated workflow ([`.github/workflows/markdownlint-fix.yml`](.github/workflows/markdownlint-fix.yml)) runs `markdownlint-cli2 --fix` on every Pull Request modifying Markdown files (strictly exempting `.agents/`) and automatically commits formatting corrections directly back to the branch.
+4. **Pull Request Markdown Auto-Fix**: A dedicated workflow ([`.github/workflows/markdownlint-fix.yml`](.github/workflows/markdownlint-fix.yml)) runs `markdownlint-cli2 --fix` on every Pull Request modifying Markdown files (strictly exempting `.agents/` and `.opencode/`) and automatically commits formatting corrections directly back to the branch.
 
 ### Local Markdown Linting & Fixing
 
@@ -684,7 +684,7 @@ To lint or format Markdown documents locally prior to pushing:
 **Bash**:
 
 ```bash
-# Check Markdown files (excluding .agents/):
+# Check Markdown files (excluding .agents/ and .opencode/):
 just lint-md
 
 # Automatically fix Markdown formatting issues:
@@ -694,7 +694,7 @@ just fix-md
 **Fish**:
 
 ```fish
-# Check Markdown files (excluding .agents/):
+# Check Markdown files (excluding .agents/ and .opencode/):
 just lint-md
 
 # Automatically fix Markdown formatting issues:

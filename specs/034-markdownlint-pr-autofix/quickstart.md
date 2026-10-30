@@ -41,11 +41,11 @@ nix develop -c markdownlint-cli2 --version
 
 ---
 
-## Scenario 2: Validate Declarative Exemption of `.agents/`
+## Scenario 2: Validate Declarative Exemption of `.agents/` and `.opencode/`
 
 ### Objective
 
-Prove that running `markdownlint-cli2` processes repository Markdown files while strictly ignoring any Markdown documents located inside `.agents/`.
+Prove that running `markdownlint-cli2` processes repository Markdown files while strictly ignoring any Markdown documents located inside `.agents/` and `.opencode/`.
 
 ### Commands
 
@@ -62,8 +62,8 @@ markdownlint-cli2
 ### Expected Outcome
 
 - The command output summary indicates files were found and linted.
-- Notice the discovery output displays `!.agents/**` as an excluded glob.
-- Zero issues or file reads are reported for `.agents/skills/*/*.md`.
+- Notice the discovery output displays `!.agents/**` and `!.opencode/**` as excluded globs.
+- Zero issues or file reads are reported for `.agents/skills/*/*.md` and `.opencode/commands/*.md`.
 
 ---
 
@@ -71,7 +71,7 @@ markdownlint-cli2
 
 ### Objective
 
-Prove that running `just fix-md` or `markdownlint-cli2 --fix` automatically corrects fixable style issues (e.g. trailing whitespace) in general documentation files without touching `.agents/`.
+Prove that running `just fix-md` or `markdownlint-cli2 --fix` automatically corrects fixable style issues (e.g. trailing whitespace) in general documentation files without touching `.agents/` or `.opencode/`.
 
 ### Commands
 
@@ -91,7 +91,7 @@ rm -f /tmp/opencode/quickstart-test.md
 ### Expected Outcome
 
 - The trailing whitespace is stripped cleanly.
-- If run against a test file in `.agents/`, the file remains untouched.
+- If run against test files in `.agents/` or `.opencode/`, the files remain untouched.
 
 ---
 

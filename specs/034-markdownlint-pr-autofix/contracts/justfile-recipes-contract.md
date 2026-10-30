@@ -8,12 +8,12 @@
 ## 1. Recipe Signatures & Descriptions
 
 ```just
-# lint Markdown files with markdownlint-cli2 (excluding .agents)
+# lint Markdown files with markdownlint-cli2 (excluding .agents and .opencode)
 [group('dev-utils')]
 lint-md:
   markdownlint-cli2
 
-# fix Markdown files with markdownlint-cli2 (excluding .agents)
+# fix Markdown files with markdownlint-cli2 (excluding .agents and .opencode)
 [group('dev-utils')]
 fix-md:
   markdownlint-cli2 --fix

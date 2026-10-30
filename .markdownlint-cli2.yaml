@@ -5,6 +5,7 @@ globs:
 ignores:
   - ".agents/**"
   - ".direnv/**"
+  - ".opencode/**"
 
 config:
   default: true

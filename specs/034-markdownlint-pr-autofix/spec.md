@@ -16,28 +16,28 @@ As a repository contributor submitting or updating a Pull Request with Markdown 
 
 **Why this priority**: Automating style corrections on every Pull Request eliminates tedious code review cycles, keeps documentation consistent across the entire repository, and guarantees that documentation standards are maintained effortlessly.
 
-**Independent Test**: Submit a Pull Request that introduces common Markdown styling defects (such as missing blank lines around headers, irregular list spacing, or trailing spaces) in a document outside the `.agents` directory. Verify that the automated workflow runs, applies corrective fixes, and pushes a clean commit back to the Pull Request branch without human intervention.
+**Independent Test**: Submit a Pull Request that introduces common Markdown styling defects (such as missing blank lines around headers, irregular list spacing, or trailing spaces) in a document outside the `.agents` and `.opencode` directories. Verify that the automated workflow runs, applies corrective fixes, and pushes a clean commit back to the Pull Request branch without human intervention.
 
 **Acceptance Scenarios**:
 
-1. **Given** a Pull Request modifying Markdown files with auto-fixable formatting violations outside `.agents/`, **When** the automated quality pipeline triggers, **Then** formatting corrections are applied using `--fix` and committed to the Pull Request branch.
+1. **Given** a Pull Request modifying Markdown files with auto-fixable formatting violations outside `.agents/` and `.opencode/`, **When** the automated quality pipeline triggers, **Then** formatting corrections are applied using `--fix` and committed to the Pull Request branch.
 2. **Given** a Pull Request where all Markdown files already satisfy formatting standards, **When** the pipeline runs, **Then** no new commits are generated and the check passes cleanly.
 3. **Given** a Pull Request that introduces syntax issues that cannot be automatically resolved, **When** the pipeline runs, **Then** auto-fixable issues are corrected and remaining errors are clearly highlighted in the workflow output.
 
 ---
 
-### User Story 2 - Strict Exemption of Agent Instruction Directory (Priority: P2)
+### User Story 2 - Strict Exemption of Agent and Tool Configuration Directories (Priority: P2)
 
-As a maintainer managing internal agent instructions and templates, I want files inside the `.agents` subfolder to be strictly exempted from automated Markdown linting and auto-fixing so that prompt structure, upstream skill configurations, and agent templates remain unmodified.
+As a maintainer managing internal agent instructions, skills, and OpenCode commands, I want files inside the `.agents` and `.opencode` subfolders to be strictly exempted from automated Markdown linting and auto-fixing so that prompt structure, upstream skill configurations, command templates, and agent definitions remain unmodified.
 
-**Why this priority**: Agent configurations and prompt definitions in `.agents` may have specific formatting constraints or upstream dependencies that should not be automatically altered by general Markdown styling rules.
+**Why this priority**: Agent configurations and command definitions in `.agents` and `.opencode` may have specific prompt structures or template constraints that should not be altered by general Markdown styling rules.
 
-**Independent Test**: Create a Pull Request containing changes to both a general documentation file and a file under `.agents/`, both containing intentional styling quirks. Verify that only the general documentation file is modified by the auto-fix mechanism, while the file in `.agents/` remains byte-for-byte identical.
+**Independent Test**: Create a Pull Request containing changes to a general documentation file and files under `.agents/` and `.opencode/`, containing styling quirks. Verify that only the general documentation file is modified by the auto-fix mechanism, while files in `.agents/` and `.opencode/` remain byte-for-byte identical.
 
 **Acceptance Scenarios**:
 
-1. **Given** a Pull Request modifying Markdown files inside `.agents/`, **When** the automated correction workflow runs, **Then** files within `.agents/` and its subdirectories are skipped and remain unmodified.
-2. **Given** a Pull Request that only modifies files inside `.agents/`, **When** the automated workflow runs, **Then** no formatting changes or commits are produced.
+1. **Given** a Pull Request modifying Markdown files inside `.agents/` or `.opencode/`, **When** the automated correction workflow runs, **Then** files within `.agents/` and `.opencode/` and their subdirectories are skipped and remain unmodified.
+2. **Given** a Pull Request that only modifies files inside `.agents/` or `.opencode/`, **When** the automated workflow runs, **Then** no formatting changes or commits are produced.
 
 ---
 
@@ -70,7 +70,7 @@ As a system operator or developer working on any configured machine (desktop, ho
 - **FR-001**: System MUST include `markdownlint-cli2` in the installed packages of all target operating environments (NixOS hosts, macOS/Darwin configurations, and the repository development shell).
 - **FR-002**: System MUST trigger an automated Markdown correction workflow on every Pull Request targeting the default branch.
 - **FR-003**: The automated Pull Request workflow MUST execute `markdownlint-cli2` with the `--fix` option against targeted Markdown files in the repository.
-- **FR-004**: The automated workflow MUST strictly exclude all Markdown files located within the `.agents` directory and all its subdirectories from linting and auto-fixing.
+- **FR-004**: The automated workflow MUST strictly exclude all Markdown files located within the `.agents` and `.opencode` directories and all their subdirectories from linting and auto-fixing.
 - **FR-005**: When formatting violations are corrected, the workflow MUST commit the changes and push them back to the Pull Request branch.
 - **FR-006**: The automated commit message MUST explicitly identify that the revisions were generated by automated Markdown linting.
 - **FR-007**: When no formatting corrections are required, the workflow MUST NOT create empty commits or modify the Git history.
@@ -80,7 +80,7 @@ As a system operator or developer working on any configured machine (desktop, ho
 
 - **Markdown Document**: Textual files with `.md` or `.markdown` extensions containing specifications, documentation, and guides throughout the repository.
 - **Pull Request**: A proposed revision branch opened against the main repository branch to be validated and merged.
-- **Excluded Path**: File and folder paths (specifically `.agents/` and any nested children) designated as immune to automated linting and formatting changes.
+- **Excluded Path**: File and folder paths (specifically `.agents/`, `.opencode/`, and any nested children) designated as immune to automated linting and formatting changes.
 - **Host Configuration**: Declarative host profiles (desktop-pc, homelab, iso, macbook-air-m4-15, and devshell) defining system environments and installed software packages.
 
 ## Success Criteria *(mandatory)*
@@ -88,7 +88,7 @@ As a system operator or developer working on any configured machine (desktop, ho
 ### Measurable Outcomes
 
 - **SC-001**: 100% of Pull Requests with auto-fixable documentation styling violations outside the excluded directory receive automated fixes within 2 minutes of pipeline activation.
-- **SC-002**: 0% of documentation files located in the designated excluded directory (`.agents`) are modified or reformatted by automated quality checks.
+- **SC-002**: 0% of documentation files located in the designated excluded directories (`.agents`, `.opencode`) are modified or reformatted by automated quality checks.
 - **SC-003**: The documentation styling CLI is accessible and functional across 100% of target operating environments immediately after system initialization.
 - **SC-004**: Automated styling checks generate zero redundant or empty revisions when documentation already adheres to style rules.
 
@@ -96,5 +96,5 @@ As a system operator or developer working on any configured machine (desktop, ho
 
 - The Pull Request automation will have sufficient permissions to push formatting commits back to branches within the primary repository.
 - `markdownlint-cli2` provided by the package management system supports the `--fix` flag and standard rule configuration mechanisms.
-- Files located under `.agents` are maintained for agent behavior and are intentionally exempt from repository-wide Markdown styling rules.
+- Files located under `.agents` and `.opencode` contain specialized prompt or command instructions and are intentionally exempt from repository-wide Markdown styling rules.
 - Local developers can use the installed `markdownlint-cli2` command or corresponding repository recipes to format documentation prior to pushing.
