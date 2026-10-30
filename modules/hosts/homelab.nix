@@ -22,6 +22,7 @@
 
       # Services
       services.caddy
+      services.code-server
       services.filebrowser
       services.home-automation
       services.jellyfin
