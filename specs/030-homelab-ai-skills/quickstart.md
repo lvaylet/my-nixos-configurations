@@ -13,6 +13,7 @@
 Verify that the declarative skill derivation builds and that `homelab`, `desktop-pc`, and `macbook-air-m4-15` evaluate cleanly with the new skills and package runners:
 
 **Bash / Fish**:
+
 ```bash
 nix eval .#nixosConfigurations.homelab.config.systemd.tmpfiles.rules --json
 nix eval .#nixosConfigurations.desktop-pc.config.home-manager.users.laurent.xdg.configFile.\"opencode/skills\".source
@@ -22,11 +23,13 @@ nix eval .#darwinConfigurations.macbook-air-m4-15.config.home-manager.users.laur
 ## 2. Run Repository Quality Gates
 
 **Bash / Fish**:
+
 ```bash
 just fmt
 just lint
 just check
 ```
+
 Expected outcome: All formatting, static analysis (`deadnix`, `statix`), and `nix flake check` pre-commit hooks succeed with exit code `0`.
 
 ## 3. Deploy and Verify on `homelab`
@@ -34,6 +37,7 @@ Expected outcome: All formatting, static analysis (`deadnix`, `statix`), and `ni
 Test and switch the configuration on `homelab`:
 
 **Bash / Fish**:
+
 ```bash
 just test
 just switch
@@ -42,6 +46,7 @@ just switch
 Verify that the declarative skills and CLI runners (`npm`, `npx`, `uv`, `uvx`) are available on `homelab`:
 
 **Bash / Fish**:
+
 ```bash
 ls -la ~/.config/opencode/skills/
 npm --version
@@ -54,12 +59,15 @@ uvx --version
 
 - **Declarative Global Skills (Matt Pocock & Addy Osmani)**: Available immediately in every OpenCode session via `~/.config/opencode/skills/` without running any install command. To update all declarative skills to their latest upstream commits:
   **Bash / Fish**:
+
   ```bash
   nix flake update mattpocock-skills addyosmani-agent-skills
   just switch
   ```
+
 - **Ad-Hoc Project or Global Skills via `npx skills`**: Use `npx skills` whenever you want to browse or install an additional third-party skill into a project workspace (or globally into `~/.agents/skills/`, which is persisted across reboots on `homelab`):
   **Bash / Fish**:
+
   ```bash
   npx skills add <owner/repo> --list
   ```

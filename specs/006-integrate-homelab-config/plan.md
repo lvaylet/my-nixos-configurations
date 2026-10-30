@@ -15,6 +15,7 @@ Integrate the reference homelab configuration from `my-first-impermanent-nixos-s
 **Language/Version**: Nix (Flakes, Nixpkgs unstable)
 
 **Primary Dependencies**:
+
 - `disko` (`github:nix-community/disko`)
 - `preservation` (`github:nix-community/preservation`)
 - `flake-parts` (`github:hercules-ci/flake-parts`)
@@ -25,6 +26,7 @@ Integrate the reference homelab configuration from `my-first-impermanent-nixos-s
 **Storage**: Declarative Disko hybrid partitioning (in-RAM `tmpfs` root, Btrfs subvolumes `/persistent` and `/nix`, dedicated 4 GB swap, 1 GB ESP `/boot`), with declarative persistence mapped to `/persistent`.
 
 **Testing**:
+
 - Formatting & linting: `just fmt` (`alejandra`), `just lint` (`statix`, `deadnix`).
 - Flake evaluation: `nix eval .#nixosConfigurations.homelab.config.system.build.toplevel.drvPath`.
 - Regression evaluation: `desktop-pc` and `iso` toplevel evaluation.
@@ -35,18 +37,21 @@ Integrate the reference homelab configuration from `my-first-impermanent-nixos-s
 **Project Type**: Infrastructure as Code (Nix Flake, NixOS system configuration).
 
 **Performance Goals**:
+
 - Ephemeral reboot with clean state in RAM.
 - Virtual memory expansion to ~24 GB usable space via ZRAM compressed swap (zstd algorithm, 50% RAM).
 - Hardware-accelerated media transcoding via Intel QuickSync iGPU drivers (`intel-media-driver`).
 - Minimized NVMe write wear via weekly `fstrim` and Btrfs `noatime, compress=zstd, ssd, discard=async`.
 
 **Constraints**:
+
 - Strict Dendritic Pattern compliance: `modules/hosts/homelab.nix` must only assemble hardware and feature modules, with zero inline service definitions.
 - 100% of explanatory comments from the source repository must be preserved verbatim.
 - Zero plaintext secrets committed to version control.
 - No regressions on `desktop-pc` or `iso` targets.
 
 **Scale/Scope**:
+
 - 1 target host updated: `modules/hosts/homelab.nix`.
 - 1 hardware and partitioning profile updated: `modules/hosts/_hardware/homelab.nix`.
 - 1 shared identity module updated: `modules/core/vars.nix`.

@@ -9,7 +9,9 @@ This document formalizes the entities, configuration attributes, data relationsh
 ## 1. Entities & Structural Hierarchy
 
 ### 1.1 Flake Root Engine (`flake.nix`)
+
 The top-level flake orchestration layer.
+
 - **Attributes**:
   - `inputs`: Attribute set of pinned upstream flake references (`nixpkgs`, `home-manager`, `nvf`, `noctalia`, `git-hooks`, `flake-parts`, `import-tree`).
   - `outputs`: Function taking `inputs` and invoking `flake-parts.lib.mkFlake` with `(import-tree ./modules)`.
@@ -18,7 +20,9 @@ The top-level flake orchestration layer.
   - Aggregates and produces top-level `FlakeOutput` entities (`nixosConfigurations`, `devShells`, `checks`, `formatter`).
 
 ### 1.2 Module File (`modules/**/*.nix`)
+
 Every non-entrypoint file in `modules/` is a top-level `flake-parts` module.
+
 - **Attributes**:
   - `path`: Filesystem path within `modules/` relative to repo root.
   - `domain`: Functional area determined by parent folder (`core`, `desktop`, `services`, `hosts`).
@@ -29,7 +33,9 @@ Every non-entrypoint file in `modules/` is a top-level `flake-parts` module.
   - MUST NOT use imperative file imports; references between modules rely on `config` or `inputs`.
 
 ### 1.3 Feature (Aspect)
+
 A cohesive, named capability providing system services, user packages, configurations, and static dotfiles.
+
 - **Attributes**:
   - `name`: Unique identifier for the capability (e.g., `base`, `desktop-session`, `terminal`, `shell`, `audio`, `tailscale`, `podman`).
   - `nixos`: Deferred NixOS module configuring system daemons, hardware drivers, firewall rules, or kernel parameters (optional).
@@ -39,7 +45,9 @@ A cohesive, named capability providing system services, user packages, configura
   - MUST be self-contained: enabling the feature brings all necessary configuration for that capability.
 
 ### 1.4 Target (Machine / Host)
+
 A deployable system closure representing a concrete machine or installation image.
+
 - **Attributes**:
   - `hostname`: Unique machine identifier (`desktop-pc`, `homelab`, `iso`).
   - `system`: Target architecture triple (default `x86_64-linux`).
@@ -51,7 +59,9 @@ A deployable system closure representing a concrete machine or installation imag
   - Associates `homeManager` components of all enabled features with the primary `User` entity.
 
 ### 1.5 Shared Identity Context (`flake.vars`)
+
 Global repository-wide identity and parameter options defined in `modules/core/vars.nix`.
+
 - **Attributes**:
   - `user`: Primary user login name (string, default `"laurent"`).
   - `fullName`: User display name (string, default `"Laurent Vaylet"`).

@@ -17,6 +17,7 @@ just check
 ```
 
 **Expected Outcome**:
+
 - `alejandra`, `statix`, and `deadnix` complete with 0 warnings or errors.
 - `nix flake check` evaluates all host configurations (`desktop-pc`, `homelab`, `iso`) and pre-commit hooks with exit code `0`.
 
@@ -39,6 +40,7 @@ nix eval --json .#nixosConfigurations.homelab.config.preservation.preserveAt.\"/
 ```
 
 **Expected Outcome**:
+
 - Both `programs.neovim.enable` evaluations return `true`.
 - `systemd.tmpfiles.rules` includes `"L+ /home/laurent/.config/nvim - - - - /nix/store/...-nvim"`.
 - Preserved directories on `homelab` include `".local/share/nvim"` and `".local/state/nvim"`.
@@ -64,6 +66,7 @@ nvim
 ```
 
 **Expected Outcome**:
+
 - `~/.config/nvim` is a symlink pointing to the `/nix/store/...-nvim` directory containing `init.lua`, `stylua.toml`, and `lua/`.
 - `$EDITOR` is `nvim`, and `vim`/`vi` resolve to Neovim.
 - `nvim` starts the LazyVim dashboard cleanly with all external tools (`rg`, `fd`, `gcc`, `make`, `tree-sitter`, `git`) available in `PATH`.

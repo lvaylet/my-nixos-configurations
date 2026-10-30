@@ -35,6 +35,7 @@ just check
 ```
 
 **Expected Outcome**:
+
 - All files format with zero syntax issues.
 - `statix` and `deadnix` report 0 warnings or errors.
 - `nix flake check` completes successfully, confirming zero unencrypted secrets or private keys in the tree.
@@ -51,6 +52,7 @@ just test configuration="desktop-pc"
 ```
 
 **Expected Outcome**:
+
 - `nh os test` builds the target derivation and activates new services/environment settings in the running session.
 - Bootloader default generation remains unchanged.
 
@@ -69,6 +71,7 @@ nh os list
 ```
 
 **Expected Outcome**:
+
 - System switches to the new generation.
 - A new numbered entry is recorded in the `Limine` bootloader menu.
 - Rebooting presents the new generation with previous generations accessible for <60s rollback.
@@ -85,6 +88,7 @@ nh os build .#homelab
 ```
 
 **Expected Outcome**:
+
 - Derivation builds successfully with background services (Jellyfin, Home Automation, AdGuard Home) and headless configuration.
 
 ---
@@ -98,6 +102,7 @@ just build-iso
 ```
 
 **Expected Outcome**:
+
 - A bootable `.iso` file is produced in `result/iso/*.iso` containing pre-authorized SSH keys and networking tools.
 
 ---
@@ -115,4 +120,5 @@ just clean-all keep="1"
 ```
 
 **Expected Outcome**:
+
 - Obsolete profile generations are deleted and unreferenced store paths in `/nix/store` are safely reclaimed.

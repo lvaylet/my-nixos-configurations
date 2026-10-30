@@ -7,6 +7,7 @@
 ## Summary
 
 Ensure `FiraCode Nerd Font` (with OpenType programming ligatures and Nerd Font v3 glyphs) is used consistently across every application and surface that displays source code or terminal text on `desktop-pc` (and shared editor configurations):
+
 1. **System/User Fontconfig Monospace Default (`modules/desktop/fonts.nix`)**: Configure `fonts.fontconfig.defaultFonts.monospace = [ "FiraCode Nerd Font" "FiraCode Nerd Font Mono" ]` alongside `nerd-fonts.fira-code` so any application requesting the generic `monospace` font family (web browsers rendering `<code>`/`<pre>`, Markdown viewers, GTK/Qt dialogs) automatically uses `FiraCode Nerd Font`.
 2. **Code Editors (`modules/desktop/editors.nix` & `modules/core/dotfiles/nvim/lua/config/options.lua`)**:
    - **VS Code**: Retain `"editor.fontFamily" = "FiraCode Nerd Font"` (`"editor.fontLigatures" = true`) and `"terminal.integrated.fontFamily" = "FiraCode Nerd Font"` (`"terminal.integrated.fontLigatures.enabled" = true`), and extend `FiraCode Nerd Font` to auxiliary code views (`"debug.console.fontFamily"`, `"scm.inputFontFamily"`, `"chat.editor.fontFamily"`).
@@ -24,6 +25,7 @@ Ensure `FiraCode Nerd Font` (with OpenType programming ligatures and Nerd Font v
 **Language/Version**: Nix (Flakes, Nixpkgs unstable), Lua (Neovim/LazyVim & WezTerm)
 
 **Primary Dependencies**:
+
 - `pkgs.nerd-fonts.fira-code` (`modules/desktop/fonts.nix`)
 - `home-manager` (`fonts.fontconfig`, `programs.vscode`, `programs.zed-editor`, `programs.wezterm`, `programs.ghostty`)
 - `programs.neovim` with LazyVim (`modules/core/neovim.nix` & `modules/core/dotfiles/nvim/`)
@@ -31,6 +33,7 @@ Ensure `FiraCode Nerd Font` (with OpenType programming ligatures and Nerd Font v
 **Storage**: N/A (100% declarative NixOS and Home Manager configuration files and store symlinks)
 
 **Testing**:
+
 - Formatting & static analysis: `just fmt` (`alejandra`), `just lint` (`statix check`, `deadnix`)
 - Host evaluation checks:
   - `nix eval .#nixosConfigurations.desktop-pc.config.system.build.toplevel.drvPath`
@@ -43,16 +46,19 @@ Ensure `FiraCode Nerd Font` (with OpenType programming ligatures and Nerd Font v
 **Project Type**: Infrastructure as Code / NixOS & Home Manager Configuration (Dendritic Pattern)
 
 **Performance Goals**:
+
 - Zero runtime font downloading or imperative cache generation outside Nix build/activation.
 - Hardware-accelerated OpenType ligature shaping (`calt`, `clig`, `liga`) at 60+ FPS across GPU terminals (WezTerm, Ghostty) and editors (VS Code, Zed, Neovim).
 
 **Constraints**:
+
 - Strict Dendritic Pattern compliance (`modules/core/` and `modules/desktop/`).
 - `homelab` MUST retain `enableHomeManager = false` with zero GUI font package bleed (`FR-006`).
 - `programs.ghostty.settings` MUST pass Ghostty's build-time `ghostty +validate-config` check.
 - `README.md` synchronized in the same branch (`FR-007`).
 
 **Scale/Scope**:
+
 - 3 modified Nix modules: `modules/desktop/fonts.nix`, `modules/desktop/editors.nix`, `modules/desktop/apps.nix` (plus verification of `modules/desktop/terminal.nix`)
 - 1 modified Lua dotfile: `modules/core/dotfiles/nvim/lua/config/options.lua`
 - 1 updated documentation file: `README.md`

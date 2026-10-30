@@ -11,6 +11,7 @@ This document consolidates the technical analysis and design decisions for bring
 ### Decision
 
 Provide explicit **Bash** (` ```bash `) and **Fish** (` ```fish `) code blocks whenever a documented command relies on syntax that differs between the two shells:
+
 - Environment variable exports (`export VAR=val` in Bash vs `set -gx VAR val` in Fish).
 - Parameter expansion (`${VAR}` in Bash vs `$VAR` in Fish).
 - Multiline file creation / heredocs (`sudo tee ... << 'EOF'` in Bash vs `printf '%s\n' '...' | sudo tee ...` in Fish).
@@ -35,6 +36,7 @@ Keep commands whose syntax is 100% identical in both shells (`devbox ...`, `nix 
 ### Decision
 
 For the Cloudflare API token (`/persistent/var/lib/caddy/cloudflare.env`) and WAHA credentials (`/persistent/var/lib/waha/waha.env`) provisioning steps:
+
 - **Bash variant**: Retain `sudo tee /persistent/var/lib/... << 'EOF'` (single-quoted `'EOF'` delimiter prevents `$`, `` ` ``, and `\` expansion).
 - **Fish variant**: Use `printf '%s\n' '<KEY>=<VALUE>' ... | sudo tee /persistent/var/lib/... >/dev/null` (or `| sudo tee ...`) with **single-quoted** arguments.
 
@@ -55,6 +57,7 @@ For the Cloudflare API token (`/persistent/var/lib/caddy/cloudflare.env`) and WA
 ### Decision
 
 Expand the **Shell Aliases** section of `README.md` into a comprehensive **Shell Environment & Aliases (Bash & Fish Duality)** section that documents:
+
 1. **Account & Environment Duality**:
    - **Fish (`pkgs.fish`)**: Default interactive login shell for primary user `laurent` across all hosts (`modules/core/base.nix`), enhanced with native command-wrapping autocompletions (`complete -c <alias> -w "<command>"`) so flags, systemd unit names, and Git branches autocomplete seamlessly.
    - **Bash (`pkgs.bashInteractive`)**: Default login shell for `root`, the headless installer ISO (`modules/core/iso.nix`), and POSIX scripts/recipes (`justfile`).

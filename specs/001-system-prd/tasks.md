@@ -154,11 +154,13 @@ graph TD
 ## Implementation Strategy
 
 ### MVP Scope (Phase 1 + Phase 2 + Phase 3)
+
 1. Complete Setup and Foundational infrastructure (`vars.nix`, `modules/nixos/base.nix`, `modules/home-manager/base.nix`, `justfile`).
 2. Deliver User Story 1 (`machines/desktop-pc`, `machines/homelab`, `machines/iso`, and `flake.nix`).
 3. Validate independent generation build for all 3 target profiles.
 
 ### Incremental Feature Expansion
+
 - **Increment 1 (US2)**: Enable quality gates, secret scanning, and non-switching activation tests.
 - **Increment 2 (US3)**: Deploy personal shell, editor (`nvf`), and CLI environment.
 - **Increment 3 (US4)**: Enable home server media and network services.

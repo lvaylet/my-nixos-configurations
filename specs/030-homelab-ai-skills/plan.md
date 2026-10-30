@@ -7,6 +7,7 @@
 ## Summary
 
 Implement a hybrid AI agent skills and package runner setup on `homelab` (and shared across `desktop-pc` and `macbook-air-m4-15`):
+
 1. **Declarative AI Skills Provisioning**: Pin Matt Pocock's (`github:mattpocock/skills`) and Addy Osmani's (`github:addyosmani/agent-skills`) skill repositories as non-flake inputs in `flake.nix` and assemble their 52 curated `SKILL.md` directories in `modules/services/opencode.nix`. Provision them declaratively via `systemd.tmpfiles.rules` (`L+ /home/${vars.userName}/.config/opencode/skills`) on headless `homelab` (`enableHomeManager = false`) and via `xdg.configFile."opencode/skills"` on Home Manager hosts (`desktop-pc` and `macbook-air-m4-15`).
 2. **Runtime Package & Tool Runners (`npm`, `npx`, `uv`, `uvx`)**: Provide `pkgs.nodejs` (`node`, `npm`, `npx`) and `pkgs.uv` (`uv`, `uvx`) in `modules/services/opencode.nix` (across system packages, `systemd.services.opencode-web.path` on `homelab`, and `programs.opencode.extraPackages` in Home Manager) so users and OpenCode sessions can execute `npx skills ...`, `uvx ...`, and MCP servers seamlessly.
 3. **Ephemeral Root Persistence & Documentation**: Preserve `~/.agents` across reboots on `homelab` via `preservation.preserveAt."/persistent"` in `modules/services/opencode.nix`, and document both the declarative skills and `npm`/`npx`/`uv`/`uvx` workflows in `README.md` with Bash and Fish parity.

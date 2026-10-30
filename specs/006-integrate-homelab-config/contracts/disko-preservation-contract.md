@@ -123,4 +123,5 @@ preservation.preserveAt."/persistent".directories = lib.mkIf <is-enabled> [
   # paths to persist
 ];
 ```
+
 Feature modules MUST NOT hardcode persistent mappings if the service itself is disabled on the target machine.

@@ -9,6 +9,7 @@ This document formalizes the entities, data structures, attribute specifications
 ## 1. Entities & Data Schemas
 
 ### Entity 1: Homelab Host Composition (`modules/hosts/homelab.nix`)
+
 Represents the target host declaration that assembles hardware and enabled capabilities.
 
 | Field | Type | Description | Constraints |
@@ -19,12 +20,14 @@ Represents the target host declaration that assembles hardware and enabled capab
 | `extraModules` | List of Modules | Host-specific overrides | Hostname, GRUB override, root SSH keys |
 
 #### Relationships
+
 - **References**: `modules/hosts/_hardware/homelab.nix` for physical hardware and Disko layout.
 - **Composes**: Feature modules from `modules/core/` and `modules/services/`.
 
 ---
 
 ### Entity 2: Hardware & Storage Profile (`modules/hosts/_hardware/homelab.nix`)
+
 Encapsulates hardware detection, Alder Lake-N tuning, and declarative Disko partitioning.
 
 | Category | Option / Attribute | Value / Schema | Purpose |
@@ -51,6 +54,7 @@ Encapsulates hardware detection, Alder Lake-N tuning, and declarative Disko part
 ---
 
 ### Entity 3: State Preservation Manifest
+
 Defines persistent paths retained across reboots via `preservation`.
 
 | Scope | Path | Type | Owner:Group | Mode | inInitrd |
@@ -84,6 +88,7 @@ Defines persistent paths retained across reboots via `preservation`.
 ---
 
 ### Entity 4: Multimedia Access Domain
+
 Coordinated security and permission model for multimedia applications.
 
 ```text
@@ -104,6 +109,7 @@ Coordinated security and permission model for multimedia applications.
 ```
 
 #### Invariants & Constraints
+
 - GID for `multimedia` MUST be fixed at `995`.
 - UID for `qbittorrent` MUST be fixed at `991`.
 - UID for `filebrowser` MUST be fixed at `992`.

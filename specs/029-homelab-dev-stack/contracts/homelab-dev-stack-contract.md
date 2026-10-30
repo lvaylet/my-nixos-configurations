@@ -6,6 +6,7 @@
 ## 1. Host Configuration Evaluation Contract
 
 ### `nixosConfigurations.homelab`
+
 - `config.programs.direnv.enable` MUST evaluate to `true`.
 - `config.programs.direnv.nix-direnv.enable` MUST evaluate to `true`.
 - `config.programs.direnv.enableFishIntegration` MUST evaluate to `true`.
@@ -15,6 +16,7 @@
 - `config.systemd.services.opencode-web.path` MUST include `"/run/wrappers"`, `"/run/current-system/sw"`, and the core CLI tools (`bash`, `just`, `nh`, `direnv`, `nix`, `git`, `gh`, `ripgrep`, `coreutils`).
 
 ### `nixosConfigurations.desktop-pc` & `darwinConfigurations.macbook-air-m4-15`
+
 - `config.programs.direnv.enable` MUST evaluate to `true`.
 - `config.programs.direnv.nix-direnv.enable` MUST evaluate to `true`.
 - `config.environment.systemPackages` MUST include `just`, `nh`, `alejandra`, `deadnix`, `statix`, `nixd`, `just-lsp`, and `cachix`.

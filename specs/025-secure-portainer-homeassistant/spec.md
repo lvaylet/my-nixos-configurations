@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Travaille sur https://github.com/lvaylet/my-nixos-configurations/issues/32 pour sécuriser Portainer et Home Assistant. Avance de manière autonome sur les étapes "speckit.plan", "speckit.tasks" puis "speckit.implement" si aucune intervention de ma part n'est nécessaire, par exemple pour clarifier ou analyser tes propositions. Après la phase d'implémentation, crée une Pull Request dédiée. Je la reverrai manuellement."
+**Input**: User description: "Travaille sur <https://github.com/lvaylet/my-nixos-configurations/issues/32> pour sécuriser Portainer et Home Assistant. Avance de manière autonome sur les étapes "speckit.plan", "speckit.tasks" puis "speckit.implement" si aucune intervention de ma part n'est nécessaire, par exemple pour clarifier ou analyser tes propositions. Après la phase d'implémentation, crée une Pull Request dédiée. Je la reverrai manuellement."
 
 ## User Scenarios & Testing *(mandatory)*
 

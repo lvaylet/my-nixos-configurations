@@ -15,6 +15,7 @@ Implement a declarative, NixOS-compatible LazyVim editing environment that repli
 **Language/Version**: Nix (Flakes, Nixpkgs unstable), Lua (LuaJIT via Neovim >= 0.9.0)
 
 **Primary Dependencies**:
+
 - `home-manager` (`programs.neovim`, `xdg.configFile`)
 - `pkgs.neovim` (>= 0.9.0 with LuaJIT)
 - `pkgs.git` (>= 2.19.0)
@@ -25,12 +26,14 @@ Implement a declarative, NixOS-compatible LazyVim editing environment that repli
 - `wezterm` (via `modules/desktop/terminal.nix`)
 
 **Storage**:
+
 - Immutable declarative configuration: `~/.config/nvim/` linked to Nix store
 - Transient runtime state & plugins: `~/.local/share/nvim/` (plugins, lockfile, treesitter grammars)
 - Transient cache: `~/.cache/nvim/`
 - User state: `~/.local/state/nvim/` (undo tree, history, ShaDa)
 
 **Testing**:
+
 - Formatting & static analysis: `just fmt` (`alejandra`), `just lint` (`statix check`, `deadnix`)
 - Flake evaluation: `nix eval .#nixosConfigurations.desktop-pc.config.system.build.toplevel.drvPath`
 - Regression evaluation: `nix eval .#nixosConfigurations.homelab.config.system.build.toplevel.drvPath`, `nix eval .#nixosConfigurations.iso.config.system.build.toplevel.drvPath`
@@ -41,11 +44,13 @@ Implement a declarative, NixOS-compatible LazyVim editing environment that repli
 **Project Type**: Infrastructure as Code & Desktop User Environment (Nix Flakes, Home Manager, Neovim dotfiles)
 
 **Performance Goals**:
+
 - Editor startup to interactive dashboard in < 1.0 second on standard hardware
 - Project file search (<leader>ff) across 10,000+ files in < 500 ms
 - 100% of runtime dependencies resolved immediately without missing binary errors
 
 **Constraints**:
+
 - Strict Dendritic Pattern compliance: `modules/desktop/editors.nix` discovered automatically via `import-tree`
 - Declarative hermeticity: zero imperative mutations in `~/.config/nvim`
 - Writable lockfile: lockfile directed to `stdpath("data")` to avoid read-only Nix store conflicts
@@ -53,6 +58,7 @@ Implement a declarative, NixOS-compatible LazyVim editing environment that repli
 - Zero build regressions across existing host definitions (`desktop-pc`, `homelab`, `iso`)
 
 **Scale/Scope**:
+
 - 1 modified module: `modules/desktop/editors.nix` (replaces `nvf` NixOS module with declarative Home Manager Neovim)
 - 1 new dotfiles directory: `modules/desktop/dotfiles/nvim/` (7 starter files)
 
@@ -121,6 +127,7 @@ modules/
 ```
 
 **Structure Decision**:
+
 - The editor module resides in `modules/desktop/editors.nix`, maintaining dendritic modularity and colocating all desktop editors (`neovim`, `vscode`, `zed-editor`).
 - Dotfiles reside in `modules/desktop/dotfiles/nvim/`, matching the established repository pattern used for `niri/config.kdl`, `starship.toml`, and `noctalia.toml`.
 

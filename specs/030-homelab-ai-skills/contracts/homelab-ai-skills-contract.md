@@ -12,12 +12,14 @@
 ## 2. Host Configuration Evaluation Contract
 
 ### `nixosConfigurations.homelab`
+
 - `config.environment.systemPackages` MUST include `opencode`, `nodejs` (`node`, `npm`, `npx`), and `uv` (`uv`, `uvx`).
 - `config.systemd.tmpfiles.rules` MUST include a rule linking `/home/laurent/.config/opencode/skills` to the declarative `opencode-skills` store path containing all 27 Matt Pocock skills (`engineering` + `productivity`) and all 25 Addy Osmani skills.
 - `config.systemd.services.opencode-web.path` MUST include `nodejs` and `uv` in addition to existing system and development tools.
 - `config.preservation.preserveAt."/persistent".users.laurent.directories` MUST include `".agents"` alongside `".local/share/opencode"` and `".local/state/opencode"`.
 
 ### `nixosConfigurations.desktop-pc` & `darwinConfigurations.macbook-air-m4-15`
+
 - `config.environment.systemPackages` MUST include `nodejs` and `uv`.
 - `config.home-manager.users.laurent.xdg.configFile."opencode/skills".source` MUST point to the declarative `opencode-skills` store path.
 - `config.home-manager.users.laurent.programs.opencode.extraPackages` MUST include `nodejs` and `uv`.

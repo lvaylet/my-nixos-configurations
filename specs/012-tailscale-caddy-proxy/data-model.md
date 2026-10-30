@@ -9,6 +9,7 @@ This document formalizes the entities, configuration schemas, attributes, relati
 ## 1. Entities & Configuration Schemas
 
 ### Entity 1: Tailnet Identity Variable (`modules/core/vars.nix`)
+
 Represents the declarative repository-wide configuration option that defines the base Tailscale tailnet domain.
 
 | Option / Attribute | Type | Default Value | Description |
@@ -16,11 +17,13 @@ Represents the declarative repository-wide configuration option that defines the
 | `config.flake.vars.tailscaleDomain` | `lib.types.str` | `"tailnet-2900.ts.net"` | Base Tailscale domain name used to assemble host FQDNs (`<hostname>.<tailscaleDomain>`) |
 
 #### Relationships
+
 - **Referenced by**: `modules/services/home-automation.nix` and `modules/services/n8n.nix` to construct fully qualified domain names for Caddy virtual hosts without string duplication or host-level boilerplate.
 
 ---
 
 ### Entity 2: Tailscale TLS Authorization (`modules/services/tailscale.nix`)
+
 Represents the Tailscale service configuration granting the reverse proxy daemon permission to fetch TLS certificates via the local daemon socket.
 
 | Option / Attribute | Value | Description |
@@ -29,11 +32,13 @@ Represents the Tailscale service configuration granting the reverse proxy daemon
 | `services.tailscale.permitCertUid` | `"caddy"` | Authorizes the `caddy` system user to request TLS certificates via LocalAPI |
 
 #### Invariants & Validation
+
 - Whenever Caddy is deployed alongside Tailscale, `services.tailscale.permitCertUid` MUST equal `"caddy"`.
 
 ---
 
 ### Entity 3: Central Caddy Reverse Proxy & Persistence (`modules/services/caddy.nix`)
+
 Represents the base reverse proxy daemon configuration, systemd startup ordering, and state preservation.
 
 | Option / Attribute | Value / Schema | Purpose |
@@ -46,6 +51,7 @@ Represents the base reverse proxy daemon configuration, systemd startup ordering
 ---
 
 ### Entity 4: Home Assistant Proxy Endpoint (`modules/services/home-automation.nix`)
+
 Represents the reverse proxy configuration exposing Home Assistant on port 443 of the host's Tailscale domain.
 
 | Option / Attribute | Value / Schema | Purpose |
@@ -58,6 +64,7 @@ Represents the reverse proxy configuration exposing Home Assistant on port 443 o
 ---
 
 ### Entity 5: n8n Workflow Automation Proxy Endpoint (`modules/services/n8n.nix`)
+
 Represents the reverse proxy configuration exposing n8n on port 5678 of the host's Tailscale domain.
 
 | Option / Attribute | Value / Schema | Purpose |
@@ -70,6 +77,7 @@ Represents the reverse proxy configuration exposing n8n on port 5678 of the host
 ---
 
 ### Entity 6: Certificate Storage Layout (`/persistent/var/lib/caddy`)
+
 Represents the on-disk directory structure managed by Caddy where Tailscale TLS certificates and metadata reside.
 
 ```text

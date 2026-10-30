@@ -27,6 +27,7 @@ just lint
 ```
 
 **Expected Outcome**:
+
 - All `.nix` files format cleanly with `alejandra`.
 - `deadnix` and `statix check` complete with exit code 0 and zero warnings.
 
@@ -51,6 +52,7 @@ just check
 ```
 
 **Expected Outcome**:
+
 - All three evaluation commands succeed, returning valid store paths.
 - `just check` (`nix flake check`) passes with exit code 0.
 
@@ -83,6 +85,7 @@ wl-paste --version
 ```
 
 **Expected Outcome**:
+
 - Each command returns a valid version string matching or exceeding minimum version requirements defined in [cli-contract.md](contracts/cli-contract.md).
 
 ---
@@ -107,6 +110,7 @@ grep -F 'lockfile' ~/.config/nvim/lua/config/lazy.lua
 ```
 
 **Expected Outcome**:
+
 - `~/.config/nvim` matches the layout specified in [starter-layout-contract.md](contracts/starter-layout-contract.md).
 - The lockfile parameter is set to `vim.fn.stdpath("data") .. "/lazy-lock.json"`.
 
@@ -122,6 +126,7 @@ nvim
 ```
 
 **Expected Outcome**:
+
 - LazyVim boots, automatically clones `lazy.nvim` into `~/.local/share/nvim/lazy/lazy.nvim` if not already present, loads the LazyVim starter UI, and presents the starter dashboard screen without errors.
 - Pressing `<leader>ff` or `<space>ff` triggers file finding via `fd`.
 - Pressing `<leader>sg` or `<space>sg` triggers live grep via `ripgrep`.

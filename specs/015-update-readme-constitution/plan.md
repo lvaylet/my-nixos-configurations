@@ -7,6 +7,7 @@
 ## Summary
 
 Update `README.md` to achieve 100% compliance with `.specify/memory/constitution.md` (v2.1.0). Specifically:
+
 1. **Dual-Shell Command Parity (Principle VI)**: Provide explicit **Bash** and **Fish** command variants whenever instructions use shell-specific syntax (`export TARGET_IP=...` and `${TARGET_IP}` vs `set -gx TARGET_IP ...` and `$TARGET_IP` for homelab provisioning/SSH/deployment; `sudo tee ... << 'EOF'` heredocs vs single-quoted `printf '%s\n' ... | sudo tee ...` for `cloudflare.env` and `waha.env` secret provisioning).
 2. **Host Shell Duality & Complete Alias Documentation**: Explain how **Fish** (primary user `laurent`'s default login shell with native `complete -w` autocompletions and Home Manager desktop aliases/functions in `modules/desktop/shell.nix`) and **Bash** (`root` login shell, installer ISO, and bootstrap hosts) coexist while sharing system-wide `environment.shellAliases` (`modules/core/base.nix`), and complete the Git aliases table (`gcan!`, `grba`, `grbc`, `gstd`, `gclean`).
 3. **Architectural & Governance Alignment (Principles II, III, V, VI, VII)**: Update the `modules/desktop/` summary in the Architecture tree (`Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU` instead of `NNN desktop session`) and document the 7-stage Constitutional Quality Gates & Verification Workflow (including dedicated branch + Pull Request isolation and `just test` before `just switch`).

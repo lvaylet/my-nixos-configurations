@@ -44,6 +44,7 @@ This research document consolidates the technical decisions, exact configuration
 ### Decision 2.1: Noctalia Built-in `Nord` Palette with Static App Configs
 
 - **Decision**: In `modules/desktop/dotfiles/noctalia.toml`, set:
+
   ```toml
   [theme]
   builtin = "Nord"
@@ -53,6 +54,7 @@ This research document consolidates the technical decisions, exact configuration
       [theme.templates]
       builtin_ids = []
   ```
+
 - **Rationale**:
   - Inspection of Noctalia's C++ source (`src/theme/builtin_palettes.cpp`) confirms that `"Nord"` is one of the 10 compiled-in palettes (`Ayu`, `Catppuccin`, `Dracula`, `Eldritch`, `Gruvbox`, `Kanagawa`, `Noctalia`, `Nord`, `Rosé Pine`, `Tokyo-Night`) with exact Polar Night (`#2e3440`, `#3b4252`), Snow Storm (`#eceff4`, `#d8dee9`), Frost (`#8fbcbb`, `#88c0d0`, `#5e81ac`), and Aurora (`#bf616a`) definitions.
   - Using `source = "builtin"` eliminates network calls to `api.noctalia.dev` at startup and works 100% hermetically offline.

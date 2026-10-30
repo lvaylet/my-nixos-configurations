@@ -66,7 +66,9 @@ erDiagram
 ## Entities & Attributes
 
 ### 1. `CI_WORKFLOW`
+
 Represents the top-level GitHub Actions automation file (`.github/workflows/ci.yml`).
+
 - **`name`** (string): Human-readable name displayed in GitHub UI (`CI`).
 - **`path`** (string): Relative path from repo root (`.github/workflows/ci.yml`).
 - **`permissions`** (map): Security permissions granted to the default `GITHUB_TOKEN` (`contents: read`).
@@ -74,14 +76,18 @@ Represents the top-level GitHub Actions automation file (`.github/workflows/ci.y
 - **`cancel_in_progress`** (boolean): Automatically terminate superseded runs (`true`).
 
 ### 2. `TRIGGER_EVENT`
+
 Represents the GitHub webhook and scheduling events that trigger pipeline execution.
+
 - **`pull_request`**: Triggers on PR creation, synchronization (new commit), and reopening against `main`.
 - **`push`**: Triggers on direct commits or merges pushed to `main`.
 - **`schedule`**: Weekly scheduled run at Monday 04:00 UTC (`0 4 * * 1`).
 - **`workflow_dispatch`**: Manual run triggered from GitHub Actions web interface or CLI.
 
 ### 3. `QUALITY_GATE_JOB` (`check`)
+
 Initial fast verification stage executed on `ubuntu-latest`.
+
 - **`runner`**: `ubuntu-latest` (x86_64 Linux).
 - **`steps`**:
   1. `actions/checkout@v4`
@@ -97,7 +103,9 @@ Initial fast verification stage executed on `ubuntu-latest`.
   - `check-case-conflicts`, `check-executables-have-shebangs`, `trim-trailing-whitespace`, `end-of-file-fixer`, `mixed-line-endings` (repository hygiene)
 
 ### 4. `MATRIX_BUILD_JOB` (`build`)
+
 Downstream parallel build jobs gated by `QUALITY_GATE_JOB`.
+
 - **`dependency`**: `needs: [check]`
 - **`runner`**: `ubuntu-latest`
 - **`matrix`**:

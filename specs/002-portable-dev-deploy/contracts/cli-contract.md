@@ -11,11 +11,13 @@ All operations are orchestrated through `justfile` recipes with standardized par
 ### 1.1 Recipe Signatures & Behaviors
 
 #### `build [configuration="desktop-pc"] [target=""]`
+
 - **Purpose**: Build the NixOS toplevel system closure for the designated machine configuration.
 - **Parameters**:
   - `configuration` (string, default: `"desktop-pc"`): Target NixOS configuration name (`desktop-pc`, `homelab`, `iso`).
   - `target` (string, default: `""`): Optional remote SSH host string.
 - **Behavior Matrix**:
+
   | Host OS | Target Argument | Executed Command | Description |
   | :--- | :--- | :--- | :--- |
   | **NixOS** | `""` | `nh os build .#{{configuration}}` | Local build via Nix helper |
@@ -25,11 +27,13 @@ All operations are orchestrated through `justfile` recipes with standardized par
 ---
 
 #### `switch [configuration="desktop-pc"] [target=""]`
+
 - **Purpose**: Build, activate, and set the system configuration as the default boot profile.
 - **Parameters**:
   - `configuration` (string, default: `"desktop-pc"`): Configuration name.
   - `target` (string, default: `""`): Remote SSH host string (e.g. `"homelab"`, `"user@192.168.1.50"`).
 - **Behavior Matrix**:
+
   | Host OS | Target Argument | Executed Command | Description |
   | :--- | :--- | :--- | :--- |
   | **NixOS** | `""` | `nh os switch .#{{configuration}}` | Local profile switch |
@@ -39,11 +43,13 @@ All operations are orchestrated through `justfile` recipes with standardized par
 ---
 
 #### `test [configuration="desktop-pc"] [target=""]`
+
 - **Purpose**: Build and activate configuration changes temporarily without modifying the bootloader.
 - **Parameters**:
   - `configuration` (string, default: `"desktop-pc"`): Configuration name.
   - `target` (string, default: `""`): Remote SSH host string.
 - **Behavior Matrix**:
+
   | Host OS | Target Argument | Executed Command | Description |
   | :--- | :--- | :--- | :--- |
   | **NixOS** | `""` | `nh os test .#{{configuration}}` | Local non-switching activation |
@@ -53,11 +59,13 @@ All operations are orchestrated through `justfile` recipes with standardized par
 ---
 
 #### `boot [configuration="desktop-pc"] [target=""]`
+
 - **Purpose**: Build and set the configuration as default for the next boot without immediate live activation.
 - **Parameters**:
   - `configuration` (string, default: `"desktop-pc"`): Configuration name.
   - `target` (string, default: `""`): Remote SSH host string.
 - **Behavior Matrix**:
+
   | Host OS | Target Argument | Executed Command | Description |
   | :--- | :--- | :--- | :--- |
   | **NixOS** | `""` | `nh os boot .#{{configuration}}` | Local bootloader entry creation |

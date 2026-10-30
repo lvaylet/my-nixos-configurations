@@ -27,6 +27,7 @@ just lint
 ```
 
 **Expected Outcome**:
+
 - All files format cleanly without modifications needed after `just fmt`.
 - `deadnix` and `statix check` complete with exit code 0 and zero warnings.
 
@@ -48,6 +49,7 @@ nix eval .#nixosConfigurations.iso.config.system.build.toplevel.drvPath
 ```
 
 **Expected Outcome**:
+
 - All three evaluation commands succeed, returning valid `.drv` store paths without evaluation errors.
 
 ---
@@ -75,6 +77,7 @@ nix eval .#nixosConfigurations.homelab.config.virtualisation.oci-containers.cont
 ```
 
 **Expected Outcome**:
+
 - All container attributes match the specification in [contracts/n8n-service-contract.md](contracts/n8n-service-contract.md).
 
 ---
@@ -88,6 +91,7 @@ nix eval .#nixosConfigurations.homelab.config.networking.firewall.allowedTCPPort
 ```
 
 **Expected Outcome**:
+
 - Output includes `5678` in the allowed TCP port list.
 
 ---
@@ -101,6 +105,7 @@ nix eval .#nixosConfigurations.homelab.config.preservation.preserveAt."/persiste
 ```
 
 **Expected Outcome**:
+
 - Output contains an entry for `/var/lib/n8n` with user `1000`, group `1000`, and mode `0750`.
 
 ---
@@ -114,4 +119,5 @@ just check
 ```
 
 **Expected Outcome**:
+
 - All git hooks and flake check derivations succeed with exit code 0.

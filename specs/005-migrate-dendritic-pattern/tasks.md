@@ -110,7 +110,7 @@
 
 ### Implementation for User Story 4
 
-- [x] T035 [US4] Configure `config.flake.vars` defaults in `modules/core/vars.nix` matching user identity ("laurent", "Laurent Vaylet", "laurent.vaylet@gmail.com", SSH key)
+- [x] T035 [US4] Configure `config.flake.vars` defaults in `modules/core/vars.nix` matching user identity ("laurent", "Laurent Vaylet", "<laurent.vaylet@gmail.com>", SSH key)
 - [x] T036 [US4] Verify user account creation and Home Manager user binding in `modules/core/lib.nix` resolves `config.flake.vars.user` without `specialArgs` pass-through
 
 **Checkpoint**: Shared identity is universally accessible across all features via `config`.
@@ -196,6 +196,7 @@ Phase 8: Polish (T043 - T045)
 ## Implementation Strategy
 
 ### MVP First (Phases 1, 2, 3, 4, 5)
+
 1. Complete Setup (T001-T002) and Foundational (T003-T005).
 2. Migrate and wire core and desktop features (T006-T014).
 3. Connect `flake.nix` with `import-tree` (T028-T029).
@@ -203,6 +204,7 @@ Phase 8: Polish (T043 - T045)
 5. **STOP and VALIDATE**: Verify `desktop-pc` evaluates and builds independently.
 
 ### Incremental Target Delivery
+
 1. Extend to server services (T015-T027).
 2. Assemble `homelab` (T031, T033) and `iso` (T034).
 3. Wire multi-system tools and checks (T037-T039).
