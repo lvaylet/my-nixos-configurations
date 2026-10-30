@@ -361,6 +361,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **n8n** (+ `n8n-runners`) | OCI Containers | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor, webhook integration, and isolated `n8nio/runners` sidecar for native Python 3 and JavaScript `Code` nodes. |
 | **Uptime Kuma** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/uptime-kuma`, Docker socket | Self-hosted monitoring tool for tracking service availability, Portainer/Podman container status, response latency, and TLS certificate expiration with real-time alerts. |
 | **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.agents`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface, declarative AI engineering skills (Matt Pocock & Addy Osmani), Node.js/Python tool runners (`npm`, `npx`, `uv`, `uvx`), and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
+| **Code-Server** | Native Service | `443` (HTTPS via Caddy) | `/home/laurent`, `/home/laurent/.local/share/code-server`, `/home/laurent/.config/code-server` | Web-based code editor and remote IDE running natively under the primary user account with full access to home workspaces, integrated terminal (`just`, `git`, `nix`), and persistent extensions. |
 | **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
 | **SGDF Contacts API** (`sgdf-utils`) | Native Service | `443` (HTTPS via Caddy) | `/var/lib/sgdf-utils` | FastAPI HTTP REST API and SQLite repository (`sgdf.sqlite3`) managing SGDF La Rochelle parent contacts for n8n and WAHA (`sgdf-utils:sgdf-utils`, `0750` preserved under `/persistent`). |
 | **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/var/cache/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding (`jellyfin:multimedia`, `0750` preserved under `/persistent`). |
@@ -376,6 +377,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 | **n8n** | `https://n8n.homelab.vaylet.fr` | `127.0.0.1:5679` | N/A (loopback bound) |
 | **Uptime Kuma** | `https://uptime.homelab.vaylet.fr` | `127.0.0.1:3002` | N/A (loopback bound) |
 | **OpenCode** | `https://opencode.homelab.vaylet.fr` | `127.0.0.1:4096` | N/A (loopback bound) |
+| **Code-Server** | `https://code.homelab.vaylet.fr` | `127.0.0.1:4444` | N/A (loopback bound) |
 | **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | N/A (loopback bound) |
 | **SGDF Contacts API** (`sgdf-utils`) | `https://sgdf.homelab.vaylet.fr` | `127.0.0.1:8000` | N/A (loopback bound) |
 | **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | N/A (loopback bound) |
@@ -602,7 +604,34 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 
    - **Calling from n8n**: In n8n `HTTP Request` nodes, configure *Header Auth* (`X-API-Key`) with the retrieved key and query `https://sgdf.homelab.vaylet.fr/api/v1/parents?active_only=true`.
 
-9. **Deploy & Activate**:
+9. **Code-Server Web Code Editor Setup & Access**:
+   - **Web Interface**: Open `https://code.homelab.vaylet.fr` in your browser from any device authenticated to your private Tailscale network.
+   - **Keyless Access**: Tailscale network isolation replaces application passwords (`auth = "none"`), granting immediate, frictionless access within the private tailnet.
+   - **Workspace & Terminal Tooling**: Launches directly in `/home/laurent` with the full Nix development and deployment toolchain (`git`, `just`, `nh`, `nix`, `nixos-rebuild`, `ripgrep`, `direnv`, `bash`) in the integrated terminal's `PATH`.
+   - **State & Extension Preservation**: Across ephemeral tmpfs reboots, `~/.local/share/code-server` (extensions, user data, workspace storage) and `~/.config/code-server` (settings and keybindings) are preserved under `/persistent/home/laurent`.
+   - **Operational Verification & Testing**:
+
+     **Bash**:
+
+     ```bash
+     # Test configuration activation safely without changing bootloader entry:
+     just test homelab
+
+     # Deploy and switch to the new configuration on homelab:
+     just switch homelab
+     ```
+
+     **Fish**:
+
+     ```fish
+     # Test configuration activation safely without changing bootloader entry:
+     just test homelab
+
+     # Deploy and switch to the new configuration on homelab:
+     just switch homelab
+     ```
+
+10. **Deploy & Activate**:
 
    ```sh
    just switch homelab
