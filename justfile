@@ -243,10 +243,53 @@ fix:
 # Flake Management
 ###################################
 
-# update all inputs and `flake.lock` file
+# update flake inputs and synchronize Fixed-Output Derivation hashes
 [group('flake-management')]
-up:
-  nix flake update
+up input="":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  INPUT="{{input}}"
+  if [ -z "${INPUT}" ]; then
+    echo "==> Updating all flake inputs..."
+    nix flake update
+  else
+    echo "==> Updating flake input '${INPUT}'..."
+    nix flake update "${INPUT}"
+  fi
+  just update-caddy-hash
+
+# verify and automatically synchronize Caddy withPlugins hash if nixpkgs changed
+[group('flake-management')]
+update-caddy-hash:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  echo "==> Checking Caddy withPlugins derivation hash..."
+  BUILD_OUTPUT=""
+  if BUILD_OUTPUT=$(nix build .#nixosConfigurations.homelab.config.services.caddy.package --no-link 2>&1); then
+    echo "==> Caddy hash is up-to-date."
+  else
+    if echo "${BUILD_OUTPUT}" | grep -q "hash mismatch"; then
+      NEW_HASH=$(echo "${BUILD_OUTPUT}" | sed -nE 's/.*got:[[:space:]]+(sha256-[A-Za-z0-9+/=]+).*/\1/p' | head -n1)
+      if [ -n "${NEW_HASH}" ]; then
+        echo "==> Updating Caddy hash in modules/services/caddy.nix to ${NEW_HASH}..."
+        sed -E "s|hash = \"sha256-[^\"]+\";|hash = \"${NEW_HASH}\";|" modules/services/caddy.nix > modules/services/caddy.nix.tmp
+        mv modules/services/caddy.nix.tmp modules/services/caddy.nix
+        echo "==> Re-verifying Caddy build with updated hash..."
+        nix build .#nixosConfigurations.homelab.config.services.caddy.package --no-link
+        echo "==> Caddy hash synchronized and verified successfully."
+      else
+        echo "Error: Hash mismatch detected but failed to parse new hash." >&2
+        echo "${BUILD_OUTPUT}" >&2
+        exit 1
+      fi
+    elif echo "${BUILD_OUTPUT}" | grep -q -E "is required, but there are no machines configured|cannot build on"; then
+      echo "==> Skipping Caddy hash check (no Linux builder configured on $(uname -s))."
+    else
+      echo "Error checking Caddy hash:" >&2
+      echo "${BUILD_OUTPUT}" >&2
+      exit 1
+    fi
+  fi
 
 # show the flake outputs
 [group('flake-management')]
