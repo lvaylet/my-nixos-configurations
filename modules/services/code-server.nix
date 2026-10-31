@@ -30,6 +30,7 @@
           coreutils
           direnv
           git
+          jq
           just
           nh
           nix

@@ -14,6 +14,7 @@
       buildInputs =
         enabledPackages
         ++ (with pkgs; [
+          jq
           just
           markdownlint-cli2
           nh

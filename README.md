@@ -608,7 +608,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
    - **Web Interface**: Open `https://code.homelab.vaylet.fr` in your browser from any device authenticated to your private Tailscale network.
    - **Keyless Access**: Tailscale network isolation replaces application passwords (`auth = "none"`), granting immediate, frictionless access within the private tailnet.
    - **Visual & Extension Parity**: Mirrors the desktop VS Code experience via `modules/core/vscode.nix` with pre-installed extensions (`GitHub Actions`, `GitHub Pull Requests and Issues`, `Nord` theme, `Markdownlint`, `Nix IDE`, `Nix`, `Alejandra`, `Even Better TOML`), relative line numbering, 80/88/100/120-column rulers, format-on-save, and Nix LSP tooling (`nixd`, `alejandra`).
-   - **Workspace & Terminal Tooling**: Launches directly in `/home/laurent` with the full Nix development and deployment toolchain (`git`, `just`, `nh`, `nix`, `nixd`, `alejandra`, `nixos-rebuild`, `ripgrep`, `direnv`, `bash`) in the integrated terminal's `PATH`.
+   - **Workspace & Terminal Tooling**: Launches directly in `/home/laurent` with the full Nix development and deployment toolchain (`git`, `just`, `nh`, `nix`, `nixd`, `alejandra`, `nixos-rebuild`, `ripgrep`, `direnv`, `bash`, `jq`) in the integrated terminal's `PATH`.
    - **Declarative Settings & Preservation**: `settings.json` is declaratively symlinked to `/nix/store` via `systemd.tmpfiles.rules` (`L+`), while runtime caches and sessions are preserved under `/persistent/home/laurent` (`.local/share/code-server`, `.config/code-server`).
    - **Operational Verification & Testing**:
 
