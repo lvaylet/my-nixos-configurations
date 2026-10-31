@@ -166,6 +166,7 @@ in {
         gh
         git
         htop
+        jq
         wget
 
         # Nix Development & Deployment Stack
@@ -287,6 +288,7 @@ in {
         gh
         git
         htop
+        jq
         wget
 
         # Nix Development & Deployment Stack
