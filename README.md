@@ -607,8 +607,9 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 9. **Code-Server Web Code Editor Setup & Access**:
    - **Web Interface**: Open `https://code.homelab.vaylet.fr` in your browser from any device authenticated to your private Tailscale network.
    - **Keyless Access**: Tailscale network isolation replaces application passwords (`auth = "none"`), granting immediate, frictionless access within the private tailnet.
-   - **Workspace & Terminal Tooling**: Launches directly in `/home/laurent` with the full Nix development and deployment toolchain (`git`, `just`, `nh`, `nix`, `nixos-rebuild`, `ripgrep`, `direnv`, `bash`) in the integrated terminal's `PATH`.
-   - **State & Extension Preservation**: Across ephemeral tmpfs reboots, `~/.local/share/code-server` (extensions, user data, workspace storage) and `~/.config/code-server` (settings and keybindings) are preserved under `/persistent/home/laurent`.
+   - **Visual & Extension Parity**: Mirrors the desktop VS Code experience via `modules/core/vscode.nix` with pre-installed extensions (`GitHub Actions`, `GitHub Pull Requests and Issues`, `Nord` theme, `Markdownlint`, `Nix IDE`, `Nix`, `Alejandra`, `Even Better TOML`), relative line numbering, 80/88/100/120-column rulers, format-on-save, and Nix LSP tooling (`nixd`, `alejandra`).
+   - **Workspace & Terminal Tooling**: Launches directly in `/home/laurent` with the full Nix development and deployment toolchain (`git`, `just`, `nh`, `nix`, `nixd`, `alejandra`, `nixos-rebuild`, `ripgrep`, `direnv`, `bash`) in the integrated terminal's `PATH`.
+   - **Declarative Settings & Preservation**: `settings.json` is declaratively symlinked to `/nix/store` via `systemd.tmpfiles.rules` (`L+`), while runtime caches and sessions are preserved under `/persistent/home/laurent` (`.local/share/code-server`, `.config/code-server`).
    - **Operational Verification & Testing**:
 
      **Bash**:
@@ -809,7 +810,7 @@ The `desktop-pc` workstation and shared CLI/editor modules use the Arctic, bluis
 
 - **Session, Compositor & Boot**: Noctalia desktop shell (`builtin = "Nord"` dark mode), Niri window focus rings and borders (`#88C0D0` active Frost, `#4C566A` inactive Polar Night, `#BF616A` urgent Aurora Red), Tuigreet KMS login screen, and Limine bootloader wallpapers.
 - **Terminal Emulators**: WezTerm (`color_scheme = 'nord'`) and Ghostty (`theme = "Nord"`).
-- **Code Editors**: Neovim/LazyVim (`gbprod/nord.nvim` with `colorscheme = "nord"`), VS Code (`arcticicestudio.nord-visual-studio-code`), and Zed (`nord` extension with `Nord` dark theme).
+- **Code Editors**: Neovim/LazyVim (`gbprod/nord.nvim` with `colorscheme = "nord"`), VS Code and Code Server (`arcticicestudio.nord-visual-studio-code` via shared `modules/core/vscode.nix`), and Zed (`nord` extension with `Nord` dark theme).
 - **Shell, Prompt & TUI Utilities**: Starship (`[palettes.nord]`), Fish syntax and pager colors, OpenCode TUI (`theme = "nord"`), Bat (`theme = "Nord"`), Fzf (`colors`), Yazi (`theme`), Btop (`color_theme = "nord"`), and Lazygit (`gui.theme`).
 
 ### Dynamic Noctalia Wallpapers (`desktop-pc`)
@@ -827,11 +828,24 @@ On `desktop-pc`, wallpapers are managed declaratively through the Git repository
 Whenever source code or terminal text is displayed across the `desktop-pc` stack, **FiraCode Nerd Font** (`pkgs.nerd-fonts.fira-code`) is used with OpenType programming ligatures (`calt`, `clig`, `liga`) and Nerd Font v3 symbol glyphs enabled:
 
 - **System & User Default `monospace` (`modules/desktop/fonts.nix`)**: Fontconfig (`fonts.fontconfig.defaultFonts.monospace`) prioritizes `FiraCode Nerd Font` (with `FiraCode Nerd Font Mono` as fallback) so web browsers, Markdown previews, and system viewers rendering generic `monospace` or `<code>`/`<pre>` blocks automatically use `FiraCode Nerd Font`.
-- **Code Editors (`modules/desktop/editors.nix`, `modules/core/dotfiles/nvim/`)**:
-  - **VS Code**: Configured with `"FiraCode Nerd Font"` and ligatures across the code editor (`editor.fontFamily`), integrated terminal (`terminal.integrated.fontFamily`), debug console (`debug.console.fontFamily`), SCM input (`scm.inputFontFamily`), and chat code blocks (`chat.editor.fontFamily`).
+- **Code Editors (`modules/desktop/editors.nix`, `modules/core/vscode.nix`, `modules/core/dotfiles/nvim/`)**:
+  - **VS Code & Code Server**: Configured with `"FiraCode Nerd Font"` and ligatures across the code editor (`editor.fontFamily`), integrated terminal (`terminal.integrated.fontFamily`), debug console (`debug.console.fontFamily`), SCM input (`scm.inputFontFamily`), and chat code blocks (`chat.editor.fontFamily`) via shared `modules/core/vscode.nix`.
   - **Zed Editor**: Configured with `buffer_font_family = "FiraCode Nerd Font"` (`calt = true`) and `terminal.font_family = "FiraCode Nerd Font"`.
   - **Neovim / LazyVim**: Inherits `FiraCode Nerd Font` and ligatures from the parent terminal emulator in TUI mode and sets `vim.opt.guifont = "FiraCode Nerd Font:h12"` (`lua/config/options.lua`) for GUI clients.
 - **Terminal Emulators (`modules/desktop/terminal.nix`, `modules/desktop/apps.nix`)**: Both **WezTerm** (`wezterm.font('FiraCode Nerd Font')`) and **Ghostty** (`font-family = "FiraCode Nerd Font"`) enable `calt`, `clig`, and `liga` ligature features by default.
+
+### Harmonized VS Code & Code Server Configuration (`modules/core/vscode.nix`)
+
+All GUI workstations (`desktop-pc`, `macbook-air-m4-15`) and remote server instances (`homelab`) share a single source of truth for Visual Studio Code and Code Server configurations:
+
+- **Centralized Library (`config.flake.lib.vscode`)**: Declared in `modules/core/vscode.nix` and discovered automatically via `import-tree ./modules`, providing:
+  - **`extensions`**: Pre-packages the shared extension suite (`GitHub Actions`, `GitHub Pull Requests and Issues`, `Nord` theme, `Markdownlint`, `Nix IDE`, `Nix`, `Alejandra`, `Even Better TOML`).
+  - **`settings`**: Unified editor preferences including Nord theme, relative line numbers, rulers (`80`, `88`, `100`, `120`), format-on-save, trailing newline cleanup, file associations (`.bu`, `.container`, `.ign`), and Nix language server settings (`nixd` with `alejandra`).
+- **Desktop Workstations (`modules/desktop/editors.nix`)**: Home Manager's `programs.vscode.profiles.default` directly references `outputs.lib.vscode.settings` and `outputs.lib.vscode.extensions pkgs`, eliminating duplicate configuration code while retaining desktop-only integrations (`wl-clipboard`, Zed editor).
+- **Homelab Code Server (`modules/services/code-server.nix`)**:
+  - Packages Code Server with all shared extensions pre-bundled using `pkgs.vscode-with-extensions.override`.
+  - Enforces `settings.json` via `systemd.tmpfiles.rules` (`L+`) pointing to the generated `/nix/store` derivation, without requiring Home Manager on `homelab`.
+  - Equips the runtime environment with `alejandra` and `nixd` in `services.code-server.extraPackages` for instant Nix LSP diagnostics and formatting in browser sessions.
 
 ### Shared Modal Editor: Neovim & LazyVim (`modules/core/neovim.nix`)
 
