@@ -10,6 +10,12 @@
     description = "Dendritic feature modules grouped by domain";
   };
 
+  options.flake.lib = lib.mkOption {
+    type = lib.types.lazyAttrsOf lib.types.raw;
+    default = {};
+    description = "Flake library functions and shared helpers";
+  };
+
   config.flake.lib = {
     mkHost = {
       system ? "x86_64-linux",

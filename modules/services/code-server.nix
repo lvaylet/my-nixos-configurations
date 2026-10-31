@@ -3,6 +3,7 @@
     nixos = {
       config,
       lib,
+      outputs,
       pkgs,
       vars,
       ...
@@ -19,7 +20,12 @@
         extraArguments = [
           "/home/${vars.userName}"
         ];
+        package = pkgs.vscode-with-extensions.override {
+          vscode = pkgs.code-server;
+          vscodeExtensions = outputs.lib.vscode.extensions pkgs;
+        };
         extraPackages = with pkgs; [
+          alejandra
           bash
           coreutils
           direnv
@@ -27,10 +33,18 @@
           just
           nh
           nix
+          nixd
           nixos-rebuild
           ripgrep
         ];
       };
+
+      systemd.tmpfiles.rules = [
+        "d /home/${vars.userName}/.local/share/code-server/User 0755 ${vars.userName} users -"
+        "L+ /home/${vars.userName}/.local/share/code-server/User/settings.json - - - - ${(pkgs.formats.json {}).generate "settings.json" outputs.lib.vscode.settings}"
+        "d /home/${vars.userName}/.config/code-server 0755 ${vars.userName} users -"
+        "L+ /home/${vars.userName}/.config/code-server/settings.json - - - - ${(pkgs.formats.json {}).generate "settings.json" outputs.lib.vscode.settings}"
+      ];
 
       services.caddy = lib.mkIf config.services.caddy.enable {
         virtualHosts."code.${vars.homelabDomain}" = {
