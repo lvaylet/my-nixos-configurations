@@ -26,6 +26,7 @@ This guide provides end-to-end scenarios to validate the implementation of share
 Verify that all Nix files format cleanly with `alejandra`, pass static linting (`statix`, `deadnix`), and succeed in hermetic pre-commit checks.
 
 #### Bash
+
 ```bash
 just fmt
 just lint
@@ -33,6 +34,7 @@ just check
 ```
 
 #### Fish
+
 ```fish
 just fmt
 just lint
@@ -40,6 +42,7 @@ just check
 ```
 
 **Expected Outcome**:
+
 - All commands exit with code 0 and zero errors or warnings.
 
 ---
@@ -49,6 +52,7 @@ just check
 Verify that `outputs.lib.vscode` is exposed and both host configurations evaluate the exact same settings and extensions.
 
 #### Bash
+
 ```bash
 # Verify shared settings evaluation
 nix eval .#lib.vscode.settings --apply 'builtins.attrNames' --json
@@ -62,6 +66,7 @@ nix eval .#nixosConfigurations.homelab.config.services.code-server.extraPackages
 ```
 
 #### Fish
+
 ```fish
 # Verify shared settings evaluation
 nix eval .#lib.vscode.settings --apply 'builtins.attrNames' --json
@@ -75,6 +80,7 @@ nix eval .#nixosConfigurations.homelab.config.services.code-server.extraPackages
 ```
 
 **Expected Outcome**:
+
 - `workbench.colorTheme` outputs `"Nord"`.
 - `services.code-server.package.name` outputs `"code-server-with-extensions-..."`.
 - `services.code-server.extraPackages` includes `alejandra` and `nixd`.
@@ -86,16 +92,19 @@ nix eval .#nixosConfigurations.homelab.config.services.code-server.extraPackages
 Verify that declarative `settings.json` symlinks are configured on `homelab`.
 
 #### Bash
+
 ```bash
 nix eval .#nixosConfigurations.homelab.config.systemd.tmpfiles.rules --apply 'rules: builtins.filter (r: builtins.match ".*settings\\.json.*" r != null) rules' --json
 ```
 
 #### Fish
+
 ```fish
 nix eval .#nixosConfigurations.homelab.config.systemd.tmpfiles.rules --apply 'rules: builtins.filter (r: builtins.match ".*settings\\.json.*" r != null) rules' --json
 ```
 
 **Expected Outcome**:
+
 - Output contains rules creating `~/.local/share/code-server/User/settings.json` and `~/.config/code-server/settings.json` pointing to the generated Nix store JSON derivation.
 
 ---
@@ -105,6 +114,7 @@ nix eval .#nixosConfigurations.homelab.config.systemd.tmpfiles.rules --apply 'ru
 Verify that configuration changes can be activated safely without modifying the bootloader.
 
 #### Bash
+
 ```bash
 # Test on desktop-pc (when running locally on desktop-pc)
 just test configuration="desktop-pc"
@@ -114,6 +124,7 @@ just test configuration="homelab"
 ```
 
 #### Fish
+
 ```fish
 # Test on desktop-pc (when running locally on desktop-pc)
 just test configuration="desktop-pc"
@@ -123,5 +134,6 @@ just test configuration="homelab"
 ```
 
 **Expected Outcome**:
+
 - Generation builds and activates successfully without errors.
 - On `homelab`, `code-server.service` starts and loads with the Nord theme, extensions, and relative line numbers.

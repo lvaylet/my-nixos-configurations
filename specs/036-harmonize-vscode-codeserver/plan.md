@@ -9,6 +9,7 @@
 Harmonize the configurations of Visual Studio Code (on `desktop-pc`) and Code Server (on `homelab`) by establishing a centralized, single source of truth in `modules/core/vscode.nix`. This eliminates code duplication across hosts while achieving maximum visual, functional, and extension parity.
 
 Key technical implementation components:
+
 1. **Centralized Configuration Library (`modules/core/vscode.nix`)**: Discovered automatically via `import-tree ./modules`, declaring `config.flake.lib.vscode` with shared `settings` (Nord theme, FiraCode Nerd Font, relative line numbers, rulers, format-on-save, diff options, file associations, Nix LSP rules) and `extensions` (GitHub Actions, GitHub Pull Requests, Nord theme, Markdownlint, Nix IDE, Nix, Alejandra, Even Better TOML).
 2. **Desktop Consumer Refactoring (`modules/desktop/editors.nix`)**: Replaces 80+ lines of duplicate settings and package lists in Home Manager's `programs.vscode.profiles.default` with references to `outputs.lib.vscode.settings` and `outputs.lib.vscode.extensions pkgs`, while retaining desktop-only tools (`wl-clipboard`, Zed editor).
 3. **Homelab Extension Packaging (`modules/services/code-server.nix`)**: Packages Code Server with all shared extensions pre-installed using `pkgs.vscode-with-extensions.override { vscode = pkgs.code-server; vscodeExtensions = outputs.lib.vscode.extensions pkgs; }`.
@@ -23,6 +24,7 @@ Key technical implementation components:
 **Language/Version**: Nix (Flakes, Nixpkgs unstable, Flake-parts)
 
 **Primary Dependencies**:
+
 - `pkgs.vscode-with-extensions` (Hermetic wrapper for VS Code / Code Server extensions)
 - `pkgs.code-server` (Web-based IDE service in `modules/services/code-server.nix`)
 - `pkgs.vscode-extensions` (Curated extension derivations from Nixpkgs)
@@ -32,6 +34,7 @@ Key technical implementation components:
 - `flake-parts` & `import-tree` (Dendritic module auto-discovery)
 
 **Storage**:
+
 - Immutable Nix store derivations:
   - Settings JSON generated via `(pkgs.formats.json {}).generate "settings.json" outputs.lib.vscode.settings`
   - Wrapped `code-server-with-extensions` package in `/nix/store`
@@ -40,6 +43,7 @@ Key technical implementation components:
   - `~/.config/code-server`
 
 **Testing**:
+
 - Formatting & static analysis: `just fmt` (`alejandra`), `just lint` (`statix`, `deadnix`).
 - Hermetic sandbox checks: `just check` (`nix flake check`).
 - Target host evaluation:
@@ -49,6 +53,7 @@ Key technical implementation components:
 - Activation testing: `just test configuration="homelab"`, `just test configuration="desktop-pc"`.
 
 **Target Platform**:
+
 - `desktop-pc` (`x86_64-linux` NixOS workstation)
 - `homelab` (`x86_64-linux` NixOS headless server)
 - `macbook-air-m4-15` (`aarch64-darwin` macOS laptop)
@@ -56,12 +61,14 @@ Key technical implementation components:
 **Project Type**: Infrastructure as Code (Nix Flakes, NixOS system configuration, Home Manager).
 
 **Performance Goals**:
+
 - 0 lines of duplicated VS Code settings JSON across the repository (`SC-002`).
 - 100% parity of theme, typography, formatting, and extensions between desktop and web editors (`SC-001`, `SC-003`).
 - 0 evaluation or build regressions across all target hosts (`SC-004`).
 - Zero delay in extension availability on `homelab` (extensions pre-bundled in package wrapper).
 
 **Constraints**:
+
 - Strict Dendritic Pattern compliance: `modules/core/vscode.nix` auto-discovered by `import-tree ./modules` (Principle II).
 - `homelab` MUST keep `enableHomeManager = false` (Principle II).
 - Desktop GUI tools (`wl-clipboard`, `zed-editor`) MUST NOT leak onto `homelab`.
@@ -69,6 +76,7 @@ Key technical implementation components:
 - Dedicated branch workflow: Changes isolated to branch `036-harmonize-vscode-codeserver` (Principle VII).
 
 **Scale/Scope**:
+
 - 1 new core module: `modules/core/vscode.nix`.
 - 2 updated feature modules: `modules/desktop/editors.nix`, `modules/services/code-server.nix`.
 - 1 updated documentation file: `README.md`.
@@ -127,6 +135,7 @@ modules/
 ```
 
 **Structure Decision**:
+
 - Created `modules/core/vscode.nix` to hold the single source of truth for VS Code settings and extension lists.
 - Updated `modules/desktop/editors.nix` to consume `outputs.lib.vscode` inside Home Manager.
 - Updated `modules/services/code-server.nix` to consume `outputs.lib.vscode` inside native NixOS, using `vscode-with-extensions` and `systemd.tmpfiles.rules`.
