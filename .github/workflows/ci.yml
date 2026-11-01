@@ -34,3 +34,6 @@ jobs:
 
       - name: Run Flake Checks
         run: nix flake check --print-build-logs
+
+      - name: Evaluate Darwin host configuration
+        run: nix eval .#darwinConfigurations.macbook-air-m4-15.system
