@@ -306,11 +306,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793539840,
-        "narHash": "sha256-TJQDsELyL4g8OFn7Drjs3ER3y70Z/hE+NCEzcQRjrXo=",
+        "lastModified": 1793567729,
+        "narHash": "sha256-j/48CMouXW5xsY1tRdHD9LSHtlQlo0xWfdXKrZRUYrg=",
         "owner": "lvaylet",
         "repo": "sgdf-tools",
-        "rev": "e84ea4d46902598f5a2b996fca3d4b65a6c0ea7d",
+        "rev": "14fb5565408c5641e62456f39dd676eda9f57d46",
         "type": "github"
       },
       "original": {

@@ -606,6 +606,48 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
      ```
 
    - **Importing SGDF Intranet Exports & Calling from n8n**: Import an intranet export (`ExportIndividus.xls`) via `sgdf --api-url https://sgdf.homelab.vaylet.fr --token "<SGDF_AUTH_TOKEN>" import ExportIndividus.xls`. In n8n `HTTP Request` nodes, configure *Bearer Auth* (or `Authorization: Bearer <SGDF_AUTH_TOKEN>`) with the retrieved token and query `https://sgdf.homelab.vaylet.fr` endpoints (such as `/api/v1/exports/google-contacts` or `/api/v1/audits/whatsapp`).
+   - **Upgrading & Redeploying `sgdf-tools`**: When a new release or commit is published to upstream `github:lvaylet/sgdf-tools`:
+     1. Update the flake lock input for `sgdf-tools` (`just up sgdf-tools`).
+     2. Deploy and switch the new generation on `homelab` (`just switch homelab`). Systemd restarts `sgdf-api` automatically, embedded SQLite migrations execute seamlessly on `/var/lib/sgdf-tools/sgdf.db`, and both database state and the `SGDF_AUTH_TOKEN` environment file are preserved under `/persistent`.
+     3. Verify health status and systemd logs, then commit the updated `flake.lock`.
+
+     **Bash**:
+
+     ```bash
+     # 1. Update flake input lock:
+     just up sgdf-tools
+
+     # 2. Deploy and switch to the new closure on homelab:
+     just switch homelab
+
+     # 3. Verify health check and service status:
+     curl https://sgdf.homelab.vaylet.fr/health
+     ssh laurent@homelab "systemctl status sgdf-api"
+     ssh laurent@homelab "journalctl -u sgdf-api -n 50"
+
+     # 4. Commit updated lockfile:
+     git add flake.lock
+     git commit -m "chore(flake): update sgdf-tools"
+     ```
+
+     **Fish**:
+
+     ```fish
+     # 1. Update flake input lock:
+     just up sgdf-tools
+
+     # 2. Deploy and switch to the new closure on homelab:
+     just switch homelab
+
+     # 3. Verify health check and service status:
+     curl https://sgdf.homelab.vaylet.fr/health
+     ssh laurent@homelab "systemctl status sgdf-api"
+     ssh laurent@homelab "journalctl -u sgdf-api -n 50"
+
+     # 4. Commit updated lockfile:
+     git add flake.lock
+     git commit -m "chore(flake): update sgdf-tools"
+     ```
 
 9. **Code-Server Web Code Editor Setup & Access**:
    - **Web Interface**: Open `https://code.homelab.vaylet.fr` in your browser from any device authenticated to your private Tailscale network.
