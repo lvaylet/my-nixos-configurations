@@ -746,10 +746,10 @@ All contributions and configuration changes follow the repository's constitution
 
 ## Continuous Integration
 
-Continuous integration runs on GitHub Actions using a two-stage gated pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+Continuous integration runs on GitHub Actions using a fast, hermetic quality gate ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
 
-1. **Stage 1 (Quality Gate & Security)**: Runs `nix flake check` to hermetically validate code formatting (`alejandra`), static analysis (`statix`, `deadnix`), flake syntax (`flake-checker`), and secret scanning filters (`trufflehog`, `ripsecrets`, `detect-private-keys`).
-2. **Stage 2 (Matrix System Builds)**: Concurrently evaluates and builds top-level derivations for all target configurations (`desktop-pc`, `homelab`, `iso`).
+1. **Quality Gate & Flake Validation (`nix flake check`)**: Evaluates all host configurations (`desktop-pc`, `homelab`, `iso`) and hermetically executes all pre-commit hooks in sandbox derivations—validating code formatting (`alejandra`), static analysis (`statix`, `deadnix`), flake syntax (`flake-checker`), and secret scanning filters (`trufflehog`, `ripsecrets`, `detect-private-keys`).
+2. **Streamlined Execution (No Remote System Builds)**: Remote CI omits heavy whole-system closure compilation, completing in under 3 minutes and saving runner resources. Full system closures and ISO images are compiled and tested locally prior to deployment (`just build`, `just test`, `just switch`).
 3. **Build Acceleration**: Leverages [Magic Nix Cache](https://github.com/DeterminateSystems/magic-nix-cache-action) and the Determinate Nix Installer for tokenless, zero-configuration GitHub Actions store caching.
 4. **Pull Request Markdown Auto-Fix**: A dedicated workflow ([`.github/workflows/markdownlint-fix.yml`](.github/workflows/markdownlint-fix.yml)) runs `markdownlint-cli2 --fix` on every Pull Request modifying Markdown files (strictly exempting `.agents/` and `.opencode/`) and automatically commits formatting corrections directly back to the branch.
 
