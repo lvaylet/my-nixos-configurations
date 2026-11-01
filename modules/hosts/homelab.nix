@@ -34,7 +34,7 @@
       services.podman
       services.portainer
       services.qbittorrent
-      services.sgdf-utils
+      services.sgdf-tools
       services.ssd
       services.ssh
       services.tailscale

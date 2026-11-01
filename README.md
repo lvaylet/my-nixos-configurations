@@ -366,7 +366,7 @@ The `homelab` server hosts containerized and native services organized under `mo
 | **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.agents`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface, declarative AI engineering skills (Matt Pocock & Addy Osmani), Node.js/Python tool runners (`npm`, `npx`, `uv`, `uvx`), and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
 | **Code-Server** | Native Service | `443` (HTTPS via Caddy) | `/home/laurent`, `/home/laurent/.local/share/code-server`, `/home/laurent/.config/code-server` | Web-based code editor and remote IDE running natively under the primary user account with full access to home workspaces, integrated terminal (`just`, `git`, `nix`), and persistent extensions. |
 | **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
-| **SGDF Contacts API** (`sgdf-utils`) | Native Service | `443` (HTTPS via Caddy) | `/var/lib/sgdf-utils` | FastAPI HTTP REST API and SQLite repository (`sgdf.sqlite3`) managing SGDF La Rochelle parent contacts for n8n and WAHA (`sgdf-utils:sgdf-utils`, `0750` preserved under `/persistent`). |
+| **SGDF Tools API** (`sgdf-tools`) | Native Service | `443` (HTTPS via Caddy) | `/var/lib/sgdf-tools` | Rust/Axum HTTP REST API (`sgdf-api`), CLI (`sgdf`), and SQLite repository (`sgdf.db`) for SGDF intranet export ingestion, legal representative deduplication, Google Contacts export, and WhatsApp differential audits with n8n and WAHA (`sgdf-tools:sgdf-tools`, `0750` preserved under `/persistent`). |
 | **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/var/cache/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding (`jellyfin:multimedia`, `0750` preserved under `/persistent`). |
 | **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
 
@@ -382,7 +382,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 | **OpenCode** | `https://opencode.homelab.vaylet.fr` | `127.0.0.1:4096` | N/A (loopback bound) |
 | **Code-Server** | `https://code.homelab.vaylet.fr` | `127.0.0.1:4444` | N/A (loopback bound) |
 | **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | N/A (loopback bound) |
-| **SGDF Contacts API** (`sgdf-utils`) | `https://sgdf.homelab.vaylet.fr` | `127.0.0.1:8000` | N/A (loopback bound) |
+| **SGDF Tools API** (`sgdf-api`) | `https://sgdf.homelab.vaylet.fr` | `127.0.0.1:8000` | N/A (loopback bound) |
 | **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | N/A (loopback bound) |
 | **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | N/A (loopback bound) |
 | **Jellyfin** | `https://jellyfin.homelab.vaylet.fr` | `127.0.0.1:8096` | `http://homelab:8096` |
@@ -588,24 +588,24 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 
    - **Sign In**: Log in using username `opencode` and the retrieved password.
 
-8. **SGDF Contacts API (`sgdf-utils`) Setup & n8n Integration**:
-   - The native `sgdf-utils` systemd service runs on `127.0.0.1:8000` under the dedicated `sgdf-utils:sgdf-utils` system user and is exposed via Caddy at `https://sgdf.homelab.vaylet.fr` (Swagger UI at `https://sgdf.homelab.vaylet.fr/docs`).
-   - Across ephemeral tmpfs reboots, `/var/lib/sgdf-utils` (storing the SQLite database `/var/lib/sgdf-utils/sgdf.sqlite3` and the API key file `/var/lib/sgdf-utils/sgdf-utils.env`) is preserved under `/persistent/var/lib/sgdf-utils` (`0750`).
-   - **API Key Retrieval (for n8n `X-API-Key` Header Auth)**: On first launch, a secure random `SGDF_API_KEY` is automatically generated in `/var/lib/sgdf-utils/sgdf-utils.env`. Retrieve it with:
+8. **SGDF Tools API (`sgdf-tools`) Setup & n8n Integration**:
+   - The native `sgdf-api` systemd service runs on `127.0.0.1:8000` under the dedicated `sgdf-tools:sgdf-tools` system user and is exposed via Caddy at `https://sgdf.homelab.vaylet.fr` (health check at `https://sgdf.homelab.vaylet.fr/health`), while the `sgdf-cli` (`sgdf`) binary is pre-installed on `homelab` with `SGDF_API_URL="http://127.0.0.1:8000"`.
+   - Across ephemeral tmpfs reboots, `/var/lib/sgdf-tools` (storing the SQLite database `/var/lib/sgdf-tools/sgdf.db` and the Bearer token file `/var/lib/sgdf-tools/sgdf-tools.env`) is preserved under `/persistent/var/lib/sgdf-tools` (`0750`).
+   - **Bearer Token Retrieval (for n8n Bearer Auth & `sgdf-cli`)**: On first launch, a secure random `SGDF_AUTH_TOKEN` is automatically generated in `/var/lib/sgdf-tools/sgdf-tools.env`. Retrieve it with:
 
      **Bash**:
 
      ```bash
-     ssh laurent@homelab "sudo cat /var/lib/sgdf-utils/sgdf-utils.env"
+     ssh laurent@homelab "sudo cat /var/lib/sgdf-tools/sgdf-tools.env"
      ```
 
      **Fish**:
 
      ```fish
-     ssh laurent@homelab "sudo cat /var/lib/sgdf-utils/sgdf-utils.env"
+     ssh laurent@homelab "sudo cat /var/lib/sgdf-tools/sgdf-tools.env"
      ```
 
-   - **Calling from n8n**: In n8n `HTTP Request` nodes, configure *Header Auth* (`X-API-Key`) with the retrieved key and query `https://sgdf.homelab.vaylet.fr/api/v1/parents?active_only=true`.
+   - **Importing SGDF Intranet Exports & Calling from n8n**: Import an intranet export (`ExportIndividus.xls`) via `sgdf --api-url https://sgdf.homelab.vaylet.fr --token "<SGDF_AUTH_TOKEN>" import ExportIndividus.xls`. In n8n `HTTP Request` nodes, configure *Bearer Auth* (or `Authorization: Bearer <SGDF_AUTH_TOKEN>`) with the retrieved token and query `https://sgdf.homelab.vaylet.fr` endpoints (such as `/api/v1/exports/google-contacts` or `/api/v1/audits/whatsapp`).
 
 9. **Code-Server Web Code Editor Setup & Access**:
    - **Web Interface**: Open `https://code.homelab.vaylet.fr` in your browser from any device authenticated to your private Tailscale network.
