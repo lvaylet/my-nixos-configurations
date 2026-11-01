@@ -27,6 +27,7 @@
         ];
         extraOptions = [
           "--group-add=995" # Ensure access to `multimedia` group.
+          "--label=io.containers.autoupdate=registry"
         ];
         capabilities = {
           CAP_NET_BIND_SERVICE = true; # Required to bind container port 80 < 1024, even on 8081 > 1024.

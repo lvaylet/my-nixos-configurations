@@ -25,6 +25,9 @@
           # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 443.
           "127.0.0.1:3001:3000"
         ];
+        extraOptions = [
+          "--label=io.containers.autoupdate=registry"
+        ];
       };
 
       # Wait for `/var/lib/containers` and `/var/lib/waha` to be mounted, and ensure persistent subdirectories and env file exist.
