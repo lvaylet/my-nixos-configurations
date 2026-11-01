@@ -51,9 +51,9 @@
       flake = false;
     };
 
-    # SGDF La Rochelle parent contacts REST API & CLI tools
-    sgdf-utils = {
-      url = "github:lvaylet/sgdf-utils";
+    # SGDF local scout group management REST API & CLI tools
+    sgdf-tools = {
+      url = "github:lvaylet/sgdf-tools";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
