@@ -20,6 +20,7 @@
         extraOptions = [
           # Use the host network namespace for all sockets with mDNS/UPnP discovery.
           "--network=host"
+          "--label=io.containers.autoupdate=registry"
           # Pass devices into the container, so Home Assistant can discover and make use of them.
           # "--device=/dev/ttyACM0:/dev/ttyACM0"
         ];

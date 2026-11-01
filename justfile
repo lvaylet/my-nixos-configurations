@@ -336,3 +336,22 @@ clean-all keep="1":
   else
     sudo nix-collect-garbage --delete-old
   fi
+
+###################################
+# Container Management
+###################################
+
+# update container images via Podman auto-update (local or remote over SSH)
+[group('container-management')]
+update-containers target="homelab":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  TARGET="{{target}}"
+  CURRENT_HOST="$(hostname -s 2>/dev/null || uname -n)"
+  if [ "${TARGET}" = "${CURRENT_HOST}" ] || [ "${TARGET}" = "localhost" ]; then
+    echo "==> Running podman auto-update locally..."
+    sudo podman auto-update
+  else
+    echo "==> Running podman auto-update on ${TARGET} over SSH..."
+    ssh -t "${TARGET}" "sudo podman auto-update"
+  fi

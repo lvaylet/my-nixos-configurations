@@ -18,6 +18,9 @@
           # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 443.
           "127.0.0.1:9443:9443"
         ];
+        extraOptions = [
+          "--label=io.containers.autoupdate=registry"
+        ];
       };
 
       # Wait for `/var/lib/containers` to be mounted.

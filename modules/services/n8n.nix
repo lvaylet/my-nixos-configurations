@@ -110,6 +110,9 @@
             # Bind strictly to localhost: external access goes through Caddy reverse proxy on port 443.
             "127.0.0.1:5679:5678"
           ];
+          extraOptions = [
+            "--label=io.containers.autoupdate=registry"
+          ];
           user = "1000:1000";
         };
 
@@ -120,6 +123,9 @@
           ];
           volumes = [
             "${taskRunnersConfig}:/etc/n8n-task-runners.json:ro"
+          ];
+          extraOptions = [
+            "--label=io.containers.autoupdate=registry"
           ];
           environment = {
             TZ = "Europe/Paris";

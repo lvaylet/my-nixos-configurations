@@ -77,6 +77,9 @@ Available recipes:
     switch configuration="" target=""      # rebuild and switch live profile (NixOS or Darwin, local or remote over SSH)
     test configuration="" target=""        # rebuild and test live without saving generation (NixOS or Darwin, local or remote over SSH)
 
+    [container-management]
+    update-containers target="homelab"     # update container images via Podman auto-update (local or remote over SSH)
+
     [dev-utils]
     fix                                    # fix warnings reported by linters
     fix-md                                 # fix Markdown files with markdownlint-cli2 (excluding .agents and .opencode)
@@ -632,7 +635,50 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
      just switch homelab
      ```
 
-10. **Deploy & Activate**:
+10. **Automated Container Image Updates (Podman & Systemd Timer)**:
+    - **Daily Automated Inspection**: Homelab runs a native systemd timer (`systemd.timers.podman-auto-update`) every 24 hours (with catch-up persistence and a 15-minute randomized delay).
+    - **Registry Digest Tracking**: All declarative OCI containers (`portainer`, `homeassistant`, `filebrowser`, `waha`, `n8n`, `n8n-runners`) include `--label=io.containers.autoupdate=registry`. When upstream image digests change, Podman pulls the new layers and systemd restarts the corresponding service seamlessly without resetting persistent storage (`/var/lib/*` under `/persistent`). Post-update image pruning automatically cleans up dangling layers.
+    - **Timer Status & Monitoring**:
+
+      **Bash**:
+
+      ```bash
+      ssh laurent@homelab "systemctl list-timers podman-auto-update.timer"
+      # Inspect recent update logs:
+      ssh laurent@homelab "journalctl -u podman-auto-update -n 50"
+      ```
+
+      **Fish**:
+
+      ```fish
+      ssh laurent@homelab "systemctl list-timers podman-auto-update.timer"
+      # Inspect recent update logs:
+      ssh laurent@homelab "journalctl -u podman-auto-update -n 50"
+      ```
+
+    - **On-Demand Manual Update**: Trigger container checks immediately from your workstation or locally on the server via `just update-containers`:
+
+      **Bash**:
+
+      ```bash
+      # Update containers remotely over SSH:
+      just update-containers homelab
+
+      # Or directly on homelab:
+      sudo podman auto-update
+      ```
+
+      **Fish**:
+
+      ```fish
+      # Update containers remotely over SSH:
+      just update-containers homelab
+
+      # Or directly on homelab:
+      sudo podman auto-update
+      ```
+
+11. **Deploy & Activate**:
 
    ```sh
    just switch homelab

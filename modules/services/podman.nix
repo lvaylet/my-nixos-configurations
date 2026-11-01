@@ -19,6 +19,40 @@
         };
       };
 
+      # Automatically update container images daily via Podman's native auto-update mechanism.
+      systemd.timers.podman-auto-update = lib.mkIf config.virtualisation.podman.enable {
+        description = "Podman auto-update timer";
+        documentation = [
+          "man:podman-auto-update(1)"
+        ];
+        wantedBy = [
+          "timers.target"
+        ];
+        timerConfig = {
+          OnCalendar = "daily";
+          Persistent = true;
+          RandomizedDelaySec = "900";
+        };
+      };
+
+      systemd.services.podman-auto-update = lib.mkIf config.virtualisation.podman.enable {
+        description = "Podman auto-update service";
+        documentation = [
+          "man:podman-auto-update(1)"
+        ];
+        wants = [
+          "network-online.target"
+        ];
+        after = [
+          "network-online.target"
+        ];
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${config.virtualisation.podman.package}/bin/podman auto-update";
+          ExecStartPost = "${config.virtualisation.podman.package}/bin/podman image prune -f";
+        };
+      };
+
       # Conditional preservation mapping (integrated as sub-attribute of config, keeping it top-level clean)
       preservation.preserveAt."/persistent".directories = lib.mkIf config.virtualisation.podman.enable [
         {
