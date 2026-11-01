@@ -590,20 +590,7 @@ Internal web applications are securely exposed on dedicated subdomains of `homel
 
 8. **SGDF Tools API (`sgdf-tools`) Setup & n8n Integration**:
    - The native `sgdf-api` systemd service runs on `127.0.0.1:8000` under the dedicated `sgdf-tools:sgdf-tools` system user and is exposed via Caddy at `https://sgdf.homelab.vaylet.fr` (health check at `https://sgdf.homelab.vaylet.fr/health`), while the `sgdf-cli` (`sgdf`) binary is pre-installed on `homelab` with `SGDF_API_URL="http://127.0.0.1:8000"`.
-   - Across ephemeral tmpfs reboots, `/var/lib/sgdf-tools` (storing the fresh SQLite database `/var/lib/sgdf-tools/sgdf.db` and the Bearer token file `/var/lib/sgdf-tools/sgdf-tools.env`) is preserved under `/persistent/var/lib/sgdf-tools` (`0750`). Any legacy `/persistent/var/lib/sgdf-utils` directory or pre-existing incompatible `sgdf.db` can be deleted outright because `sgdf-tools` initializes a completely new SQLite schema on startup:
-
-     **Bash**:
-
-     ```bash
-     ssh laurent@homelab "sudo rm -rf /persistent/var/lib/sgdf-utils /var/lib/sgdf-utils"
-     ```
-
-     **Fish**:
-
-     ```fish
-     ssh laurent@homelab "sudo rm -rf /persistent/var/lib/sgdf-utils /var/lib/sgdf-utils"
-     ```
-
+   - Across ephemeral tmpfs reboots, `/var/lib/sgdf-tools` (storing the SQLite database `/var/lib/sgdf-tools/sgdf.db` and the Bearer token file `/var/lib/sgdf-tools/sgdf-tools.env`) is preserved under `/persistent/var/lib/sgdf-tools` (`0750`).
    - **Bearer Token Retrieval (for n8n Bearer Auth & `sgdf-cli`)**: On first launch, a secure random `SGDF_AUTH_TOKEN` is automatically generated in `/var/lib/sgdf-tools/sgdf-tools.env`. Retrieve it with:
 
      **Bash**:
