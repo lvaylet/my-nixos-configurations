@@ -4,40 +4,16 @@
 
 Declarative NixOS multi-host configurations, Home Manager user environments, and portable cross-platform development toolchains.
 
-## Quickstart & Environment Setup
+---
 
-This repository supports development, testing, and deployment from **any Linux machine** (NixOS or non-NixOS) as well as **macOS and Windows (WSL2)** via Devbox.
+## Managed Hosts Topology
 
-### Option 1: Cross-Platform via Devbox (Recommended for non-NixOS / macOS / WSL)
-
-If you have [Devbox](https://www.jetify.com/devbox) installed:
-
-```sh
-# Start the development shell with all linters, formatters, and task runners:
-devbox shell
-
-# Or run tasks directly:
-devbox run check
-devbox run lint
-devbox run fmt
-```
-
-### Option 2: Native Nix Flakes (`direnv` & `nix develop`)
-
-On managed NixOS and Darwin hosts (`desktop-pc`, `homelab`, `macbook-air-m4-15`), `direnv` (with `nix-direnv`) and the core Nix development and deployment stack (`just`, `just-lsp`, `nh`, `alejandra`, `deadnix`, `statix`, `markdownlint-cli2`, `nixd`, `cachix`) are pre-installed at the system level via `modules/core/base.nix`. Navigating into the repository and authorizing `.envrc` once automatically activates the flake development shell and installs the `pre-commit` hooks in both **Bash** and **Fish**:
-
-```sh
-# Authorize automatic flake devShell activation (.envrc -> `use flake`):
-direnv allow
-
-# Or enter the nix development shell manually on any system with Nix + Flakes:
-nix develop
-
-# Format, lint, and run checks:
-just fmt
-just lint
-just check
-```
+| Host | Architecture | OS / Stack | Role & Key Capabilities | Guide |
+| --- | --- | --- | --- | --- |
+| **`desktop-pc`** | `x86_64-linux` | NixOS / Home Manager | Primary workstation: Niri Wayland compositor, Noctalia shell, WezTerm, Nvidia GPU, Nord theme | [`modules/hosts/desktop-pc.nix`](modules/hosts/desktop-pc.nix) |
+| **`homelab`** | `x86_64-linux` | NixOS (Impermanent `tmpfs`) | Headless server: Caddy reverse proxy, Cloudflare DNS-01, Tailscale SSH, Podman, n8n, Jellyfin, Home Assistant | [Homelab Guide](docs/hosts/homelab.md) |
+| **`macbook-air-m4-15`** | `aarch64-darwin` | macOS / `nix-darwin` | Portable workstation: Fish, Neovim/LazyVim, WezTerm, Ghostty, OpenCode, VS Code, Tailscale | [macOS Guide](docs/hosts/macbook.md) |
+| **`iso`** | `x86_64-linux` | NixOS Installer | Bootable headless installation image with pre-baked SSH keys for automated `nixos-anywhere` deployment | [`modules/core/iso.nix`](modules/core/iso.nix) |
 
 ---
 
@@ -47,924 +23,133 @@ This repository is structured around the **[Dendritic Pattern](https://github.co
 
 - **Feature-Centric Design**: Every capability is organized as a cohesive feature in domain directories under `modules/` (`core/`, `desktop/`, `services/`, `hosts/`), colocating NixOS system services and Home Manager user environments side-by-side.
 - **Zero-Boilerplate Auto-Discovery**: All non-entrypoint files under `modules/` are discovered automatically via `(inputs.import-tree ./modules)` in `flake.nix`, requiring zero manual entries in centralized import arrays.
-- **Declarative Host Composition**: Target machines (`modules/hosts/desktop-pc.nix`, `modules/hosts/homelab.nix`, `modules/hosts/iso.nix`) declare their closure purely by listing their hardware specification and an explicit array of enabled features.
+- **Declarative Host Composition**: Target machines declare their closure purely by listing hardware specifications and an explicit array of enabled features without inline service definitions.
 - **Unified Identity Context**: Shared user identity, credentials, and parameters are defined as top-level options in `modules/core/vars.nix` (`config.flake.vars`) and accessed without parameter plumbing.
 
 ```text
 modules/
-├── core/                  # Systems, identity options, builder (mkHost, mkDarwinHost), base system, bootloaders (limine, grub), Neovim/LazyVim, checks, devShell
-├── desktop/               # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
-├── services/              # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, OpenCode, Uptime Kuma, WAHA, etc.
-└── hosts/                 # Machine closures (desktop-pc, homelab, iso, macbook-air-m4-15) and hardware specs
+├── core/       # Base foundation, identity vars, builders (mkHost, mkDarwinHost), Neovim, devShell, checks
+├── desktop/    # Niri Wayland session, Noctalia shell, WezTerm, Fish shell, fonts, editors, audio, GPU
+├── services/   # Networking, OpenSSH, Tailscale, Podman, Caddy, Jellyfin, n8n, OpenCode, Uptime Kuma, WAHA
+└── hosts/      # Machine closures (desktop-pc, homelab, iso, macbook-air-m4-15) and hardware specs
+```
+
+---
+
+## Quickstart & Environment Setup
+
+This repository supports development, testing, and deployment from any Linux machine, macOS, or Windows (WSL2):
+
+### Option 1: Cross-Platform via Devbox (Recommended for non-NixOS / macOS / WSL)
+
+```sh
+# Start development shell with all linters, formatters, and task runners:
+devbox shell
+```
+
+### Option 2: Native Nix Flakes (`direnv` & `nix develop`)
+
+On managed hosts, `direnv` and developer tools (`just`, `nh`, `alejandra`, `deadnix`, `statix`, `markdownlint-cli2`) are pre-installed:
+
+```sh
+# Authorize automatic flake devShell activation:
+direnv allow
+
+# Or enter development shell manually:
+nix develop
 ```
 
 ---
 
 ## Operational Recipes (`justfile`)
 
-All common workflows are defined in the [`justfile`](justfile) using a unified set of lifecycle verbs (`build`, `test`, `switch`, `boot`, `install`) across all hosts (`desktop-pc`, `homelab`, `macbook-air-m4-15`). When `configuration` is omitted, `just` automatically detects the local machine (`macbook-air-m4-15` on macOS, or the current NixOS hostname `desktop-pc` / `homelab` on Linux):
+All operational workflows are defined in the [`justfile`](justfile) using unified lifecycle verbs across all hosts (`desktop-pc`, `homelab`, `macbook-air-m4-15`). When omitted, target configurations default to the local machine:
 
-```sh
-$ just
-Available recipes:
-    default                                # run `just --list`
-
-    [(re)build]
-    boot configuration="" target=""        # rebuild and set boot default (NixOS local or remote over SSH)
-    build configuration="" target=""       # rebuild system closure without activating (NixOS or Darwin)
-    build-iso                              # build custom ISO image with SSH access for remote installations
-    install target configuration="homelab" # bootstrap and install NixOS host remotely from scratch using nixos-anywhere
-    switch configuration="" target=""      # rebuild and switch live profile (NixOS or Darwin, local or remote over SSH)
-    test configuration="" target=""        # rebuild and test live without saving generation (NixOS or Darwin, local or remote over SSH)
-
-    [container-management]
-    update-containers target="homelab"     # update container images via Podman auto-update (local or remote over SSH)
-
-    [dev-utils]
-    fix                                    # fix warnings reported by linters
-    fix-md                                 # fix Markdown files with markdownlint-cli2 (excluding .agents and .opencode)
-    fmt                                    # format code recursively
-    lint                                   # run linters
-    lint-md                                # lint Markdown files with markdownlint-cli2 (excluding .agents and .opencode)
-
-    [flake-management]
-    check                                  # check whether the flake evaluates and run its tests
-    show                                   # show the flake outputs
-    up                                     # update all inputs and `flake.lock` file
-
-    [garbage-collection]
-    clean keep="1"                         # clean the current user's profiles
-    clean-all keep="1"                     # clean all profiles
-    collect-garbage                        # delete all unreachable store objects
-    delete-old-generations                 # delete all unreachable store objects and old generations of profiles
-```
+| Command | Action | Scope / Target |
+| --- | --- | --- |
+| `just build [<host>]` | Compile configuration closure without activating | Local or remote host |
+| `just test [<host>]` | Compile and activate in live session without saving boot profile | Local or remote host |
+| `just switch [<host>]` | Compile, activate live, and commit a new profile generation | Local or remote host |
+| `just boot [<host>]` | Build and set profile as the default for the next boot | NixOS host |
+| `just check` | Evaluate flake syntax, configurations, and run hermetic sandbox checks | All configurations |
+| `just fmt` / `just fix-md` | Format `.nix` files with Alejandra / Auto-fix Markdown files | Repository files |
+| `just lint` / `just lint-md` | Run static analysis (`deadnix`, `statix`) / Lint Markdown | Repository files |
+| `just clean` / `just clean-all` | Run profile garbage collection | User / System |
 
 ### Remote Deployments over SSH
 
-To test or deploy to a remote NixOS host over SSH from another workstation (when `target` is omitted and `configuration` differs from the local hostname, `target` automatically defaults to `configuration`):
-
-```sh
-# Temporarily test a configuration on a remote target:
-just test homelab
-
-# Permanently deploy and switch a remote target:
-just switch homelab
-
-# Set next boot profile on a remote target:
-just boot homelab
-
-# Or specify an explicit IP / SSH host:
-just switch configuration="homelab" target="192.168.1.180"
-```
-
-### macOS Workstation Deployment (`macbook-air-m4-15`)
-
-The MacBook Air M4 runs macOS (`aarch64-darwin`) managed declaratively using [`nix-darwin`](https://github.com/LnL7/nix-darwin) and Home Manager. It shares 100% of user environments, dotfiles, editor settings, and client SSH profiles with `desktop-pc`:
-
-- **Shared Capabilities**: Fish shell, Starship prompt, system & Git aliases, Neovim/LazyVim (`dotfiles/nvim`), VS Code extensions & settings, WezTerm & Ghostty terminal configurations, FiraCode Nerd Font, OpenCode v2 (with Nord theme, declarative AI skills from Matt Pocock & Addy Osmani, and `nodejs` / `uv` package runners), core CLI utilities (`eza`, `bat`, `yazi`, `btop`, `ripgrep`, `just`, `direnv`, etc.), and client SSH configuration targeting `homelab`.
-- **Platform Separation**: Linux desktop compositors (Niri, Noctalia, Greetd, PipeWire, Nvidia) and homelab server daemons (Caddy, Jellyfin, AdGuard, etc.) remain strictly isolated to their native hosts.
-
-#### Initial Provisioning (First-Time Bootstrap on a Fresh Mac)
-
-Follow these steps when setting up the MacBook Air M4 for the very first time:
-
-1. **Install Command Line Tools & Nix**:
-   Open Terminal and install the Apple Developer Command Line Tools if not already present:
-
-   ```sh
-   xcode-select --install
-   ```
-
-   Install Nix with Flakes enabled (recommended via the [Determinate Nix Installer](https://github.com/DeterminateSystems/nix-installer)):
-
-   ```sh
-   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-   ```
-
-2. **Initialize `/etc/synthetic.conf` (Mandatory for `/run`)**:
-   On modern macOS, the root filesystem (`/`) is an APFS sealed system volume mounted in read-only mode. Apple provides `/etc/synthetic.conf` to declare synthetic virtual mount points and symlinks at root. `nix-darwin` requires `/run -> private/var/run` to host `/run/current-system`.
-
-   If `/etc/synthetic.conf` does not exist on a fresh Mac, `nix-darwin`'s activation script will fail with `stat: cannot stat '/etc/synthetic.conf': No such file or directory` and `chmod: cannot access '/etc/synthetic.conf'`. Create and initialize it beforehand:
-
-   **Bash**:
-
-   ```bash
-   # Create /etc/synthetic.conf with the tab-separated /run mapping (the \t is required):
-   printf 'run\tprivate/var/run\n' | sudo tee /etc/synthetic.conf
-   sudo chmod 644 /etc/synthetic.conf
-   sudo /System/Library/Filesystems/apfs.fs/Contents/Resources/apfs.util -t
-   ```
-
-   **Fish**:
-
-   ```fish
-   # Create /etc/synthetic.conf with the tab-separated /run mapping (the \t is required):
-   printf 'run\tprivate/var/run\n' | sudo tee /etc/synthetic.conf
-   sudo chmod 644 /etc/synthetic.conf
-   sudo /System/Library/Filesystems/apfs.fs/Contents/Resources/apfs.util -t
-   ```
-
-   *Verification*:
-
-   ```sh
-   ls -la /run
-   # Expected output: lrwxr-xr-x ... /run -> private/var/run
-   ```
-
-   *(Note: If `apfs.util -t` does not create the symlink immediately on your macOS version, restart your Mac once so APFS processes `/etc/synthetic.conf` during early boot).*
-
-3. **Initial `nix-darwin` Bootstrap & System Activation**:
-   Clone this repository, navigate into it, and perform the initial activation:
-
-   **Bash**:
-
-   ```bash
-   git clone https://github.com/lvaylet/my-nixos-configurations.git
-   cd my-nixos-configurations
-   nix run nix-darwin -- switch --flake .#macbook-air-m4-15
-   ```
-
-   **Fish**:
-
-   ```fish
-   git clone https://github.com/lvaylet/my-nixos-configurations.git
-   cd my-nixos-configurations
-   nix run nix-darwin -- switch --flake .#macbook-air-m4-15
-   ```
-
-#### Routine Maintenance & Daily Operations
-
-For day-to-day configuration adjustments, testing, and system switches on macOS (when run on `macbook-air-m4-15`, `just` automatically selects `macbook-air-m4-15`):
-
-- **`just build`**: Compiles the configuration closure in the Nix store without activating or touching the running system (validates syntax, types, and package builds).
-- **`just test`**: Compiles and **activates** the configuration in the live session with `sudo` without recording a new profile generation in `/nix/var/nix/profiles/system` (direct equivalent of `nixos-rebuild test`).
-- **`just switch`**: Compiles, commits a new profile generation in `/nix/var/nix/profiles/system`, and activates the live system with `sudo`.
-- **Rollback**: In case an issue occurs after a switch, instantly revert to the previous generation with `sudo darwin-rebuild --rollback`.
+Deploy or test configurations on remote targets (e.g. `homelab`) from any workstation:
 
 **Bash**:
 
 ```bash
-# 1. Compile only (no activation):
-just build
+# Test configuration remotely without saving profile:
+just test homelab
 
-# 2. Test and activate live without saving a new generation profile:
-just test
-
-# 3. Permanently switch and record a new generation:
-just switch
-# Or using nix-darwin directly:
-sudo nix run nix-darwin -- switch --flake .#macbook-air-m4-15
-
-# Rollback to the previous generation if needed:
-sudo darwin-rebuild --rollback
-
-# Update flake dependencies:
-just up
+# Permanently deploy and switch remote target:
+just switch homelab
 ```
 
 **Fish**:
 
 ```fish
-# 1. Compile only (no activation):
-just build
-
-# 2. Test and activate live without saving a new generation profile:
-just test
-
-# 3. Permanently switch and record a new generation:
-just switch
-# Or using nix-darwin directly:
-sudo nix run nix-darwin -- switch --flake .#macbook-air-m4-15
-
-# Rollback to the previous generation if needed:
-sudo darwin-rebuild --rollback
-
-# Update flake dependencies:
-just up
-```
-
-#### Client Access to Homelab Services
-
-From the MacBook Air (or any device authenticated to the private tailnet), you can immediately access homelab infrastructure:
-
-- **Tailscale SSH (Dynamic Keyless Access)**: Connect from any tailnet-authenticated machine via `tailscale ssh laurent@homelab` (or `ssh laurent@100.127.199.88`) using Tailscale identity and ACLs (`modules/services/tailscale.nix` with `extraSetFlags = ["--ssh"]`), No static SSH key generation, repository commit, or `homelab` rebuild is required when onboarding a new device.
-- **Physical LAN SSH Shortcut (OpenSSH Fallback)**: Run `ssh homelab` on the local network to connect directly to `192.168.1.180` with your user account and static key (configured via shared `services.ssh`).
-- **Tailscale Web Services**: When connected to Tailscale, access all internal applications directly in your browser (e.g. `https://ha.homelab.vaylet.fr`, `https://n8n.homelab.vaylet.fr`, `https://uptime.homelab.vaylet.fr`).
-
-### Initial Provisioning of Homelab (`nixos-anywhere` & Custom ISO)
-
-To perform an automated, headless bootstrap of the impermanent `homelab` server from scratch:
-
-1. **Build the Custom Installer ISO**:
-   The custom ISO (`modules/core/iso.nix`) embeds authorized SSH public keys for both `nixos` and `root` users, enabling direct passwordless SSH access:
-
-   ```sh
-   just build-iso
-   ```
-
-   The bootable ISO image is generated under `result/iso/nixos-*-x86_64-linux.iso`. Flash it to a USB drive (e.g. using `dd`, `rpi-imager`, or Ventoy).
-
-2. **Boot the Target Host**:
-   - Insert the USB drive into the homelab hardware (e.g. Beelink S13 mini PC) and boot from it.
-   - Note the assigned IPv4 address displayed in the MOTD banner or check it with `ip addr`.
-
-3. **Install Remotely with `nixos-anywhere`**:
-   From an authorized workstation, launch the remote deployment:
-
-   **Bash**:
-
-   ```bash
-   export TARGET_IP=<target-ip>
-
-   # Using the unified just recipe (defaults to configuration="homelab"):
-   just install "${TARGET_IP}"
-
-   # Or invoking nixos-anywhere directly:
-   nix run github:nix-community/nixos-anywhere -- --flake .#homelab "root@${TARGET_IP}"
-   ```
-
-   **Fish**:
-
-   ```fish
-   set -gx TARGET_IP <target-ip>
-
-   # Using the unified just recipe (defaults to configuration="homelab"):
-   just install "$TARGET_IP"
-
-   # Or invoking nixos-anywhere directly:
-   nix run github:nix-community/nixos-anywhere -- --flake .#homelab "root@$TARGET_IP"
-   ```
-
-   `nixos-anywhere` automatically:
-   - Partitions and formats the SSD via `disko` (creating the hybrid MBR/ESP layout, swap, and Btrfs subvolumes `/persistent` and `/nix` with ephemeral `tmpfs` root).
-   - Mounts the target filesystem hierarchy and sets up preservation links.
-   - Installs the complete NixOS system closure with GRUB 2.
-   - Reboots into your fresh impermanent system.
-
-4. **Verify and Deploy Subsequent Updates**:
-   Once rebooted, connect over SSH as `laurent` (default interactive shell: **Fish**) or `root` (default shell: **Bash**):
-
-   **Bash**:
-
-   ```bash
-   ssh "laurent@${TARGET_IP}"
-   ```
-
-   **Fish**:
-
-   ```fish
-   ssh "laurent@$TARGET_IP"
-   ```
-
-   For routine updates that do not require repartitioning the storage device, you can deploy either **locally from `homelab` itself** (in an SSH session or via OpenCode, where `just` automatically detects the `homelab` hostname) or **remotely from another workstation**:
-
-   **Bash**:
-
-   ```bash
-   # Directly on homelab (auto-detects local hostname 'homelab'):
-   just test
-   just switch
-
-   # Or remotely from another workstation (using SSH alias 'homelab' or custom TARGET_IP):
-   just switch homelab
-   just switch configuration="homelab" target="${TARGET_IP}"
-
-   # Or test the configuration remotely without setting a new boot profile:
-   just test homelab
-   just test configuration="homelab" target="${TARGET_IP}"
-   ```
-
-   **Fish**:
-
-   ```fish
-   # Directly on homelab (auto-detects local hostname 'homelab'):
-   just test
-   just switch
-
-   # Or remotely from another workstation (using SSH alias 'homelab' or custom TARGET_IP):
-   just switch homelab
-   just switch configuration="homelab" target="$TARGET_IP"
-
-   # Or test the configuration remotely without setting a new boot profile:
-   just test homelab
-   just test configuration="homelab" target="$TARGET_IP"
-   ```
-
-### Homelab Hosted Services
-
-The `homelab` server hosts containerized and native services organized under `modules/services/` with coordinated access to shared storage (`/data`) and state preservation under `/persistent`:
-
-| **Service** | **Type** | **Network / Ports** | **Storage / Data** | **Description** |
-| --- | --- | --- | --- | --- |
-| **Tailscale** | Native Service | `41641/udp` (WireGuard), `22` (Tailscale SSH on `tailscale0`) | `/var/lib/tailscale` | Private mesh VPN, Tailscale SSH server, and LocalAPI TLS certificate provider for Caddy (`root:root`, `0700` preserved under `/persistent`). |
-| **Caddy** | Native Service | `443` (HTTPS) | `/var/lib/caddy` | Central reverse proxy with Cloudflare DNS-01 ACME plugin and Let's Encrypt TLS. |
-| **Filebrowser Quantum** | OCI Container | `443` (HTTPS via Caddy) | `/data:/srv`, `/var/lib/filebrowser:/config` | Web-based file manager for browsing, uploading, and organizing files. |
-| **Home Assistant** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/home-assistant:/config` | Home automation platform with local network discovery and Tailscale HTTPS access. |
-| **Portainer CE** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/portainer`, Docker socket | Container management Web UI. |
-| **n8n** (+ `n8n-runners`) | OCI Containers | `443` (HTTPS via Caddy) | `/var/lib/n8n` | Workflow automation platform with visual node-based editor, webhook integration, and isolated `n8nio/runners` sidecar for native Python 3 and JavaScript `Code` nodes. |
-| **Uptime Kuma** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/uptime-kuma`, Docker socket | Self-hosted monitoring tool for tracking service availability, Portainer/Podman container status, response latency, and TLS certificate expiration with real-time alerts. |
-| **OpenCode** | Native Service | `443` (HTTPS via Caddy) | `/var/lib/opencode`, `/home/laurent/workspace`, `/home/laurent/.agents`, `/home/laurent/.local/share/opencode` | AI coding agent built for the terminal with web interface, declarative AI engineering skills (Matt Pocock & Addy Osmani), Node.js/Python tool runners (`npm`, `npx`, `uv`, `uvx`), and headless server daemon running under the primary user account with full access to cloned Git workspaces. |
-| **Code-Server** | Native Service | `443` (HTTPS via Caddy) | `/home/laurent`, `/home/laurent/.local/share/code-server`, `/home/laurent/.config/code-server` | Web-based code editor and remote IDE running natively under the primary user account with full access to home workspaces, integrated terminal (`just`, `git`, `nix`), and persistent extensions. |
-| **WAHA** | OCI Container | `443` (HTTPS via Caddy) | `/var/lib/waha` | Self-hosted WhatsApp HTTP API and dashboard for automating WhatsApp messaging workflows with n8n. |
-| **SGDF Tools API** (`sgdf-tools`) | Native Service | `443` (HTTPS via Caddy) | `/var/lib/sgdf-tools` | Rust/Axum HTTP REST API (`sgdf-api`), CLI (`sgdf`), and SQLite repository (`sgdf.db`) for SGDF intranet export ingestion, legal representative deduplication, Google Contacts export, and WhatsApp differential audits with n8n and WAHA (`sgdf-tools:sgdf-tools`, `0750` preserved under `/persistent`). |
-| **Jellyfin** | Native Service | `443` (HTTPS via Caddy), `8096` (TCP) | `/var/lib/jellyfin`, `/var/cache/jellyfin`, `/data/media` | Media streaming server with Intel QuickSync hardware transcoding (`jellyfin:multimedia`, `0750` preserved under `/persistent`). |
-| **qBittorrent** | Native Service | `443` (HTTPS via Caddy), `8080` (WebUI) + Torrent ports | `/data/downloads`, `/var/lib/qBittorrent` | Headless BitTorrent client with automated download directories. |
-
-#### Reverse Proxy & Secure HTTPS Access (Caddy & Cloudflare DNS-01)
-
-Internal web applications are securely exposed on dedicated subdomains of `homelab.vaylet.fr` through **Caddy** (`modules/services/caddy.nix`) compiled with the official `caddy-dns/cloudflare` plugin:
-
-| **Service** | **Subdomain / External URL** | **Upstream Target** | **LAN Direct URL** |
-| --- | --- | --- | --- |
-| **Home Assistant** | `https://ha.homelab.vaylet.fr` | `127.0.0.1:8123` | N/A (loopback bound) |
-| **n8n** | `https://n8n.homelab.vaylet.fr` | `127.0.0.1:5679` | N/A (loopback bound) |
-| **Uptime Kuma** | `https://uptime.homelab.vaylet.fr` | `127.0.0.1:3002` | N/A (loopback bound) |
-| **OpenCode** | `https://opencode.homelab.vaylet.fr` | `127.0.0.1:4096` | N/A (loopback bound) |
-| **Code-Server** | `https://code.homelab.vaylet.fr` | `127.0.0.1:4444` | N/A (loopback bound) |
-| **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | N/A (loopback bound) |
-| **SGDF Tools API** (`sgdf-api`) | `https://sgdf.homelab.vaylet.fr` | `127.0.0.1:8000` | N/A (loopback bound) |
-| **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | N/A (loopback bound) |
-| **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` *(TLS bypass)* | N/A (loopback bound) |
-| **Jellyfin** | `https://jellyfin.homelab.vaylet.fr` | `127.0.0.1:8096` | `http://homelab:8096` |
-| **qBittorrent** | `https://qbittorrent.homelab.vaylet.fr` | `127.0.0.1:8080` | `http://homelab:8080` |
-
-- **Security & Private Tailscale Overlay**: DNS records for `*.homelab.vaylet.fr` point exclusively to the homelab's private Tailscale CGNAT IP (`100.127.199.88`). No ports are opened or forwarded on the home router (WAN). Only devices authenticated to your private Tailscale network can reach these endpoints.
-- **Automated Publicly-Trusted Certificates**: Caddy automatically provisions and renews genuine Let's Encrypt certificates using the ACME DNS-01 challenge via Cloudflare, eliminating browser security alerts and mobile app certificate rejections without exposing port 80 to the internet.
-- **State & Secret Preservation**: Certificates, runtime state, and the Cloudflare API secret file in `/var/lib/caddy` are preserved under `/persistent/var/lib/caddy` across ephemeral tmpfs reboots.
-
-##### Configuration Instructions
-
-1. **DNS Setup (Cloudflare)**:
-   - In Cloudflare DNS for `vaylet.fr`, create a single wildcard **A** record:
-     - **Name**: `*.homelab` (resolves `*.homelab.vaylet.fr`)
-     - **IPv4 Address**: `100.127.199.88` (homelab's Tailscale IP)
-     - **Proxy status**: **DNS Only** (grey cloud — mandatory for non-routable Tailscale CGNAT IPs)
-
-2. **Cloudflare API Token Provisioning**:
-   - In Cloudflare, generate an API token with `Zone - DNS - Edit` permissions for the `vaylet.fr` zone.
-   - On the `homelab` server, provision the token into the persistent Caddy environment file (never committed to git):
-
-   **Bash**:
-
-   ```bash
-   sudo mkdir -p /persistent/var/lib/caddy
-   sudo tee /persistent/var/lib/caddy/cloudflare.env << 'EOF'
-   CLOUDFLARE_API_TOKEN=<your-cloudflare-api-token>
-   EOF
-   sudo chown -R caddy:caddy /persistent/var/lib/caddy
-   sudo chmod 0600 /persistent/var/lib/caddy/cloudflare.env
-   ```
-
-   **Fish**:
-
-   ```fish
-   sudo mkdir -p /persistent/var/lib/caddy
-   printf '%s\n' \
-     'CLOUDFLARE_API_TOKEN=<your-cloudflare-api-token>' \
-     | sudo tee /persistent/var/lib/caddy/cloudflare.env
-   sudo chown -R caddy:caddy /persistent/var/lib/caddy
-   sudo chmod 0600 /persistent/var/lib/caddy/cloudflare.env
-   ```
-
-3. **Home Assistant Reverse Proxy Authorization (UI Configuration)**:
-   - Modern Home Assistant releases (>= 2026.10) manage reverse proxy trust directly in the Web UI, ignoring legacy `http:` YAML blocks in `configuration.yaml`.
-   - Because direct LAN access to port `8123` is blocked by the host firewall, forward port `8123` over SSH from your workstation to reach the local loopback listener for initial setup:
-
-   **Bash**:
-
-   ```bash
-   ssh -L 8123:127.0.0.1:8123 laurent@homelab
-   ```
-
-   **Fish**:
-
-   ```fish
-   ssh -L 8123:127.0.0.1:8123 laurent@homelab
-   ```
-
-   - Open `http://127.0.0.1:8123` in your local browser.
-   - Navigate to **Settings** > **System** > **Network** (**Paramètres** > **Système** > **Réseau**).
-   - In the **Reverse Proxy** (**Proxy inverse**) section:
-     - Check **Use reverse proxy** (**Utiliser un proxy inverse**).
-     - Add Caddy's loopback addresses to **Trusted proxies** (**Proxys de confiance**):
-       - `127.0.0.1`
-       - `::1`
-   - *(Optional)* In **Home Assistant URL**, set the external URL to `https://ha.homelab.vaylet.fr`.
-   - Click **Save** (**Enregistrer**) and restart Home Assistant (`scr podman-homeassistant` or via UI).
-   - Remove any deprecated `http:` block from `/persistent/var/lib/home-assistant/configuration.yaml` to avoid deprecation warnings.
-
-4. **WAHA Credentials & Initial WhatsApp Session Setup**:
-   - By default, WAHA generates random credentials on each container start if none are provided. To keep the API key and dashboard/Swagger passwords persistent across restarts (without committing secrets to Git), provision `/persistent/var/lib/waha/waha.env` on the `homelab` server:
-   - *(Tip)* Generate a secure 256-bit (64-character hex) API key without external dependencies using `/dev/urandom`:
-
-   ```sh
-   tr -dc 'a-f0-9' < /dev/urandom | head -c 64; echo
-   ```
-
-   **Bash**:
-
-   ```bash
-   sudo mkdir -p /persistent/var/lib/waha
-   sudo tee /persistent/var/lib/waha/waha.env << 'EOF'
-   WAHA_API_KEY=<your-waha-api-key>
-   WAHA_DASHBOARD_USERNAME=admin
-   WAHA_DASHBOARD_PASSWORD=<your-dashboard-password>
-   WHATSAPP_SWAGGER_USERNAME=admin
-   WHATSAPP_SWAGGER_PASSWORD=<your-swagger-password>
-   EOF
-   sudo chmod 0600 /persistent/var/lib/waha/waha.env
-   sudo systemctl restart podman-waha
-   ```
-
-   **Fish**:
-
-   ```fish
-   sudo mkdir -p /persistent/var/lib/waha
-   printf '%s\n' \
-     'WAHA_API_KEY=<your-waha-api-key>' \
-     'WAHA_DASHBOARD_USERNAME=admin' \
-     'WAHA_DASHBOARD_PASSWORD=<your-dashboard-password>' \
-     'WHATSAPP_SWAGGER_USERNAME=admin' \
-     'WHATSAPP_SWAGGER_PASSWORD=<your-swagger-password>' \
-     | sudo tee /persistent/var/lib/waha/waha.env
-   sudo chmod 0600 /persistent/var/lib/waha/waha.env
-   sudo systemctl restart podman-waha
-   ```
-
-   - Open `https://waha.homelab.vaylet.fr/dashboard` in your browser and sign in with `WAHA_DASHBOARD_USERNAME` / `WAHA_DASHBOARD_PASSWORD`.
-   - Start the `default` WhatsApp session and pair your phone by scanning the QR code (or entering a phone pairing code) from the WhatsApp mobile app (**Linked devices** > **Link a device**).
-   - Once paired, the session state is persisted in `/var/lib/waha/sessions` (`/persistent/var/lib/waha/sessions`) and automatically reconnected on boot via `WHATSAPP_RESTART_ALL_SESSIONS=True`.
-   - In **n8n** (`https://n8n.homelab.vaylet.fr`), configure your WAHA HTTP requests or community node to use `http://127.0.0.1:3001` (or `https://waha.homelab.vaylet.fr`) with header `X-Api-Key: <your-waha-api-key>`.
-
-5. **Uptime Kuma Initial Setup & Portainer Container Monitoring**:
-   - Open `https://uptime.homelab.vaylet.fr` in your browser and create your administrator account on first launch.
-   - To monitor OCI containers managed by Portainer (`filebrowser`, `homeassistant`, `n8n`, `n8n-runners`, `portainer`, `waha`):
-     - Navigate to **Settings** > **Docker Hosts** (**Paramètres** > **Hôtes Docker**) and click **Setup Docker Host**.
-     - Set **Connection Type** to **Socket** and **Docker Daemon** to `/var/run/docker.sock` (or `/var/run/podman/podman.sock`), then click **Test** and **Save**.
-     - When creating a new monitor, select **Monitor Type**: **Docker Container** and enter the exact container name as shown in Portainer (e.g. `n8n`, `waha`, `homeassistant`, `filebrowser`, `portainer`).
-
-6. **Tailscale SSH Access Control Policy (Admin Console)**:
-   - Managed NixOS hosts (`homelab`, `desktop-pc`) enable Tailscale's built-in SSH server on the `tailscale0` (`100.x.y.z`) interface via `services.tailscale.extraSetFlags = ["--ssh"]` (`modules/services/tailscale.nix`), which runs `tailscale set --ssh` through `tailscaled-set.service` while leaving OpenSSH (`services.openssh`) active on physical LAN interfaces (`192.168.1.180`) as a fallback.
-   - **State & Node Key Preservation on `homelab`**: Across ephemeral `tmpfs` reboots, `/var/lib/tailscale` (`root:root`, `0700`) is preserved under `/persistent/var/lib/tailscale` via `preservation.preserveAt."/persistent".directories`, retaining the node private key, tailnet authentication credentials (`tailscaled.state`), and `--ssh` daemon state automatically on every reboot.
-   - In the [Tailscale Admin Console Access Controls](https://login.tailscale.com/admin/acls), define the `ssh` policy stanza to authorize tailnet members to connect as `laurent` and `root`:
-
-   ```jsonc
-   "ssh": [
-     {
-       "action": "check",
-       "src": ["autogroup:member"],
-       "dst": ["homelab"],
-       "users": ["laurent", "root"]
-     }
-   ]
-   ```
-
-   - Once applied, any newly authenticated tailnet device can connect without local SSH keys in `authorized_keys`:
-
-   **Bash**:
-
-   ```bash
-   export TAILSCALE_HOST=100.127.199.88
-   ssh "laurent@${TAILSCALE_HOST}"
-   # Or via MagicDNS / Tailscale CLI:
-   tailscale ssh laurent@homelab
-   ```
-
-   **Fish**:
-
-   ```fish
-   set -gx TAILSCALE_HOST 100.127.199.88
-   ssh "laurent@$TAILSCALE_HOST"
-   # Or via MagicDNS / Tailscale CLI:
-   tailscale ssh laurent@homelab
-   ```
-
-7. **OpenCode v2 Initial Setup & Access**:
-   - **Terminal Shell**: Connect to `homelab` via SSH (`ssh homelab`) and launch `opencode` to start an interactive agent session styled with the shared Nord theme.
-   - **Web Interface**: Open `https://opencode.homelab.vaylet.fr` in your browser.
-   - **Declarative AI Agent Skills (`mattpocock/skills` & `addyosmani/agent-skills`)**: Pinned as non-flake inputs in `flake.nix` and assembled into a unified 52-skill bundle in `modules/services/opencode.nix`, all 27 official engineering/productivity skills from [Matt Pocock](https://github.com/mattpocock/skills) (`grill-me`, `grill-with-docs`, `tdd`, `to-spec`, `to-tickets`, `code-review`, `domain-modeling`, etc.) and all 25 software lifecycle skills from [Addy Osmani](https://github.com/addyosmani/agent-skills) (`spec-driven-development`, `test-driven-development`, `incremental-implementation`, `code-review-and-quality`, `interview-me`, `debugging-and-error-recovery`, etc.) are linked declaratively into `~/.config/opencode/skills` across `homelab`, `desktop-pc`, and `macbook-air-m4-15`.
-   - **Node.js & Python Package Runners (`npm`, `npx`, `uv`, `uvx`)**: Both `pkgs.nodejs` (`node`, `npm`, `npx`) and `pkgs.uv` (`uv`, `uvx`) are installed in the system environment and in the `opencode-web` service `PATH`. While core skills are managed declaratively via Nix, you can use `npx skills` or `uvx` at any time to browse/install project-local or ad-hoc global skills (`~/.agents/skills/`) and run MCP servers:
-
-     **Bash**:
-
-     ```bash
-     # Browse or install ad-hoc skills via the skills CLI:
-     npx skills add <owner/repo> --list
-     npx skills add <owner/repo>
-
-     # Run Python or Node.js CLI tools / MCP servers on demand:
-     uvx <python-tool>
-     npx <npm-package>
-     ```
-
-     **Fish**:
-
-     ```fish
-     # Browse or install ad-hoc skills via the skills CLI:
-     npx skills add <owner/repo> --list
-     npx skills add <owner/repo>
-
-     # Run Python or Node.js CLI tools / MCP servers on demand:
-     uvx <python-tool>
-     npx <npm-package>
-     ```
-
-   - **User Execution & Workspace Access**: The web daemon runs natively under the primary user account (`laurent:users`) with `WorkingDirectory = "/home/laurent"` and `HOME = "/home/laurent"`, granting OpenCode direct read and write access to cloned Git repositories in `/home/laurent/workspace/` (e.g. `/home/laurent/workspace/github.com/lvaylet/`) as well as user Git configurations (`.gitconfig`). Its systemd `PATH` includes `/run/wrappers/bin` (`sudo`), `/run/current-system/sw/bin`, the full Nix development and deployment stack (`just`, `nh`, `direnv`, `nix`, `nixos-rebuild`, `bash`, `git`, `gh`, `ripgrep`), and the Node.js/Python tool runners (`node`, `npm`, `npx`, `uv`, `uvx`) for local validation and self-deployment.
-   - **Systemd Sandboxing (`PrivateTmp`)**: Isolated with `PrivateTmp = true` so the daemon has its own dedicated `/tmp` namespace, avoiding `/tmp/opencode` permission conflicts with interactive CLI shell sessions.
-   - **State & Workspace Preservation**: Across ephemeral tmpfs reboots, `/var/lib/opencode` (environment credentials and daemon state), `/home/laurent/workspace` (cloned Git repositories), `/home/laurent/.agents` (user-installed global agent skills), `/home/laurent/.local/share/direnv` (`direnv allow` authorizations), and `/home/laurent/.local/share/opencode` / `/home/laurent/.local/state/opencode` (session history, database, and logs) are preserved under `/persistent`.
-   - **Server Password Retrieval**: On first launch, a secure random password is automatically generated in `/persistent/var/lib/opencode/opencode.env`. Retrieve it with:
-
-     **Bash**:
-
-     ```bash
-     ssh laurent@homelab "sudo cat /var/lib/opencode/opencode.env"
-     ```
-
-     **Fish**:
-
-     ```fish
-     ssh laurent@homelab "sudo cat /var/lib/opencode/opencode.env"
-     ```
-
-   - **Sign In**: Log in using username `opencode` and the retrieved password.
-
-8. **SGDF Tools API (`sgdf-tools`) Setup & n8n Integration**:
-   - The native `sgdf-api` systemd service runs on `127.0.0.1:8000` under the dedicated `sgdf-tools:sgdf-tools` system user and is exposed via Caddy at `https://sgdf.homelab.vaylet.fr` (health check at `https://sgdf.homelab.vaylet.fr/health`), while the `sgdf-cli` (`sgdf`) binary is pre-installed on `homelab` with `SGDF_API_URL="http://127.0.0.1:8000"`.
-   - Across ephemeral tmpfs reboots, `/var/lib/sgdf-tools` (storing the SQLite database `/var/lib/sgdf-tools/sgdf.db` and the Bearer token file `/var/lib/sgdf-tools/sgdf-tools.env`) is preserved under `/persistent/var/lib/sgdf-tools` (`0750`).
-   - **Bearer Token Retrieval (for n8n Bearer Auth & `sgdf-cli`)**: On first launch, a secure random `SGDF_AUTH_TOKEN` is automatically generated in `/var/lib/sgdf-tools/sgdf-tools.env`. Retrieve it with:
-
-     **Bash**:
-
-     ```bash
-     ssh laurent@homelab "sudo cat /var/lib/sgdf-tools/sgdf-tools.env"
-     ```
-
-     **Fish**:
-
-     ```fish
-     ssh laurent@homelab "sudo cat /var/lib/sgdf-tools/sgdf-tools.env"
-     ```
-
-   - **Importing SGDF Intranet Exports & Calling from n8n**: Import an intranet export (`ExportIndividus.xls`) via `sgdf --api-url https://sgdf.homelab.vaylet.fr --token "<SGDF_AUTH_TOKEN>" import ExportIndividus.xls`. In n8n `HTTP Request` nodes, configure *Bearer Auth* (or `Authorization: Bearer <SGDF_AUTH_TOKEN>`) with the retrieved token and query `https://sgdf.homelab.vaylet.fr` endpoints (such as `/api/v1/exports/google-contacts` or `/api/v1/audits/whatsapp`).
-   - **Upgrading & Redeploying `sgdf-tools`**: When a new release or commit is published to upstream `github:lvaylet/sgdf-tools`:
-     1. Update the flake lock input for `sgdf-tools` (`just up sgdf-tools`).
-     2. Deploy and switch the new generation on `homelab` (`just switch homelab`). Systemd restarts `sgdf-api` automatically, embedded SQLite migrations execute seamlessly on `/var/lib/sgdf-tools/sgdf.db`, and both database state and the `SGDF_AUTH_TOKEN` environment file are preserved under `/persistent`.
-     3. Verify health status and systemd logs, then commit the updated `flake.lock`.
-
-     **Bash**:
-
-     ```bash
-     # 1. Update flake input lock:
-     just up sgdf-tools
-
-     # 2. Deploy and switch to the new closure on homelab:
-     just switch homelab
-
-     # 3. Verify health check and service status:
-     curl https://sgdf.homelab.vaylet.fr/health
-     ssh laurent@homelab "systemctl status sgdf-api"
-     ssh laurent@homelab "journalctl -u sgdf-api -n 50"
-
-     # 4. Commit updated lockfile:
-     git add flake.lock
-     git commit -m "chore(flake): update sgdf-tools"
-     ```
-
-     **Fish**:
-
-     ```fish
-     # 1. Update flake input lock:
-     just up sgdf-tools
-
-     # 2. Deploy and switch to the new closure on homelab:
-     just switch homelab
-
-     # 3. Verify health check and service status:
-     curl https://sgdf.homelab.vaylet.fr/health
-     ssh laurent@homelab "systemctl status sgdf-api"
-     ssh laurent@homelab "journalctl -u sgdf-api -n 50"
-
-     # 4. Commit updated lockfile:
-     git add flake.lock
-     git commit -m "chore(flake): update sgdf-tools"
-     ```
-
-9. **Code-Server Web Code Editor Setup & Access**:
-   - **Web Interface**: Open `https://code.homelab.vaylet.fr` in your browser from any device authenticated to your private Tailscale network.
-   - **Keyless Access**: Tailscale network isolation replaces application passwords (`auth = "none"`), granting immediate, frictionless access within the private tailnet.
-   - **Visual & Extension Parity**: Mirrors the desktop VS Code experience via `modules/core/vscode.nix` with pre-installed extensions (`GitHub Actions`, `GitHub Pull Requests and Issues`, `Nord` theme, `Markdownlint`, `Nix IDE`, `Nix`, `Alejandra`, `Even Better TOML`), relative line numbering, 80/88/100/120-column rulers, format-on-save, and Nix LSP tooling (`nixd`, `alejandra`).
-   - **Workspace & Terminal Tooling**: Launches directly in `/home/laurent` with the full Nix development and deployment toolchain (`git`, `just`, `nh`, `nix`, `nixd`, `alejandra`, `nixos-rebuild`, `ripgrep`, `direnv`, `bash`, `jq`) in the integrated terminal's `PATH`.
-   - **Declarative Settings & Preservation**: `settings.json` is declaratively symlinked to `/nix/store` via `systemd.tmpfiles.rules` (`L+`), while runtime caches and sessions are preserved under `/persistent/home/laurent` (`.local/share/code-server`, `.config/code-server`).
-   - **Operational Verification & Testing**:
-
-     **Bash**:
-
-     ```bash
-     # Test configuration activation safely without changing bootloader entry:
-     just test homelab
-
-     # Deploy and switch to the new configuration on homelab:
-     just switch homelab
-     ```
-
-     **Fish**:
-
-     ```fish
-     # Test configuration activation safely without changing bootloader entry:
-     just test homelab
-
-     # Deploy and switch to the new configuration on homelab:
-     just switch homelab
-     ```
-
-10. **Automated Container Image Updates (Podman & Systemd Timer)**:
-    - **Daily Automated Inspection**: Homelab runs a native systemd timer (`systemd.timers.podman-auto-update`) every 24 hours (with catch-up persistence and a 15-minute randomized delay).
-    - **Registry Digest Tracking**: All declarative OCI containers (`portainer`, `homeassistant`, `filebrowser`, `waha`, `n8n`, `n8n-runners`) include `--label=io.containers.autoupdate=registry`. When upstream image digests change, Podman pulls the new layers and systemd restarts the corresponding service seamlessly without resetting persistent storage (`/var/lib/*` under `/persistent`). Post-update image pruning automatically cleans up dangling layers.
-    - **Timer Status & Monitoring**:
-
-      **Bash**:
-
-      ```bash
-      ssh laurent@homelab "systemctl list-timers podman-auto-update.timer"
-      # Inspect recent update logs:
-      ssh laurent@homelab "journalctl -u podman-auto-update -n 50"
-      ```
-
-      **Fish**:
-
-      ```fish
-      ssh laurent@homelab "systemctl list-timers podman-auto-update.timer"
-      # Inspect recent update logs:
-      ssh laurent@homelab "journalctl -u podman-auto-update -n 50"
-      ```
-
-    - **On-Demand Manual Update**: Trigger container checks immediately from your workstation or locally on the server via `just update-containers`:
-
-      **Bash**:
-
-      ```bash
-      # Update containers remotely over SSH:
-      just update-containers homelab
-
-      # Or directly on homelab:
-      sudo podman auto-update
-      ```
-
-      **Fish**:
-
-      ```fish
-      # Update containers remotely over SSH:
-      just update-containers homelab
-
-      # Or directly on homelab:
-      sudo podman auto-update
-      ```
-
-11. **Deploy & Activate**:
-
-   ```sh
-   just switch homelab
-   ```
-
-#### Shared Multimedia Storage (`/data`)
-
-Downloading, file management, and media streaming services collaborate using a coordinated permission model (`modules/services/media.nix`):
-
-- **Group `multimedia` (GID `995`)**: Shared by `qbittorrent` (UID `991`), `filebrowser` (UID `992`), `jellyfin` (including its preserved `/var/lib/jellyfin` and `/var/cache/jellyfin` directories), and the primary user `laurent`.
-- **SetGID Bit (`2775`)**: Automatically propagates group ownership to all new files written in `/data/downloads` and `/data/media`.
-- **Systemd Tmpfiles (`z` rules)**: Enforces permissions after preservation mounts without race conditions.
-
-### Local / Non-NixOS Building
-
-On a non-NixOS Linux or macOS workstation, build a target system closure without requiring root privileges:
-
-```sh
-just build homelab
+# Test configuration remotely without saving profile:
+just test homelab
+
+# Permanently deploy and switch remote target:
+just switch homelab
 ```
 
 ---
 
-## Flake Outputs
+## Homelab Hosted Services Summary
 
-```sh
-$ just show
-git+file:///home/laurent/workspace/github.com/lvaylet/my-nixos-configurations
-├───checks
-│   ├───aarch64-darwin
-│   ├───aarch64-linux
-│   ├───x86_64-darwin
-│   └───x86_64-linux
-│       └───pre-commit-check: derivation 'pre-commit-run'
-├───devShells
-│   ├───aarch64-darwin
-│   ├───aarch64-linux
-│   ├───x86_64-darwin
-│   └───x86_64-linux
-│       └───default: development environment 'nix-shell'
-├───formatter
-│   ├───aarch64-darwin
-│   ├───aarch64-linux
-│   ├───x86_64-darwin
-│   └───x86_64-linux: package 'pre-commit-run'
-├───darwinConfigurations
-│   └───macbook-air-m4-15: Darwin configuration
-└───nixosConfigurations
-    ├───desktop-pc: NixOS configuration
-    ├───homelab: NixOS configuration
-    └───iso: NixOS configuration
-```
+Internal web applications run on `homelab` and are securely exposed over the private Tailscale overlay (`*.homelab.vaylet.fr` pointing to `100.127.199.88`) with automated Let's Encrypt certificates provisioned via Cloudflare DNS-01:
+
+| Service | Subdomain / URL | Local Upstream | Type & Purpose |
+| --- | --- | --- | --- |
+| **Home Assistant** | `https://ha.homelab.vaylet.fr` | `127.0.0.1:8123` | OCI Container — Home automation platform |
+| **n8n** | `https://n8n.homelab.vaylet.fr` | `127.0.0.1:5679` | OCI Containers — Visual workflow automation with isolated Python/JS runners |
+| **Uptime Kuma** | `https://uptime.homelab.vaylet.fr` | `127.0.0.1:3002` | Native Service — Monitoring service availability and container metrics |
+| **OpenCode** | `https://opencode.homelab.vaylet.fr` | `127.0.0.1:4096` | Native Service — AI coding agent web daemon with declarative skills |
+| **Code-Server** | `https://code.homelab.vaylet.fr` | `127.0.0.1:4444` | Native Service — Web-based VS Code IDE with persistent workspaces |
+| **WAHA** | `https://waha.homelab.vaylet.fr` | `127.0.0.1:3001` | OCI Container — WhatsApp HTTP API for n8n automations |
+| **SGDF Tools API** | `https://sgdf.homelab.vaylet.fr` | `127.0.0.1:8000` | Native Service — SGDF intranet export ingestion & Google Contacts / WhatsApp audits |
+| **FileBrowser Quantum** | `https://fb.homelab.vaylet.fr` | `127.0.0.1:8081` | OCI Container — Web-based file manager for `/data` |
+| **Portainer CE** | `https://portainer.homelab.vaylet.fr` | `https://127.0.0.1:9443` | OCI Container — Container management Web UI |
+| **Jellyfin** | `https://jellyfin.homelab.vaylet.fr` | `127.0.0.1:8096` | Native Service — Media streaming with Intel QuickSync transcoding |
+| **qBittorrent** | `https://qbittorrent.homelab.vaylet.fr` | `127.0.0.1:8080` | Native Service — Headless BitTorrent client for `/data/downloads` |
+
+*For complete setup instructions (Cloudflare API tokens, WhatsApp pairing, Home Assistant proxy authorization, and `/data` permissions), see the [Homelab Services Guide](docs/services/homelab-services.md).*
+
+---
 
 ## Quality Gates & Verification Workflow
 
-All contributions and configuration changes follow the repository's constitutional quality gates (`.specify/memory/constitution.md`):
+All contributions adhere to the repository quality gates ([`.specify/memory/constitution.md`](.specify/memory/constitution.md)):
 
-1. **Branch Isolation & Pull Request**: All modifications must take place in a dedicated branch associated with a Pull Request targeting `main` (direct commits to `main` are prohibited).
-2. **Living Documentation & Dual-Shell Parity**: `README.md` must be updated within the same branch whenever a service or workflow is added, modified, or removed, providing explicit **Bash** and **Fish** command variants whenever shell syntax differs.
-3. **Formatting & Markdown Quality**: Run `just fmt` (or `nix fmt .`) to format all `.nix` files with `alejandra` and execute pre-commit formatters. Run `just fix-md` to format Markdown documentation using `markdownlint-cli2 --fix` (excluding `.agents/` and `.opencode/`).
-4. **Linting & Diagnostics**: Run `just lint` (`deadnix` and `statix check`) and `just lint-md` (`markdownlint-cli2`); auto-fixable warnings can be resolved with `just fix` or `just fix-md`.
-5. **Flake Integrity & Checks**: Run `just check` (`nix flake check`) to validate syntax, evaluate derivations, and run all hermetic pre-commit sandbox checks with a 100% pass rate.
-6. **Activation Testing**: Run `just test [<host>]` (e.g. `just test` locally or `just test homelab`) to safely test configuration activation without modifying bootloader entries or generation profiles.
-7. **Deployment & Switch**: Run `just switch [<host>]` (e.g. `just switch` locally or `just switch homelab`) or `just boot [<host>]` to finalize system generation updates.
-
-## Continuous Integration
-
-Continuous integration runs on GitHub Actions using a fast, hermetic quality gate ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
-
-1. **Quality Gate & Flake Validation (`nix flake check`)**: Evaluates all host configurations (`desktop-pc`, `homelab`, `iso`) and hermetically executes all pre-commit hooks in sandbox derivations—validating code formatting (`alejandra`), static analysis (`statix`, `deadnix`), flake syntax (`flake-checker`), and secret scanning filters (`trufflehog`, `ripsecrets`, `detect-private-keys`), and evaluates the Darwin host configuration closure (`macbook-air-m4-15`).
-2. **Streamlined Execution (No Remote System Builds)**: Remote CI omits heavy whole-system closure compilation, completing in under 3 minutes and saving runner resources. Full system closures and ISO images are compiled and tested locally prior to deployment (`just build`, `just test`, `just switch`).
-3. **Build Acceleration**: Leverages [Magic Nix Cache](https://github.com/DeterminateSystems/magic-nix-cache-action) and the Determinate Nix Installer for tokenless, zero-configuration GitHub Actions store caching.
-4. **Pull Request Markdown Auto-Fix**: A dedicated workflow ([`.github/workflows/markdownlint-fix.yml`](.github/workflows/markdownlint-fix.yml)) runs `markdownlint-cli2 --fix` on every Pull Request modifying Markdown files (strictly exempting `.agents/` and `.opencode/`) and automatically commits formatting corrections directly back to the branch.
-
-### Local Markdown Linting & Fixing
-
-To lint or format Markdown documents locally prior to pushing:
-
-**Bash**:
-
-```bash
-# Check Markdown files (excluding .agents/ and .opencode/):
-just lint-md
-
-# Automatically fix Markdown formatting issues:
-just fix-md
-```
-
-**Fish**:
-
-```fish
-# Check Markdown files (excluding .agents/ and .opencode/):
-just lint-md
-
-# Automatically fix Markdown formatting issues:
-just fix-md
-```
+1. **Dedicated Branch & PR Isolation**: Direct commits to `main` are prohibited. All work occurs in dedicated branches.
+2. **Living Documentation & Dual-Shell Parity**: `README.md` and `docs/` reflect all changes with explicit **Bash** and **Fish** command blocks.
+3. **Automated Quality Checks**: Changes must pass formatting (`just fmt`, `just fix-md`), linting (`just lint`, `just lint-md`), and hermetic pre-commit checks (`just check` / `nix flake check`) before deployment.
 
 ---
 
-## Shell Environment & Aliases (Bash & Fish Duality)
+## Documentation Directory
 
-Managed NixOS (`desktop-pc`, `homelab`, `iso`) and Darwin (`macbook-air-m4-15`) hosts operate with a dual-shell architecture across user accounts and operational contexts:
-
-- **Fish (`pkgs.fish`)**: Configured as the default interactive login shell for the primary user (`laurent`) across all hosts (`users.users.${vars.userName}.shell = pkgs.fish` in `modules/core/base.nix`), enriched with native Fish abbreviations (`programs.fish.shellAbbrs`) that expand inline and automatically provide full argument autocompletions without manual `complete -c` wrapper scripts.
-- **Bash (`pkgs.bashInteractive`)**: Retained as the default login shell for `root`, the custom headless installer ISO (`modules/core/iso.nix`), non-NixOS bootstrap hosts, and `justfile` execution recipes.
-- **Shared System-Wide Aliases & Abbreviations (`environment.shellAliases` & `programs.fish.shellAbbrs`)**: Declared once in `modules/core/base.nix` (`systemdAliases` and `gitAliases`) and shared across NixOS and Darwin, ensuring identical `systemctl`, `journalctl`, and `git` shortcuts whether logged in as `laurent` (Fish) or `root` (Bash).
-
-### Service Management (`systemctl`)
-
-| Alias | Command | Purpose / Example |
-| --- | --- | --- |
-| `sc` | `systemctl` | Base systemctl command (e.g. `sc list-units`) |
-| `scs` / `sc-status` | `systemctl status` | Check service status (e.g. `scs jellyfin`) |
-| `scr` / `sc-restart` | `systemctl restart` | Restart a service (e.g. `scr podman-homeassistant`) |
-| `scl` / `sc-reload` | `systemctl reload` | Reload configuration without restart (e.g. `scl nginx`) |
-| `sc-start` | `systemctl start` | Start a stopped service (e.g. `sc-start qbittorrent`) |
-| `sc-stop` | `systemctl stop` | Stop a running service (e.g. `sc-stop podman-filebrowser`) |
-| `sc-failed` | `systemctl --failed` | List all currently failed systemd units |
-
-### Log Inspection (`journalctl`)
-
-| Alias | Command | Purpose / Example |
-| --- | --- | --- |
-| `jc` | `journalctl` | Open systemd journal viewer |
-| `logs` / `jcu` | `journalctl -u` | View logs for a specific unit (e.g. `logs jellyfin` or `jcu podman-portainer`) |
-| `logsf` / `jcuf` | `journalctl -f -u` | Follow logs in real time for a unit (e.g. `logsf jellyfin`) |
-| `jcf` | `journalctl -f` | Follow all system logs in real time |
-| `jcb` | `journalctl -b` | View logs from the current boot only |
-| `jce` | `journalctl -e` | Open journal and jump directly to the end |
-
-### Git Aliases (Oh-My-Zsh Style)
-
-Common Oh-My-Zsh style Git shortcuts available in both Bash and Fish, with native Fish autocompletion for branches, files, and options:
-
-| Alias | Command | Purpose / Action |
-| --- | --- | --- |
-| `g` | `git` | Base git command |
-| `gst` | `git status` | Show working tree status |
-| `ga` / `gaa` | `git add` / `git add --all` | Stage changes (file autocompletion enabled) |
-| `gco` / `gcb` | `git checkout` / `git checkout -b` | Checkout branch/commit (branch autocompletion enabled) |
-| `gsw` / `gswc` | `git switch` / `git switch -c` | Switch branch (branch autocompletion enabled) |
-| `gc` / `gcm` | `git commit --verbose` / `git commit --message` | Create commit |
-| `gca` / `gcam` | `git commit --verbose --all` / `git commit --all --message` | Stage all and commit |
-| `gc!` / `gca!` / `gcan!` | `git commit --verbose --amend` / `... --all --amend` / `... --all --no-edit --amend` | Amend previous commit (with or without editing message) |
-| `gd` / `gds` | `git diff` / `git diff --staged` | Show unstaged or staged changes |
-| `gl` / `gp` / `gpf` | `git pull` / `git push` / `git push --force-with-lease` | Sync with remote repository |
-| `gb` / `gba` / `gbd` | `git branch` / `git branch --all` / `git branch --delete` | List or delete branches |
-| `glo` / `glg` / `glp` | `git log --oneline --decorate` / `git log --stat` / `git log --patch` | View commit logs |
-| `grb` / `grbi` / `grbc` / `grba` | `git rebase` / `--interactive` / `--continue` / `--abort` | Rebase operations |
-| `gm` / `gmc` / `gma` | `git merge` / `--continue` / `--abort` | Merge operations |
-| `gsta` / `gstp` / `gsts` / `gstd` | `git stash apply` / `pop` / `show --patch` / `drop` | Stash management |
-| `grh` / `grhh` | `git reset` / `git reset --hard` | Reset working tree |
-| `gclean` | `git clean --interactive -d` | Interactively clean untracked files and directories |
-
-### Desktop Interactive Fish Extensions (`modules/desktop/shell.nix`)
-
-On desktop workstations (`desktop-pc`), Home Manager extends Fish with Nord syntax/pager highlighting, modern CLI replacements, helper functions, and a declarative Nord-themed [Starship](https://starship.rs/) prompt (`~/.config/starship.toml`):
-
-| Alias / Function | Command | Purpose / Action |
-| --- | --- | --- |
-| `ls` | `eza --group --group-directories-first --icons --header --time-style long-iso` | Directory listing with icons and ISO timestamps |
-| `ll` / `la` | `eza ... --long` / `eza ... --long --all` | Detailed long listing (standard / including hidden files) |
-| `llt` / `lat` | `eza ... --long --tree` / `eza ... --long --all --tree` | Recursive tree view (standard / including hidden files) |
-| `cat` | `bat` | Syntax-highlighted file viewer (`Nord` theme) |
-| `y` | `yazi` | Terminal file manager (`Nord` theme) |
-| `b` | `btop` | Interactive system resource monitor (`nord` theme) |
-| `d` | `ncdu --exclude /mnt --color dark` | Disk usage analyzer |
-| `c` / `x` / `r` | `clear` / `exit` / `source ~/.config/fish/config.fish` | Session control and Fish config reload |
-| `take <dir>` | `mkdir -p $argv[1]; and cd $argv[1]` | Create a directory and immediately `cd` into it |
-
-### Unified Nord Visual Theme (`desktop-pc` & Shared Stack)
-
-The `desktop-pc` workstation and shared CLI/editor modules use the Arctic, bluish **[Nord](https://www.nordtheme.com/)** color palette (`#2E3440`–`#B48EAD`) consistently across all layers of the stack:
-
-- **Session, Compositor & Boot**: Noctalia desktop shell (`builtin = "Nord"` dark mode), Niri window focus rings and borders (`#88C0D0` active Frost, `#4C566A` inactive Polar Night, `#BF616A` urgent Aurora Red), Tuigreet KMS login screen, and Limine bootloader wallpapers.
-- **Terminal Emulators**: WezTerm (`color_scheme = 'nord'`) and Ghostty (`theme = "Nord"`).
-- **Code Editors**: Neovim/LazyVim (`gbprod/nord.nvim` with `colorscheme = "nord"`), VS Code and Code Server (`arcticicestudio.nord-visual-studio-code` via shared `modules/core/vscode.nix`), and Zed (`nord` extension with `Nord` dark theme).
-- **Shell, Prompt & TUI Utilities**: Starship (`[palettes.nord]`), Fish syntax and pager colors, OpenCode TUI (`theme = "nord"`), Bat (`theme = "Nord"`), Fzf (`colors`), Yazi (`theme`), Btop (`color_theme = "nord"`), and Lazygit (`gui.theme`).
-
-### Dynamic Noctalia Wallpapers (`desktop-pc`)
-
-On `desktop-pc`, wallpapers are managed declaratively through the Git repository and rotated dynamically by Noctalia:
-
-- **Versioned Asset Directory**: Images are versioned in `assets/wallpapers/` (tracked via `.gitkeep`) and deployed to `~/Pictures/wallpapers` via Home Manager (`modules/desktop/session.nix`).
-- **Startup Randomization & Nord Fallback**: Noctalia is configured (`modules/desktop/dotfiles/noctalia.toml`) with `directory = "~/Pictures/wallpapers"`, `fill_mode = "crop"`, `fill_color = "#2e3440"` (Nord Polar Night fallback when the folder has no images), and `[wallpaper.automation]` (`order = "random"`, `interval_seconds = 86400`) to automatically select a random wallpaper on session startup without automatic mid-session timer disruptions.
-- **Niri Desktop Keybindings**:
-  - `Mod + Shift + W`: Picks and applies a new random wallpaper immediately (`noctalia msg wallpaper-random`).
-  - `Mod + Ctrl + W`: Toggles Noctalia's interactive graphical wallpaper picker panel (`noctalia msg panel-toggle wallpaper`).
-
-### Unified Code Typography: FiraCode Nerd Font (`modules/desktop/fonts.nix`)
-
-Whenever source code or terminal text is displayed across the `desktop-pc` stack, **FiraCode Nerd Font** (`pkgs.nerd-fonts.fira-code`) is used with OpenType programming ligatures (`calt`, `clig`, `liga`) and Nerd Font v3 symbol glyphs enabled:
-
-- **System & User Default `monospace` (`modules/desktop/fonts.nix`)**: Fontconfig (`fonts.fontconfig.defaultFonts.monospace`) prioritizes `FiraCode Nerd Font` (with `FiraCode Nerd Font Mono` as fallback) so web browsers, Markdown previews, and system viewers rendering generic `monospace` or `<code>`/`<pre>` blocks automatically use `FiraCode Nerd Font`.
-- **Code Editors (`modules/desktop/editors.nix`, `modules/core/vscode.nix`, `modules/core/dotfiles/nvim/`)**:
-  - **VS Code & Code Server**: Configured with `"FiraCode Nerd Font"` and ligatures across the code editor (`editor.fontFamily`), integrated terminal (`terminal.integrated.fontFamily`), debug console (`debug.console.fontFamily`), SCM input (`scm.inputFontFamily`), and chat code blocks (`chat.editor.fontFamily`) via shared `modules/core/vscode.nix`.
-  - **Zed Editor**: Configured with `buffer_font_family = "FiraCode Nerd Font"` (`calt = true`) and `terminal.font_family = "FiraCode Nerd Font"`.
-  - **Neovim / LazyVim**: Inherits `FiraCode Nerd Font` and ligatures from the parent terminal emulator in TUI mode and sets `vim.opt.guifont = "FiraCode Nerd Font:h12"` (`lua/config/options.lua`) for GUI clients.
-- **Terminal Emulators (`modules/desktop/terminal.nix`, `modules/desktop/apps.nix`)**: Both **WezTerm** (`wezterm.font('FiraCode Nerd Font')`) and **Ghostty** (`font-family = "FiraCode Nerd Font"`) enable `calt`, `clig`, and `liga` ligature features by default.
-
-### Harmonized VS Code & Code Server Configuration (`modules/core/vscode.nix`)
-
-All GUI workstations (`desktop-pc`, `macbook-air-m4-15`) and remote server instances (`homelab`) share a single source of truth for Visual Studio Code and Code Server configurations:
-
-- **Centralized Library (`config.flake.lib.vscode`)**: Declared in `modules/core/vscode.nix` and discovered automatically via `import-tree ./modules`, providing:
-  - **`extensions`**: Pre-packages the shared extension suite (`GitHub Actions`, `GitHub Pull Requests and Issues`, `Nord` theme, `Markdownlint`, `Nix IDE`, `Nix`, `Alejandra`, `Even Better TOML`).
-  - **`settings`**: Unified editor preferences including Nord theme, relative line numbers, rulers (`80`, `88`, `100`, `120`), format-on-save, trailing newline cleanup, file associations (`.bu`, `.container`, `.ign`), and Nix language server settings (`nixd` with `alejandra`).
-- **Desktop Workstations (`modules/desktop/editors.nix`)**: Home Manager's `programs.vscode.profiles.default` directly references `outputs.lib.vscode.settings` and `outputs.lib.vscode.extensions pkgs`, eliminating duplicate configuration code while retaining desktop-only integrations (`wl-clipboard`, Zed editor).
-- **Homelab Code Server (`modules/services/code-server.nix`)**:
-  - Packages Code Server with all shared extensions pre-bundled using `pkgs.vscode-with-extensions.override`.
-  - Enforces `settings.json` via `systemd.tmpfiles.rules` (`L+`) pointing to the generated `/nix/store` derivation, without requiring Home Manager on `homelab`.
-  - Equips the runtime environment with `alejandra` and `nixd` in `services.code-server.extraPackages` for instant Nix LSP diagnostics and formatting in browser sessions.
-
-### Shared Modal Editor: Neovim & LazyVim (`modules/core/neovim.nix`)
-
-All interactive hosts (`desktop-pc`, `homelab`, and `macbook-air-m4-15`) share a unified, system-level [LazyVim](https://www.lazyvim.org/) editing environment via `core.neovim` without requiring Home Manager on `homelab`:
-
-- **System-Level Neovim Engine**: Configured via NixOS `programs.neovim` and Darwin `environment.systemPackages` (`defaultEditor = true`, `viAlias = true`, `vimAlias = true`), provisioning all upstream LazyVim CLI dependencies (`git`, `gcc`, `gnumake`, `ripgrep`, `fd`, `tree-sitter`, `curl`, `unzip`, `gnutar`, `gzip`) across all hosts.
-- **Declarative Configuration Symlink**: Links `~/.config/nvim` to the shared starter files in `modules/core/dotfiles/nvim/` via `systemd.tmpfiles.rules` (`L+`) on Linux/NixOS and via Home Manager `xdg.configFile."nvim"` on macOS.
-- **Impermanence State Persistence on `homelab` (`modules/core/preservation.nix`)**: Persists `.local/share/nvim` (cloned LazyVim plugins, `lazy-lock.json`, and compiled Tree-sitter parsers) and `.local/state/nvim` (undo history, ShaDa registers, and session state) under `/persistent/home/laurent` across reboots.
-- **Desktop GUI Editors (`modules/desktop/editors.nix`)**: Graphical editors (VS Code, Zed) are shared across workstations, while Wayland clipboard integration (`wl-clipboard`) remains scoped exclusively to `desktop-pc`.
-
----
-
-## Useful Nix Commands
-
-| Command | Purpose |
+| Guide | Description |
 | --- | --- |
-| `nix fmt .` | format all Nix code with Alejandra |
-| `nix develop` | activate developer shell with pre-commit hooks and linters |
-| `nix flake check` | check whether flake evaluates and all checks pass |
-| `nix flake show` | show outputs provided by the flake |
-| `nix flake update` | update all pinned inputs in `flake.lock` |
-| `nixos-rebuild switch --flake .#<host> --target-host <host> --use-remote-sudo` | manual remote switch command |
+| 📖 **[macOS Workstation Guide](docs/hosts/macbook.md)** | Apple M4 initial bootstrap (`/etc/synthetic.conf`, `nix-darwin`), daily ops, and Tailscale access |
+| 🖥️ **[Homelab Bootstrap Guide](docs/hosts/homelab.md)** | Headless bare-metal installation (`nixos-anywhere` + custom ISO), tmpfs impermanence, and updates |
+| ⚙️ **[Homelab Services Guide](docs/services/homelab-services.md)** | Step-by-step setup recipes for all 12 services, Cloudflare DNS-01, API tokens, and storage permissions |
+| ⌨️ **[Shell Aliases & Design Guide](docs/reference/shell-aliases.md)** | Comprehensive cheat sheets for Git, systemctl, journalctl, Fish helpers, and Nord visual theme |
 
 ---
 
 ## References
 
-- [Explode Root On Every Boot | Simplest Impermanent NixOS Setup 2026 | Vimjoyer](https://www.vimjoyer.com/vid89-impermanent)
+- [Explode Root On Every Boot \| Simplest Impermanent NixOS Setup 2026 \| Vimjoyer](https://www.vimjoyer.com/vid89-impermanent)
 - [NixOS as a server, part 1: Impermanence](https://guekka.github.io/nixos-server-1/)
 - [Quickstart Guide: nixos-anywhere](https://nix-community.github.io/nixos-anywhere/quickstart.html)
-- [NixOS Homelab avec Impermanence Automatisée | Gemini](https://gemini.google.com/share/076bac87f8e1)
 - [Disko: Declarative Disk Partitioning for NixOS](https://github.com/nix-community/disko)
 - [Preservation: Declarative State Preservation](https://github.com/nix-community/preservation)
 - [Dendritic Pattern](https://github.com/mightyiam/dendritic)
