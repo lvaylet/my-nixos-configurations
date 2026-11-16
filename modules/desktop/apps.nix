@@ -21,6 +21,14 @@
           gptfdisk
           parted
           tparted
+
+          # Screenshot & Wayland Desktop Utilities
+          # ---
+          grim
+          slurp
+          libnotify
+          satty
+          wl-clipboard
         ];
 
       programs = {

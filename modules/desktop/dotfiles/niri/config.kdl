@@ -334,6 +334,12 @@ window-rule {
     open-floating true
 }
 
+// Open Satty screenshot annotation tool as floating by default.
+window-rule {
+    match app-id=r#"^com\.gabm\.satty$"#
+    open-floating true
+}
+
 // Example: block out two password managers from screen capture.
 // (This example rule is commented out with a "/-" in front.)
 /-window-rule {
@@ -633,9 +639,9 @@ binds {
     // Mod+Space       { switch-layout "next"; }
     // Mod+Shift+Space { switch-layout "prev"; }
 
-    Print { screenshot; }
-    Ctrl+Print { screenshot-screen; }
-    Alt+Print { screenshot-window; }
+    Print hotkey-overlay-title="Capture: Interactive Region" { spawn "screenshot-tool" "region"; }
+    Ctrl+Print hotkey-overlay-title="Capture: Full Screen" { spawn "screenshot-tool" "screen"; }
+    Alt+Print hotkey-overlay-title="Capture: Active Window" { spawn "screenshot-tool" "window"; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here

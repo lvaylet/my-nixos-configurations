@@ -1,0 +1,9 @@
+[general]
+fullscreen = false
+early-exit = true
+initial-tool = "arrow"
+copy-command = "wl-copy"
+corner-roundness = 12
+
+[font]
+family = "FiraCode Nerd Font"
