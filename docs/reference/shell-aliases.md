@@ -143,4 +143,25 @@ All interactive hosts (`desktop-pc`, `homelab`, and `macbook-air-m4-15`) share a
 
 ---
 
+## macOS-like Screenshot Workflow (`desktop-pc`)
+
+Workstation `desktop-pc` provides a macOS-like screenshot workflow integrating Wayland capture (`grim` + `slurp`), dual automatic persistence (saving to `~/Pictures/Screenshots/` and copying to the Wayland clipboard via `wl-copy`), interactive desktop notifications with preview thumbnails, and full image annotation powered by **Satty** (`pkgs.satty`):
+
+| Keybinding | Command | Behavior / Action |
+| --- | --- | --- |
+| `Print` | `screenshot-tool region` | Interactive area selection via `slurp`; captures selection, copies to clipboard, saves to file, and shows notification |
+| `Ctrl + Print` | `screenshot-tool screen` | Full screen capture; copies to clipboard, saves to file, and shows notification |
+| `Alt + Print` | `screenshot-tool window` | Active focused window capture via Niri IPC; copies to clipboard, saves to file, and shows notification |
+
+### Notification Actions & Markup (Satty)
+
+Every successful capture displays a desktop notification with an image preview thumbnail and 3 interactive buttons:
+
+- **Annoter**: Launches the **Satty** GTK4/Libadwaita markup tool in a floating window over the desktop, providing arrows, text, highlighting, numbered steps, and redaction (blur/pixelate) with instant copy (`Ctrl+C`) or save (`Ctrl+S`).
+- **Ouvrir**: Opens the screenshots directory (`~/Pictures/Screenshots`) in the default file manager via `xdg-open`.
+- **Supprimer**: Immediately deletes the screenshot file from disk.
+- **Dismissal / Timeout**: Letting the notification fade or dismissing it leaves the saved PNG file and clipboard content intact without interruptions.
+
+---
+
 [← Back to README](../../README.md)
