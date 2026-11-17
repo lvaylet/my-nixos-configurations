@@ -35,6 +35,7 @@ programs.opencode = {
 ```
 
 **Guarantees**:
+
 1. `programs.opencode.tui` remains an empty attribute set `{}`.
 2. Zero evaluation warnings are emitted during `nix eval` or `nh os switch` / `just switch`.
 3. Home Manager writes `$HOME/.config/opencode/cli.json` containing valid JSON with schema `https://opencode.ai/v2/cli.json`.
@@ -65,6 +66,7 @@ in {
 ```
 
 **Guarantees**:
+
 1. Interactive shell sessions on `homelab` (`ssh homelab` -> `opencode`) find `cli.json` with Nord theme configured.
 2. No conflict with Home Manager on `desktop-pc`, because the tmpfiles rule for `cli.json` is conditional on `!(config ? home-manager)`.
 

@@ -42,6 +42,7 @@ just check
 ```
 
 **Expected Outcome**:
+
 - All commands exit with code 0 and zero warnings.
 
 ---
@@ -77,6 +78,7 @@ nix eval .#darwinConfigurations.macbook-air-m4-15.config.system.build.toplevel.d
 ```
 
 **Expected Outcome**:
+
 - Derivation paths are printed.
 - Zero evaluation warnings regarding `programs.opencode.tui` or `cli.json` are emitted.
 
@@ -101,6 +103,7 @@ nix eval --json .#nixosConfigurations.desktop-pc.config.home-manager.users.laure
 ```
 
 **Expected Outcome**:
+
 - Output matches: `{"theme":{"name":"nord"}}`.
 
 ---
@@ -122,6 +125,7 @@ just test configuration="desktop-pc"
 ```
 
 **Expected Outcome**:
+
 - `nh os test` builds and activates the profile.
 - `$HOME/.config/opencode/cli.json` exists and contains `{"$schema":"https://opencode.ai/v2/cli.json","theme":{"name":"nord"}}`.
 - No evaluation warnings are emitted.

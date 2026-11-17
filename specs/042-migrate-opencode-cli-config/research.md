@@ -6,6 +6,7 @@
 ## Context & Objectives
 
 During NixOS system activation (`just switch` or `nix eval`), Home Manager emits an evaluation warning:
+
 ```text
 evaluation warning: laurent profile: programs.opencode.tui is ignored by OpenCode 2.
 
@@ -40,6 +41,7 @@ The objective is to eliminate this warning across all repository targets while p
 - **Decision**: Set `cli.theme = { name = "nord"; };`.
 - **Rationale**:
   - The OpenCode 2 CLI schema (`https://opencode.ai/v2/cli.json`) defines `theme` as an object:
+
     ```json
     "theme": {
       "type": "object",
@@ -50,6 +52,7 @@ The objective is to eliminate this warning across all repository targets while p
       "additionalProperties": false
     }
     ```
+
   - In OpenCode 1, `tui.json` accepted `theme = "nord"`.
   - In OpenCode 2, `cli.json` requires an object `{ "name": "nord" }`. Optional `mode` defaults to following terminal appearance if omitted.
   - Passing `{ name = "nord"; }` adheres to the schema and enables schema validation.

@@ -15,16 +15,19 @@ Migrate the OpenCode configuration in `modules/services/opencode.nix` from legac
 **Language/Version**: Nix (Flakes, Nixpkgs unstable, Flake-parts)
 
 **Primary Dependencies**:
+
 - `home-manager` (`programs.opencode.cli` module option)
 - `inputs.opencode` (OpenCode v2.1.4 pinned package)
 - `systemd.tmpfiles.rules` (Declarative store symlinks for `homelab`)
 - `flake-parts` & `import-tree` (Dendritic module discovery)
 
 **Storage**:
+
 - Generated JSON derivation in `/nix/store`
 - Deployed at `$HOME/.config/opencode/cli.json`
 
 **Testing**:
+
 - Formatting & static analysis: `just fmt` (`alejandra`), `just lint` (`statix check`, `deadnix`)
 - Hermetic flake checks: `just check` (`nix flake check`)
 - Multi-host evaluation:
@@ -34,6 +37,7 @@ Migrate the OpenCode configuration in `modules/services/opencode.nix` from legac
 - Activation testing: `just test configuration="desktop-pc"`
 
 **Target Platform**:
+
 - `desktop-pc` (`x86_64-linux` NixOS desktop workstation)
 - `homelab` (`x86_64-linux` NixOS headless server)
 - `macbook-air-m4-15` (`aarch64-darwin` macOS laptop)
@@ -41,16 +45,19 @@ Migrate the OpenCode configuration in `modules/services/opencode.nix` from legac
 **Project Type**: Infrastructure as Code (Nix Flakes, NixOS modules, Home Manager)
 
 **Performance Goals**:
+
 - 0 evaluation warnings emitted across all targets (`SC-001`, `SC-002`)
 - 100% theme retention (`nord`) across interactive CLI sessions (`SC-003`)
 - Clean activation and build across all machines (`SC-004`)
 
 **Constraints**:
+
 - Must adhere to Constitution Principle I (Declarative) & II (Dendritic Colocation)
 - Must not touch `modules/hosts/` (keep host declarations pure)
 - Must preserve `enableHomeManager = false` on `homelab`
 
 **Scale/Scope**:
+
 - 1 modified module: `modules/services/opencode.nix`
 
 ---
