@@ -55,7 +55,13 @@ in {
       opencodePackage = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
       opencodeSkillsDir = mkOpencodeSkillsDir {inherit inputs pkgs;};
       opencodeConfigFile = pkgs.writeText "opencode.json" (builtins.toJSON {
-        theme = "nord";
+        "$schema" = "https://opencode.ai/config.json";
+      });
+      opencodeCliConfigFile = pkgs.writeText "opencode-cli.json" (builtins.toJSON {
+        "$schema" = "https://opencode.ai/v2/cli.json";
+        theme = {
+          name = "nord";
+        };
       });
     in {
       # Shell package availability for homelab and NixOS hosts
@@ -73,6 +79,7 @@ in {
           "L+ /home/${vars.userName}/.config/opencode/opencode.json - - - - ${opencodeConfigFile}"
         ]
         ++ lib.optionals (!(config ? home-manager)) [
+          "L+ /home/${vars.userName}/.config/opencode/cli.json - - - - ${opencodeCliConfigFile}"
           "L+ /home/${vars.userName}/.config/opencode/skills - - - - ${opencodeSkillsDir}"
         ];
 
@@ -177,8 +184,10 @@ in {
           nodejs
           uv
         ];
-        tui = {
-          theme = "nord";
+        cli = {
+          theme = {
+            name = "nord";
+          };
         };
       };
 
